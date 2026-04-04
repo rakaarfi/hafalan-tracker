@@ -270,3 +270,45 @@ func (s *Server) updateMemorization(c *gin.Context) {
 
 	c.JSON(http.StatusOK, mem)
 }
+
+// getParentChildren returns all children of the current parent with their progress
+func (s *Server) getParentChildren(c *gin.Context) {
+	// Get user info from context
+	userID := c.GetString("user_id")
+
+	// Get all children's progress for this user
+	progress, err := s.parentService.GetChildrenProgressByUserID(c.Request.Context(), userID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Failed to retrieve children progress",
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, progress)
+}
+
+// getParentChildProgress returns detailed progress for a specific child
+func (s *Server) getParentChildProgress(c *gin.Context) {
+	childID := c.Param("id")
+
+	// Get user info from context
+	userID := c.GetString("user_id")
+
+	// Get specific child's progress
+	progress, err := s.parentService.GetChildProgressByUserID(c.Request.Context(), userID, childID)
+	if err != nil {
+		if err.Error() == "student not found in parent's children list" {
+			c.JSON(http.StatusForbidden, gin.H{
+				"error": "You don't have permission to view this student's progress",
+			})
+		} else {
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"error": err.Error(),
+			})
+		}
+		return
+	}
+
+	c.JSON(http.StatusOK, progress)
+}

@@ -75,10 +75,31 @@ func (s *Server) authMiddleware() gin.HandlerFunc {
 // roleMiddleware checks if user has required role
 func roleMiddleware(roles ...string) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		// TODO: Get user role from context
-		// userRole := c.GetString("role")
+		// Get user role from context
+		userRole := c.GetString("role")
 
-		// For now, skip role check
+		// Check if user has required role
+		hasRole := false
+		for _, role := range roles {
+			if userRole == role {
+				hasRole = true
+				break
+			}
+		}
+
+		if !hasRole {
+			c.JSON(http.StatusForbidden, gin.H{
+				"error": "Insufficient permissions",
+			})
+			c.Abort()
+			return
+		}
+
 		c.Next()
 	}
+}
+
+// parentRoleMiddleware checks if user is a parent
+func (s *Server) parentRoleMiddleware() gin.HandlerFunc {
+	return roleMiddleware("parent")
 }
