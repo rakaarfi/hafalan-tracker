@@ -1,16 +1,23 @@
 package server
 
 import (
+	"time"
+
 	"github.com/gin-gonic/gin"
+	"github.com/rakaarfi/hafalan-tracker/backend/internal/auth"
 	"github.com/rakaarfi/hafalan-tracker/backend/internal/config"
 	"github.com/rakaarfi/hafalan-tracker/backend/internal/database"
+	"github.com/rakaarfi/hafalan-tracker/backend/internal/repository"
+	"github.com/rakaarfi/hafalan-tracker/backend/internal/service"
 )
 
 // Server represents the HTTP server
 type Server struct {
-	cfg     *config.Config
-	db      *database.DB
-	router  *gin.Engine
+	cfg           *config.Config
+	db            *database.DB
+	router        *gin.Engine
+	authService   *service.AuthService
+	jwtManager    *auth.JWTManager
 }
 
 // New creates a new server instance
@@ -26,11 +33,22 @@ func New(cfg *config.Config, db *database.DB) *Server {
 	router.Use(gin.Logger())
 	router.Use(corsMiddleware())
 
+	// Initialize JWT manager
+	jwtManager := auth.NewJWTManager(cfg.JWT.Secret, 24*time.Hour)
+
+	// Initialize repositories
+	userRepo := repository.NewUserRepository(db.DB)
+
+	// Initialize services
+	authService := service.NewAuthService(userRepo, jwtManager)
+
 	// Create server
 	srv := &Server{
-		cfg:    cfg,
-		db:     db,
-		router: router,
+		cfg:         cfg,
+		db:          db,
+		router:      router,
+		authService: authService,
+		jwtManager:  jwtManager,
 	}
 
 	// Setup routes
@@ -56,7 +74,7 @@ func (s *Server) setupRoutes() {
 
 		// Protected routes (require authentication)
 		protected := v1.Group("/")
-		protected.Use(authMiddleware())
+		protected.Use(s.authMiddleware())
 		{
 			// User management
 			protected.GET("/users", s.getUsers)
