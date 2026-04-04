@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/rakaarfi/hafalan-tracker/backend/internal/service"
 )
 
 // healthCheck returns the health status of the server
@@ -28,10 +29,24 @@ func (s *Server) ping(c *gin.Context) {
 
 // login handles user authentication
 func (s *Server) login(c *gin.Context) {
-	// TODO: Implement JWT-based authentication
-	c.JSON(http.StatusNotImplemented, gin.H{
-		"error": "Authentication not yet implemented",
-	})
+	var req service.LoginRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Invalid request format",
+		})
+		return
+	}
+
+	// Authenticate user
+	resp, err := s.authService.Login(c.Request.Context(), &req)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"error": "Invalid email or password",
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, resp)
 }
 
 // getUsers returns all users

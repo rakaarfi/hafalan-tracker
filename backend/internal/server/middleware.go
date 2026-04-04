@@ -29,7 +29,7 @@ func corsMiddleware() gin.HandlerFunc {
 }
 
 // authMiddleware validates JWT tokens
-func authMiddleware() gin.HandlerFunc {
+func (s *Server) authMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		// Get Authorization header
 		authHeader := c.GetHeader("Authorization")
@@ -53,19 +53,20 @@ func authMiddleware() gin.HandlerFunc {
 
 		token := parts[1]
 
-		// TODO: Validate JWT token
-		// For now, just check if token is not empty
-		if token == "" {
+		// Validate JWT token
+		claims, err := s.jwtManager.Validate(token)
+		if err != nil {
 			c.JSON(http.StatusUnauthorized, gin.H{
-				"error": "Invalid token",
+				"error": "Invalid or expired token",
 			})
 			c.Abort()
 			return
 		}
 
-		// TODO: Extract user claims from token and set in context
-		// c.Set("user_id", claims.UserID)
-		// c.Set("role", claims.Role)
+		// Extract user claims and set in context
+		c.Set("user_id", claims.UserID)
+		c.Set("role", claims.Role)
+		c.Set("email", claims.Email)
 
 		c.Next()
 	}
