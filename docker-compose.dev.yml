@@ -1,0 +1,26 @@
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: hafalan-tracker-db-dev
+    environment:
+      POSTGRES_USER: hafalan_user
+      POSTGRES_PASSWORD: hafalan_pass
+      POSTGRES_DB: hafalan_tracker
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data_dev:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U hafalan_user"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - hafalan-network
+
+volumes:
+  postgres_data_dev:
+
+networks:
+  hafalan-network:
+    driver: bridge
