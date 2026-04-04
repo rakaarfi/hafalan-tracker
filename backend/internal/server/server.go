@@ -19,6 +19,7 @@ type Server struct {
 	authService        *service.AuthService
 	jwtManager         *auth.JWTManager
 	memorizationService *service.MemorizationService
+	parentService      *service.ParentService
 }
 
 // New creates a new server instance
@@ -41,10 +42,13 @@ func New(cfg *config.Config, db *database.DB) *Server {
 	userRepo := repository.NewUserRepository(db.DB)
 	memorizationRepo := repository.NewMemorizationRepository(db.DB)
 	historyRepo := repository.NewHistoryRepository(db.DB)
+	parentRepo := repository.NewParentRepository(db.DB)
+	studentRepo := repository.NewStudentRepository(db.DB)
 
 	// Initialize services
 	authService := service.NewAuthService(userRepo, jwtManager)
 	memorizationService := service.NewMemorizationService(memorizationRepo, historyRepo)
+	parentService := service.NewParentService(parentRepo, studentRepo, memorizationRepo)
 
 	// Create server
 	srv := &Server{
@@ -54,6 +58,7 @@ func New(cfg *config.Config, db *database.DB) *Server {
 		authService:        authService,
 		jwtManager:         jwtManager,
 		memorizationService: memorizationService,
+		parentService:      parentService,
 	}
 
 	// Setup routes
@@ -100,6 +105,14 @@ func (s *Server) setupRoutes() {
 			// Class routes
 			protected.GET("/classes", s.getClasses)
 			protected.GET("/classes/:id", s.getClass)
+
+			// Parent-specific routes (only accessible by parents)
+			parents := protected.Group("/parents/me")
+			parents.Use(s.parentRoleMiddleware())
+			{
+				parents.GET("/children", s.getParentChildren)
+				parents.GET("/children/:id", s.getParentChildProgress)
+			}
 
 			// Memorization routes
 			protected.GET("/memorizations", s.getMemorizations)
