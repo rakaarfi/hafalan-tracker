@@ -24,6 +24,7 @@ hafalan-tracker/
 ### Frontend
 - React 18 with Vite
 - TypeScript
+- Bun (runtime & package manager)
 - React Router v6
 - Zustand (state management)
 - React Hook Form + Zod
@@ -42,7 +43,7 @@ hafalan-tracker/
 ## 📦 Setup Development
 
 ### Prerequisites
-- Node.js 18+
+- Bun 1.0+
 - Go 1.21+
 - PostgreSQL 15+
 - Docker (optional)
@@ -52,7 +53,7 @@ hafalan-tracker/
 **Frontend:**
 ```bash
 cd frontend
-npm install
+bun install
 ```
 
 **Backend:**
@@ -77,7 +78,7 @@ psql -U user -d hafalan_tracker -f seeds/quran_data.sql
 **Frontend:**
 ```bash
 cd frontend
-npm run dev
+bun run dev
 # Runs on http://localhost:5173
 ```
 
@@ -113,7 +114,7 @@ See [docs/database.md](docs/database.md) for database schema documentation.
 **Frontend:**
 ```bash
 cd frontend
-npm test
+bun test
 ```
 
 **Backend:**
