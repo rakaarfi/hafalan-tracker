@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/rakaarfi/hafalan-tracker/backend/internal/repository"
 	"github.com/rakaarfi/hafalan-tracker/backend/internal/service"
 )
 
@@ -136,34 +137,136 @@ func (s *Server) getClass(c *gin.Context) {
 
 // getMemorizations returns all memorizations
 func (s *Server) getMemorizations(c *gin.Context) {
-	// TODO: Implement with proper database query
-	c.JSON(http.StatusNotImplemented, gin.H{
-		"error": "Not yet implemented",
-	})
+	// Get user info from context
+	userID := c.GetString("user_id")
+	role := c.GetString("role")
+
+	var mems []repository.MemorizationWithDetails
+	var err error
+
+	// Filter based on role
+	if role == "teacher" {
+		// Teachers can only see their assigned students' memorizations
+		mems, err = s.memorizationService.GetByTeacherID(c.Request.Context(), userID)
+	} else if role == "parent" {
+		// Parents can only see their children's memorizations
+		// TODO: Implement parent-child relationship check
+		c.JSON(http.StatusNotImplemented, gin.H{
+			"error": "Parent view not yet implemented",
+		})
+		return
+	} else {
+		// Admins can see all memorizations
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Invalid role for memorization view",
+		})
+		return
+	}
+
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Failed to retrieve memorizations",
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, mems)
 }
 
 // getMemorization returns a specific memorization
 func (s *Server) getMemorization(c *gin.Context) {
 	id := c.Param("id")
-	c.JSON(http.StatusOK, gin.H{
-		"id": id,
-		"message": "Memorization details",
-	})
+
+	mem, err := s.memorizationService.GetByID(c.Request.Context(), id)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Failed to retrieve memorization",
+		})
+		return
+	}
+
+	if mem == nil {
+		c.JSON(http.StatusNotFound, gin.H{
+			"error": "Memorization not found",
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, mem)
 }
 
 // createMemorization creates a new memorization record
 func (s *Server) createMemorization(c *gin.Context) {
-	// TODO: Implement with proper validation and database insert
-	c.JSON(http.StatusNotImplemented, gin.H{
-		"error": "Not yet implemented",
-	})
+	var req service.CreateMemorizationRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Invalid request format",
+		})
+		return
+	}
+
+	// Get user info from context
+	userID := c.GetString("user_id")
+	role := c.GetString("role")
+
+	// Only teachers can create memorization records
+	if role != "teacher" {
+		c.JSON(http.StatusForbidden, gin.H{
+			"error": "Only teachers can create memorization records",
+		})
+		return
+	}
+
+	// Set teacher ID to current user
+	req.TeacherID = userID
+
+	// Create memorization
+	mem, err := s.memorizationService.Create(c.Request.Context(), &req, userID)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusCreated, mem)
 }
 
 // updateMemorization updates an existing memorization record
 func (s *Server) updateMemorization(c *gin.Context) {
 	id := c.Param("id")
-	c.JSON(http.StatusOK, gin.H{
-		"id": id,
-		"message": "Memorization updated",
-	})
+
+	var req service.UpdateMemorizationRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Invalid request format",
+		})
+		return
+	}
+
+	// Set ID from URL parameter
+	req.ID = id
+
+	// Get user info from context
+	userID := c.GetString("user_id")
+	role := c.GetString("role")
+
+	// Only teachers can update memorization records
+	if role != "teacher" {
+		c.JSON(http.StatusForbidden, gin.H{
+			"error": "Only teachers can update memorization records",
+		})
+		return
+	}
+
+	// Update memorization
+	mem, err := s.memorizationService.Update(c.Request.Context(), &req, userID)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, mem)
 }

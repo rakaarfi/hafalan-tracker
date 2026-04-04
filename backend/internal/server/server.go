@@ -13,11 +13,12 @@ import (
 
 // Server represents the HTTP server
 type Server struct {
-	cfg           *config.Config
-	db            *database.DB
-	router        *gin.Engine
-	authService   *service.AuthService
-	jwtManager    *auth.JWTManager
+	cfg                *config.Config
+	db                 *database.DB
+	router             *gin.Engine
+	authService        *service.AuthService
+	jwtManager         *auth.JWTManager
+	memorizationService *service.MemorizationService
 }
 
 // New creates a new server instance
@@ -38,17 +39,21 @@ func New(cfg *config.Config, db *database.DB) *Server {
 
 	// Initialize repositories
 	userRepo := repository.NewUserRepository(db.DB)
+	memorizationRepo := repository.NewMemorizationRepository(db.DB)
+	historyRepo := repository.NewHistoryRepository(db.DB)
 
 	// Initialize services
 	authService := service.NewAuthService(userRepo, jwtManager)
+	memorizationService := service.NewMemorizationService(memorizationRepo, historyRepo)
 
 	// Create server
 	srv := &Server{
-		cfg:         cfg,
-		db:          db,
-		router:      router,
-		authService: authService,
-		jwtManager:  jwtManager,
+		cfg:                cfg,
+		db:                 db,
+		router:             router,
+		authService:        authService,
+		jwtManager:         jwtManager,
+		memorizationService: memorizationService,
 	}
 
 	// Setup routes
