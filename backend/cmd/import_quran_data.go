@@ -59,10 +59,10 @@ func main() {
 	}
 	defer db.Close()
 
-	// Read surah JSON - adjust path for running from project root
+	// Read surah JSON - adjust path for running from different directories
 	surahDataPath := "shared/data/surah.json"
 	if _, err := os.Stat(surahDataPath); os.IsNotExist(err) {
-		surahDataPath = "../../shared/data/surah.json"
+		surahDataPath = "../shared/data/surah.json"
 	}
 
 	surahData, err := ioutil.ReadFile(surahDataPath)
@@ -96,10 +96,10 @@ func main() {
 
 	fmt.Println("Imported", len(surahs), "surahs")
 
-	// Read juz JSON - adjust path for running from project root
+	// Read juz JSON - adjust path for running from different directories
 	juzDataPath := "shared/data/juz.json"
 	if _, err := os.Stat(juzDataPath); os.IsNotExist(err) {
-		juzDataPath = "../../shared/data/juz.json"
+		juzDataPath = "../shared/data/juz.json"
 	}
 
 	juzData, err := ioutil.ReadFile(juzDataPath)
