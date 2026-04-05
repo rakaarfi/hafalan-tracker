@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -26,7 +25,6 @@ type HafalanFormData = z.infer<typeof hafalanSchema>
 export function HafalanInputForm({ studentId }: { studentId: string }) {
   const { t } = useTranslation()
   const { toast } = useToast()
-  const [unitType, setUnitType] = useState<'surah' | 'page' | 'juz'>('surah')
 
   const { register, handleSubmit, formState: { errors, isSubmitting }, watch, setValue } = useForm<HafalanFormData>({
     resolver: zodResolver(hafalanSchema),
@@ -76,7 +74,6 @@ export function HafalanInputForm({ studentId }: { studentId: string }) {
               key={type}
               type="button"
               onClick={() => {
-                setUnitType(type)
                 setValue('unit_type', type)
               }}
               className={`px-4 py-2 border-2 min-h-[44px] min-w-[44px] ${
