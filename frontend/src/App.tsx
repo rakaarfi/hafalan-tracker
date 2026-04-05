@@ -23,11 +23,19 @@ function App() {
             element={isAuthenticated ? <TeacherDashboard /> : <Navigate to="/login" replace />}
           />
           <Route
+            path="/teacher/dashboard"
+            element={isAuthenticated ? <TeacherDashboard /> : <Navigate to="/login" replace />}
+          />
+          <Route
             path="/teacher/students/:studentId"
             element={isAuthenticated ? <StudentDetailPage /> : <Navigate to="/login" replace />}
           />
           <Route
             path="/parent"
+            element={isAuthenticated ? <ParentDashboard /> : <Navigate to="/login" replace />}
+          />
+          <Route
+            path="/parent/dashboard"
             element={isAuthenticated ? <ParentDashboard /> : <Navigate to="/login" replace />}
           />
         </Routes>
