@@ -2,6 +2,7 @@ import { BrowserRouter } from 'react-router-dom'
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { Toaster } from '@/components/ui/toaster'
 import { LoginPage } from '@/pages/LoginPage'
+import { TeacherDashboard } from '@/pages/TeacherDashboard'
 import { useAuthStore } from '@/stores/authStore'
 
 function App() {
@@ -17,7 +18,7 @@ function App() {
           {/* Protected Routes */}
           <Route
             path="/teacher/*"
-            element={isAuthenticated ? <div>Teacher Dashboard</div> : <Navigate to="/login" replace />}
+            element={isAuthenticated ? <TeacherDashboard /> : <Navigate to="/login" replace />}
           />
           <Route
             path="/parent/*"
