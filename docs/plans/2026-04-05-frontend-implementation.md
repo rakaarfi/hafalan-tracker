@@ -43,7 +43,7 @@
 **Step 1: Initialize shadcn/ui**
 ```bash
 cd frontend
-bunx shadcn-ui@latest init
+bunx --bun shadcn@latest init -t vite
 ```
 
 Choose options:
@@ -87,13 +87,13 @@ export default {
 
 **Step 3: Add required shadcn components**
 ```bash
-bunx shadcn-ui@latest add button
-bunx shadcn-ui@latest add input
-bunx shadcn-ui@latest add label
-bunx shadcn-ui@latest add form
-bunx shadcn-ui@latest add select
-bunx shadcn-ui@latest add badge
-bunx shadcn-ui@latest add toast
+bunx --bun shadcn@latest add button
+bunx --bun shadcn@latest add input
+bunx --bun shadcn@latest add label
+bunx --bun shadcn@latest add form
+bunx --bun shadcn@latest add select
+bunx --bun shadcn@latest add badge
+bunx --bun shadcn@latest add toast
 ```
 
 **Step 4: Modify Button component for sharp corners**
