@@ -3,7 +3,7 @@ import { Search } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { cn } from '@/lib/utils'
-import { surahOptions, juzOptions, type SurahOption, type JuzOption } from '@/lib/quran-data'
+import { surahOptions, juzOptions, type SurahOption } from '@/lib/quran-data'
 
 interface QuranComboboxProps {
   mode: 'surah' | 'juz' | 'page'
