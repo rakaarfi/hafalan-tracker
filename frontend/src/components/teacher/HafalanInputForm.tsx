@@ -1,0 +1,222 @@
+import { useState } from 'react'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { z } from 'zod'
+import { useTranslation } from 'react-i18next'
+import { Button } from '@/components/ui/button'
+import { QuranCombobox } from '@/components/quran/QuranCombobox'
+import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
+import { useToast } from '@/hooks/use-toast'
+import api from '@/lib/api'
+
+const hafalanSchema = z.object({
+  unit_type: z.enum(['surah', 'page', 'juz']),
+  surah_id: z.string().optional(),
+  juz_id: z.string().optional(),
+  page_start: z.number().min(1).max(604).optional(),
+  page_end: z.number().min(1).max(604).optional(),
+  status: z.enum(['fluent', 'good', 'needs_improvement']),
+  notes: z.string().max(500).optional(),
+  test_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/)
+})
+
+type HafalanFormData = z.infer<typeof hafalanSchema>
+
+export function HafalanInputForm({ studentId }: { studentId: string }) {
+  const { t } = useTranslation()
+  const { toast } = useToast()
+  const [unitType, setUnitType] = useState<'surah' | 'page' | 'juz'>('surah')
+
+  const { register, handleSubmit, formState: { errors, isSubmitting }, watch, setValue } = useForm<HafalanFormData>({
+    resolver: zodResolver(hafalanSchema),
+    defaultValues: {
+      unit_type: 'surah',
+      test_date: new Date().toISOString().split('T')[0]
+    }
+  })
+
+  const watchedUnitType = watch('unit_type')
+  const watchedStatus = watch('status', 'fluent')
+
+  const onSubmit = async (data: HafalanFormData) => {
+    try {
+      await api.post('/memorizations', {
+        ...data,
+        student_id: studentId
+      })
+
+      toast({
+        title: "Berhasil",
+        description: "Data hafalan berhasil disimpan",
+      })
+
+      // Navigate back to dashboard
+      setTimeout(() => {
+        window.location.href = '/teacher/dashboard'
+      }, 1000)
+
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Gagal",
+        description: error.response?.data?.error || "Gagal menyimpan data",
+      })
+    }
+  }
+
+  return (
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+      {/* Unit Type Selector */}
+      <div>
+        <Label>{t('teacher.unitType')}</Label>
+        <div className="flex gap-4 mt-2">
+          {(['surah', 'page', 'juz'] as const).map((type) => (
+            <button
+              key={type}
+              type="button"
+              onClick={() => {
+                setUnitType(type)
+                setValue('unit_type', type)
+              }}
+              className={`px-4 py-2 border-2 min-h-[44px] min-w-[44px] ${
+                watchedUnitType === type
+                  ? 'border-primary bg-primary text-white'
+                  : 'border-border hover:bg-gray-50'
+              }`}
+            >
+              {t(`teacher.${type}`)}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Dynamic combobox based on unit type */}
+      {watchedUnitType === 'surah' && (
+        <div>
+          <Label>{t('teacher.surah')}</Label>
+          <div className="mt-2">
+            <QuranCombobox
+              mode="surah"
+              value={watch('surah_id') || ''}
+              onChange={(value) => setValue('surah_id', value)}
+            />
+          </div>
+        </div>
+      )}
+
+      {watchedUnitType === 'juz' && (
+        <div>
+          <Label>{t('teacher.juz')}</Label>
+          <div className="mt-2">
+            <QuranCombobox
+              mode="juz"
+              value={watch('juz_id') || ''}
+              onChange={(value) => setValue('juz_id', value)}
+            />
+          </div>
+        </div>
+      )}
+
+      {watchedUnitType === 'page' && (
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <Label htmlFor="page_start">Halaman Awal</Label>
+            <input
+              id="page_start"
+              type="number"
+              min={1}
+              max={604}
+              {...register('page_start', { valueAsNumber: true })}
+              className="flex h-9 w-full rounded-none border-2 border-input bg-transparent px-3 py-1 text-base transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring min-h-[44px]"
+            />
+            {errors.page_start && (
+              <p className="text-sm text-red-600">{errors.page_start.message}</p>
+            )}
+          </div>
+          <div>
+            <Label htmlFor="page_end">Halaman Akhir</Label>
+            <input
+              id="page_end"
+              type="number"
+              min={1}
+              max={604}
+              {...register('page_end', { valueAsNumber: true })}
+              className="flex h-9 w-full rounded-none border-2 border-input bg-transparent px-3 py-1 text-base transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring min-h-[44px]"
+            />
+            {errors.page_end && (
+              <p className="text-sm text-red-600">{errors.page_end.message}</p>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Status Selector */}
+      <div>
+        <Label>{t('teacher.status')}</Label>
+        <div className="flex gap-4 mt-2">
+          {(['fluent', 'good', 'needs_improvement'] as const).map((status) => (
+            <button
+              key={status}
+              type="button"
+              onClick={() => setValue('status', status)}
+              className={`px-4 py-2 border-2 min-h-[44px] min-w-[44px] ${
+                watchedStatus === status
+                  ? status === 'fluent'
+                    ? 'bg-green-100 text-green-800 border-green-200'
+                    : status === 'good'
+                      ? 'bg-yellow-100 text-yellow-800 border-yellow-200'
+                      : 'bg-red-100 text-red-800 border-red-200'
+                  : 'border-border hover:bg-gray-50'
+              }`}
+            >
+              {status === 'fluent' && '✅ '}
+              {status === 'good' && '👍 '}
+              {status === 'needs_improvement' && '⚠️ '}
+              {t(`teacher.status.${status}`)}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Notes */}
+      <div>
+        <Label htmlFor="notes">{t('teacher.notes')} (Opsional)</Label>
+        <Textarea
+          id="notes"
+          placeholder="Catatan tambahan..."
+          rows={3}
+          maxLength={500}
+          {...register('notes')}
+          className="border-2 mt-2"
+        />
+        <p className="text-xs text-gray-500 mt-1">
+          {watch('notes')?.length || 0} / 500 karakter
+        </p>
+      </div>
+
+      {/* Test Date */}
+      <div>
+        <Label htmlFor="test_date">{t('teacher.testDate')}</Label>
+        <input
+          id="test_date"
+          type="date"
+          {...register('test_date')}
+          className="flex h-9 w-full rounded-none border-2 border-input bg-transparent px-3 py-1 text-base transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring min-h-[44px] mt-2"
+        />
+        {errors.test_date && (
+          <p className="text-sm text-red-600">{errors.test_date.message}</p>
+        )}
+      </div>
+
+      {/* Submit Button */}
+      <Button
+        type="submit"
+        className="w-full min-h-[44px]"
+        disabled={isSubmitting}
+      >
+        {isSubmitting ? 'Menyimpan...' : t('teacher.submit')}
+      </Button>
+    </form>
+  )
+}

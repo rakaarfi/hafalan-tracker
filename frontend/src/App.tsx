@@ -3,6 +3,7 @@ import { Routes, Route, Navigate } from 'react-router-dom'
 import { Toaster } from '@/components/ui/toaster'
 import { LoginPage } from '@/pages/LoginPage'
 import { TeacherDashboard } from '@/pages/TeacherDashboard'
+import { StudentDetailPage } from '@/pages/StudentDetailPage'
 import { useAuthStore } from '@/stores/authStore'
 
 function App() {
@@ -17,8 +18,12 @@ function App() {
 
           {/* Protected Routes */}
           <Route
-            path="/teacher/*"
+            path="/teacher"
             element={isAuthenticated ? <TeacherDashboard /> : <Navigate to="/login" replace />}
+          />
+          <Route
+            path="/teacher/students/:studentId"
+            element={isAuthenticated ? <StudentDetailPage /> : <Navigate to="/login" replace />}
           />
           <Route
             path="/parent/*"
