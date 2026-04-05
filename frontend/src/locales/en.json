@@ -1,0 +1,45 @@
+{
+  "app": {
+    "name": "Hafalan Tracker",
+    "tagline": "Track Quran memorization progress"
+  },
+  "auth": {
+    "login": "Login",
+    "email": "Email",
+    "password": "Password",
+    "loginSuccess": "Login successful",
+    "loginError": "Login failed",
+    "logout": "Logout",
+    "welcome": "Welcome"
+  },
+  "teacher": {
+    "dashboard": "Teacher Dashboard",
+    "studentList": "Student List",
+    "inputHafalan": "Input Memorization",
+    "selectStudent": "Select Student",
+    "unitType": "Unit Type",
+    "surah": "Surah",
+    "juz": "Juz",
+    "page": "Page",
+    "status": "Status",
+    "notes": "Notes",
+    "testDate": "Test Date",
+    "submit": "Submit",
+    "searchStudent": "Search students...",
+    "noStudents": "No students found",
+    "status": {
+      "fluent": "Fluent",
+      "good": "Good",
+      "needs_improvement": "Needs Improvement"
+    }
+  },
+  "parent": {
+    "dashboard": "Children's Progress",
+    "childProgress": "Memorization Progress",
+    "lastTest": "Last Test",
+    "overallProgress": "Overall Progress",
+    "recentTests": "Recent Tests",
+    "children": "Children",
+    "tapForDetail": "Tap for detail →"
+  }
+}
