@@ -59,7 +59,9 @@ func Load() (*Config, error) {
 	}
 
 	// Validate required fields
-	// Password is optional for development (trust authentication)
+	if cfg.Database.Password == "" {
+		return nil, fmt.Errorf("DB_PASSWORD is required")
+	}
 	if cfg.JWT.Secret == "" {
 		return nil, fmt.Errorf("JWT_SECRET is required")
 	}
@@ -89,13 +91,6 @@ func getEnvAsInt(key string, defaultValue int) int {
 
 // GetDSN returns the PostgreSQL Data Source Name
 func (c *DatabaseConfig) GetDSN() string {
-	// Handle empty password for trust authentication
-	if c.Password == "" {
-		return fmt.Sprintf(
-			"host=%s port=%s user=%s dbname=%s sslmode=%s",
-			c.Host, c.Port, c.User, c.DBName, c.SSLMode,
-		)
-	}
 	return fmt.Sprintf(
 		"host=%s port=%s user=%s password=%s dbname=%s sslmode=%s",
 		c.Host, c.Port, c.User, c.Password, c.DBName, c.SSLMode,
