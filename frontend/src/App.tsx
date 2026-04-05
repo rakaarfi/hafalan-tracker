@@ -5,6 +5,7 @@ import { LoginPage } from '@/pages/LoginPage'
 import { TeacherDashboard } from '@/pages/TeacherDashboard'
 import { StudentDetailPage } from '@/pages/StudentDetailPage'
 import { ParentDashboard } from '@/pages/ParentDashboard'
+import { ChildDetailPage } from '@/pages/ChildDetailPage'
 import { useAuthStore } from '@/stores/authStore'
 
 function App() {
@@ -37,6 +38,10 @@ function App() {
           <Route
             path="/parent/dashboard"
             element={isAuthenticated ? <ParentDashboard /> : <Navigate to="/login" replace />}
+          />
+          <Route
+            path="/parent/children/:childId"
+            element={isAuthenticated ? <ChildDetailPage /> : <Navigate to="/login" replace />}
           />
         </Routes>
         <Toaster />
