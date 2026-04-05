@@ -6,6 +6,10 @@ import { TeacherDashboard } from '@/pages/TeacherDashboard'
 import { StudentDetailPage } from '@/pages/StudentDetailPage'
 import { ParentDashboard } from '@/pages/ParentDashboard'
 import { ChildDetailPage } from '@/pages/ChildDetailPage'
+import { AdminDashboard } from '@/pages/admin/AdminDashboard'
+import { AdminOverviewPage } from '@/pages/admin/AdminOverviewPage'
+import { StudentListPage } from '@/pages/admin/StudentListPage'
+import { StudentFormPage } from '@/pages/admin/StudentFormPage'
 import { useAuthStore } from '@/stores/authStore'
 
 function App() {
@@ -43,6 +47,18 @@ function App() {
             path="/parent/children/:childId"
             element={isAuthenticated ? <ChildDetailPage /> : <Navigate to="/login" replace />}
           />
+
+          {/* Admin Routes */}
+          <Route
+            path="/admin"
+            element={isAuthenticated ? <AdminDashboard /> : <Navigate to="/login" replace />}
+          >
+            <Route index element={<AdminOverviewPage />} />
+            <Route path="dashboard" element={<AdminOverviewPage />} />
+            <Route path="students" element={<StudentListPage />} />
+            <Route path="students/new" element={<StudentFormPage />} />
+            <Route path="students/:studentId/edit" element={<StudentFormPage />} />
+          </Route>
         </Routes>
         <Toaster />
       </div>
