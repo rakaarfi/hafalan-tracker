@@ -1,0 +1,24 @@
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.dev
+    container_name: hafalan-tracker-backend-dev
+    environment:
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_USER=hafalan_user
+      - DB_PASSWORD=hafalan_pass
+      - DB_NAME=hafalan_tracker
+      - DB_SSLMODE=disable
+      - SERVER_PORT=8080
+      - JWT_SECRET=dev-secret-key-change-in-production
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres
+    networks:
+      - hafalan-network
+    volumes:
+      - ./backend:/app
+    restart: unless-stopped
