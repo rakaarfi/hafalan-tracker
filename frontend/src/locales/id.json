@@ -1,0 +1,45 @@
+{
+  "app": {
+    "name": "Pendekatan Hafalan",
+    "tagline": "Pantau perkembangan hafalan Quran"
+  },
+  "auth": {
+    "login": "Masuk",
+    "email": "Email",
+    "password": "Kata Sandi",
+    "loginSuccess": "Berhasil masuk",
+    "loginError": "Gagal masuk",
+    "logout": "Keluar",
+    "welcome": "Selamat datang"
+  },
+  "teacher": {
+    "dashboard": "Dashboard Guru",
+    "studentList": "Daftar Murid",
+    "inputHafalan": "Input Hafalan",
+    "selectStudent": "Pilih Murid",
+    "unitType": "Tipe Unit",
+    "surah": "Surah",
+    "juz": "Juz",
+    "page": "Halaman",
+    "status": "Status",
+    "notes": "Catatan",
+    "testDate": "Tanggal Tes",
+    "submit": "Simpan",
+    "searchStudent": "Cari murid...",
+    "noStudents": "Tidak ada murid ditemukan",
+    "status": {
+      "fluent": "Lancar",
+      "good": "Cukup",
+      "needs_improvement": "Perlu Perbaikan"
+    }
+  },
+  "parent": {
+    "dashboard": "Progress Anak",
+    "childProgress": "Progress Hafalan",
+    "lastTest": "Tes Terakhir",
+    "overallProgress": "Progress Total",
+    "recentTests": "Tes Terakhir",
+    "children": "Anak-Anak",
+    "tapForDetail": "Tap untuk detail →"
+  }
+}
