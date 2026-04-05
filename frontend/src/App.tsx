@@ -4,6 +4,7 @@ import { Toaster } from '@/components/ui/toaster'
 import { LoginPage } from '@/pages/LoginPage'
 import { TeacherDashboard } from '@/pages/TeacherDashboard'
 import { StudentDetailPage } from '@/pages/StudentDetailPage'
+import { ParentDashboard } from '@/pages/ParentDashboard'
 import { useAuthStore } from '@/stores/authStore'
 
 function App() {
@@ -26,8 +27,8 @@ function App() {
             element={isAuthenticated ? <StudentDetailPage /> : <Navigate to="/login" replace />}
           />
           <Route
-            path="/parent/*"
-            element={isAuthenticated ? <div>Parent Dashboard</div> : <Navigate to="/login" replace />}
+            path="/parent"
+            element={isAuthenticated ? <ParentDashboard /> : <Navigate to="/login" replace />}
           />
         </Routes>
         <Toaster />
