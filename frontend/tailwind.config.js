@@ -16,6 +16,13 @@ export default {
         xl: "0",
         "0": "0",
       },
+      screens: {
+        'xs': '375px',  // Extra small phones
+        'sm': '640px',  // Small phones
+        'md': '768px',  // Tablets
+        'lg': '1024px',  // Desktops
+        'xl': '1280px',  // Large desktops
+      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
