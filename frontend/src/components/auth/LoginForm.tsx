@@ -37,9 +37,9 @@ export function LoginForm() {
 
       // Redirect based on role
       const redirectMap: Record<string, string> = {
+        admin: '/admin/dashboard',
         teacher: '/teacher/dashboard',
-        parent: '/parent/dashboard',
-        admin: '/admin/dashboard'
+        parent: '/parent/dashboard'
       }
       setTimeout(() => {
         window.location.href = redirectMap[user.role] || '/dashboard'
