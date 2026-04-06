@@ -13,13 +13,21 @@ import (
 
 // Server represents the HTTP server
 type Server struct {
-	cfg                *config.Config
-	db                 *database.DB
-	router             *gin.Engine
-	authService        *service.AuthService
-	jwtManager         *auth.JWTManager
+	cfg                 *config.Config
+	db                  *database.DB
+	router              *gin.Engine
+	authService         *service.AuthService
+	jwtManager          *auth.JWTManager
 	memorizationService *service.MemorizationService
-	parentService      *service.ParentService
+	parentService       *service.ParentService
+	studentService      *service.StudentService
+	teacherService      *service.TeacherService
+	classService        *service.ClassService
+	settingsService     *service.SettingsService
+	studentRepo         *repository.StudentRepository
+	teacherRepo         *repository.TeacherRepository
+	parentRepo          *repository.ParentRepository
+	classRepo           *repository.ClassRepository
 }
 
 // New creates a new server instance
@@ -44,21 +52,36 @@ func New(cfg *config.Config, db *database.DB) *Server {
 	historyRepo := repository.NewHistoryRepository(db.DB)
 	parentRepo := repository.NewParentRepository(db.DB)
 	studentRepo := repository.NewStudentRepository(db.DB)
+	teacherRepo := repository.NewTeacherRepository(db.DB)
+	classRepo := repository.NewClassRepository(db.DB)
+	settingsRepo := repository.NewSettingsRepository(db.DB)
 
 	// Initialize services
 	authService := service.NewAuthService(userRepo, jwtManager)
 	memorizationService := service.NewMemorizationService(memorizationRepo, historyRepo)
-	parentService := service.NewParentService(parentRepo, studentRepo, memorizationRepo)
+	parentService := service.NewParentService(parentRepo, studentRepo, memorizationRepo, userRepo)
+	studentService := service.NewStudentService(studentRepo, parentRepo)
+	teacherService := service.NewTeacherService(teacherRepo, userRepo, jwtManager)
+	classService := service.NewClassService(classRepo, teacherRepo)
+	settingsService := service.NewSettingsService(settingsRepo, userRepo)
 
 	// Create server
 	srv := &Server{
-		cfg:                cfg,
-		db:                 db,
-		router:             router,
-		authService:        authService,
-		jwtManager:         jwtManager,
+		cfg:                 cfg,
+		db:                  db,
+		router:              router,
+		authService:         authService,
+		jwtManager:          jwtManager,
 		memorizationService: memorizationService,
-		parentService:      parentService,
+		parentService:       parentService,
+		studentService:      studentService,
+		teacherService:      teacherService,
+		classService:        classService,
+		settingsService:     settingsService,
+		studentRepo:         studentRepo,
+		teacherRepo:         teacherRepo,
+		parentRepo:          parentRepo,
+		classRepo:           classRepo,
 	}
 
 	// Setup routes
@@ -90,21 +113,12 @@ func (s *Server) setupRoutes() {
 			protected.GET("/users", s.getUsers)
 			protected.GET("/users/:id", s.getUser)
 
-			// Teacher routes
-			protected.GET("/teachers", s.getTeachers)
-			protected.GET("/teachers/:id", s.getTeacher)
-
-			// Parent routes
-			protected.GET("/parents", s.getParents)
-			protected.GET("/parents/:id", s.getParent)
-
-			// Student routes
-			protected.GET("/students", s.getStudents)
-			protected.GET("/students/:id", s.getStudent)
-
-			// Class routes
-			protected.GET("/classes", s.getClasses)
-			protected.GET("/classes/:id", s.getClass)
+				// Teacher-specific routes (only accessible by teachers)
+				teachers := protected.Group("/teachers/me")
+				teachers.Use(s.teacherRoleMiddleware())
+				{
+					teachers.GET("/students", s.getTeacherStudents)
+				}
 
 			// Parent-specific routes (only accessible by parents)
 			parents := protected.Group("/parents/me")
@@ -119,6 +133,48 @@ func (s *Server) setupRoutes() {
 			protected.GET("/memorizations/:id", s.getMemorization)
 			protected.POST("/memorizations", s.createMemorization)
 			protected.PUT("/memorizations/:id", s.updateMemorization)
+
+			// Student routes
+			protected.GET("/students", s.getAllStudents)
+			protected.GET("/students/:id", s.getStudent)
+			protected.GET("/students/:id/memorizations", s.getStudentMemorizations)
+			protected.POST("/students", s.createStudent)
+			protected.PUT("/students/:id", s.updateStudent)
+			protected.DELETE("/students/:id", s.deleteStudent)
+
+			// Teacher routes
+			protected.GET("/teachers", s.getAllTeachers)
+			protected.GET("/teachers/:id", s.getTeacher)
+			protected.POST("/teachers", s.createTeacher)
+			protected.PUT("/teachers/:id", s.updateTeacher)
+			protected.DELETE("/teachers/:id", s.deleteTeacher)
+
+			// Parent routes
+			protected.GET("/parents", s.getAllParents)
+			protected.GET("/parents/:id", s.getParent)
+			protected.POST("/parents", s.createParent)
+			protected.PUT("/parents/:id", s.updateParent)
+			protected.DELETE("/parents/:id", s.deleteParent)
+
+			// Class routes
+			protected.GET("/classes", s.getAllClasses)
+			protected.GET("/classes/:id", s.getClass)
+			protected.POST("/classes", s.createClass)
+			protected.PUT("/classes/:id", s.updateClass)
+			protected.DELETE("/classes/:id", s.deleteClass)
+
+			// Dashboard routes
+			protected.GET("/dashboard/stats", s.getDashboardStats)
+
+			// Settings routes
+			protected.GET("/settings", s.getSettings)
+			protected.PUT("/settings", s.updateSettings)
+			protected.POST("/settings/logo", s.uploadLogo)
+			protected.POST("/admin/reset-password", s.resetPassword)
+
+			// Profile routes
+			protected.PUT("/profile", s.updateProfile)
+			protected.POST("/profile/change-password", s.changePassword)
 		}
 	}
 }

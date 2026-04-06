@@ -74,3 +74,49 @@ func (r *UserRepository) GetByID(ctx context.Context, id string) (*UserWithRole,
 
 	return &user, nil
 }
+
+// Create creates a new user
+func (r *UserRepository) Create(ctx context.Context, user *User) error {
+	query := `
+		INSERT INTO users (email, password_hash, role_id, is_active)
+		VALUES ($1, $2, $3, true)
+		RETURNING id, created_at
+	`
+
+	// For now, use default role_id (1 for teacher/parent)
+	// TODO: Get role_id from role name
+	defaultRoleID := "1"
+
+	err := r.db.QueryRowContext(ctx, query,
+		user.Email,
+		user.Password,
+		defaultRoleID,
+	).Scan(&user.ID, &user.CreatedAt)
+	return err
+}
+
+// Delete deletes a user (soft delete)
+func (r *UserRepository) Delete(ctx context.Context, id string) error {
+	query := `UPDATE users SET is_active = false WHERE id = $1`
+	_, err := r.db.ExecContext(ctx, query, id)
+	return err
+}
+
+// DB returns the underlying database connection
+func (r *UserRepository) DB() *sqlx.DB {
+	return r.db
+}
+
+// UpdatePassword updates a user's password
+func (r *UserRepository) UpdatePassword(ctx context.Context, userID, passwordHash string) error {
+	query := `UPDATE users SET password_hash = $1 WHERE id = $2`
+	_, err := r.db.ExecContext(ctx, query, passwordHash, userID)
+	return err
+}
+
+// UpdateEmail updates a user's email
+func (r *UserRepository) UpdateEmail(ctx context.Context, userID, email string) error {
+	query := `UPDATE users SET email = $1 WHERE id = $2`
+	_, err := r.db.ExecContext(ctx, query, email, userID)
+	return err
+}

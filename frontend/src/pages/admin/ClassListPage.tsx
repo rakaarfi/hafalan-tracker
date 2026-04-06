@@ -1,81 +1,113 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Plus, Search, Edit, Trash2, GraduationCap, Users } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
+import { classesApi } from '@/lib/api'
 
 interface Class {
   id: string
   name: string
+  grade_level: string
+  homeroom_teacher_id: string | null
   teacher_name: string | null
   students_count: number
+  created_at: string
+  updated_at: string
 }
 
 export function ClassListPage() {
   const [classes, setClasses] = useState<Class[]>([])
   const [search, setSearch] = useState('')
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [deleting, setDeleting] = useState<string | null>(null)
 
-  const mockClasses: Class[] = [
-    {
-      id: '1',
-      name: 'Kelas 1A',
-      teacher_name: 'Siti Rahayu',
-      students_count: 25
-    },
-    {
-      id: '2',
-      name: 'Kelas 1B',
-      teacher_name: 'Siti Rahayu',
-      students_count: 28
-    },
-    {
-      id: '3',
-      name: 'Kelas 6A',
-      teacher_name: 'Budi Santoso',
-      students_count: 30
-    },
-    {
-      id: '4',
-      name: 'Kelas 6B',
-      teacher_name: 'Budi Santoso',
-      students_count: 27
-    },
-  ]
+  useEffect(() => {
+    fetchClasses()
+  }, [])
 
-  useState(() => {
-    setTimeout(() => {
-      setClasses(mockClasses)
+  const fetchClasses = async (searchQuery?: string) => {
+    try {
+      setLoading(true)
+      setError(null)
+      const data = await classesApi.getAll(searchQuery)
+      setClasses(data)
+    } catch (err: any) {
+      console.error('Failed to fetch classes:', err)
+      setError('Gagal memuat data kelas')
+    } finally {
       setLoading(false)
-    }, 500)
-  })
-
-  const filteredClasses = classes.filter(cls =>
-    cls.name.toLowerCase().includes(search.toLowerCase())
-  )
-
-  const handleDelete = (id: string) => {
-    if (confirm('Yakin ingin menghapus kelas ini?')) {
-      setClasses(classes.filter(c => c.id !== id))
     }
+  }
+
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      if (search.length > 0 || search.length === 0) {
+        fetchClasses(search || undefined)
+      }
+    }, 500)
+
+    return () => clearTimeout(timeoutId)
+  }, [search])
+
+  const filteredClasses = classes
+
+  const handleDelete = async (id: string) => {
+    if (!confirm('Yakin ingin menghapus kelas ini?')) {
+      return
+    }
+
+    try {
+      setDeleting(id)
+      await classesApi.delete(id)
+      setClasses(classes.filter(c => c.id !== id))
+      alert('Kelas berhasil dihapus')
+    } catch (error: any) {
+      alert('Gagal menghapus kelas: ' + (error.response?.data?.error || 'Unknown error'))
+    } finally {
+      setDeleting(null)
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="text-center py-12">
+        <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-gray-300 border-t-primary"></div>
+        <p className="mt-4 text-gray-600">Memuat data...</p>
+      </div>
+    )
   }
 
   return (
     <div>
       {/* Header */}
-      <div className="flex justify-between items-center mb-6">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
         <div>
-          <h1 className="text-2xl font-bold">Data Kelas</h1>
+          <h1 className="text-xl md:text-2xl font-bold">Data Kelas</h1>
           <p className="text-gray-600">Kelola kelas dan wali kelas</p>
         </div>
         <Button
           onClick={() => window.location.href = '/admin/classes/new'}
-          className="min-h-[44px] min-w-[44px]"
+          className="min-h-[44px] min-w-[44px] w-full sm:w-auto"
         >
           <Plus size={20} className="mr-2 inline" />
           Tambah Kelas
         </Button>
       </div>
+
+      {/* Error State */}
+      {error && (
+        <div className="border-2 border-red-200 bg-red-50 p-4 mb-6">
+          <p className="text-red-800 font-medium">{error}</p>
+          <button
+            onClick={() => fetchClasses()}
+            className="mt-2 px-4 py-2 border-2 border-red-300 text-red-700 hover:bg-red-100 min-h-[44px] min-w-[44px]"
+          >
+            Coba Lagi
+          </button>
+        </div>
+      )}
 
       {/* Search */}
       <div className="mb-6">
@@ -94,71 +126,68 @@ export function ClassListPage() {
       {loading ? (
         <div className="text-center py-12">Loading...</div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredClasses.map((cls) => (
-            <div key={cls.id} className="border-2 border-border bg-white p-6">
-              {/* Header */}
-              <div className="flex items-start justify-between mb-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 bg-primary text-white flex items-center justify-center">
-                    <GraduationCap size={24} />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-lg">{cls.name}</h3>
-                  </div>
-                </div>
-              </div>
-
-              {/* Info */}
-              <div className="space-y-2 mb-4">
-                <div className="flex items-center gap-2 text-sm">
-                  <Users size={16} className="text-gray-600" />
-                  <span>{cls.students_count} murid</span>
-                </div>
-                {cls.teacher_name && (
-                  <div className="text-sm">
-                    <span className="text-gray-600">Wali Kelas:</span>
-                    <span className="font-medium ml-2">{cls.teacher_name}</span>
-                  </div>
-                )}
-              </div>
-
-              {/* Actions */}
-              <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => window.location.href = `/admin/classes/${cls.id}/edit`}
-                  className="flex-1 min-h-[36px]"
-                >
-                  <Edit size={16} className="mr-1" />
-                  Edit
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handleDelete(cls.id)}
-                  className="flex-1 min-h-[36px] border-red-200 text-red-600 hover:bg-red-50"
-                >
-                  <Trash2 size={16} className="mr-1" />
-                  Hapus
-                </Button>
-              </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+          {filteredClasses.length === 0 ? (
+            <div className="col-span-full text-center py-12 border-2 border-border bg-white">
+              <GraduationCap size={48} className="mx-auto text-gray-400 mb-4" />
+              <p className="text-gray-500">{search ? 'Tidak ada kelas ditemukan' : 'Belum ada data kelas'}</p>
             </div>
-          ))}
-        </div>
-      )}
+          ) : (
+            filteredClasses.map((cls) => (
+              <div key={cls.id} className="border-2 border-border bg-white p-4 md:p-6">
+                {/* Header */}
+                <div className="flex items-start justify-between mb-4">
+                  <div className="flex items-center gap-2 md:gap-3">
+                    <div className="w-10 h-10 md:w-12 md:h-12 bg-primary text-white flex items-center justify-center flex-shrink-0">
+                      <GraduationCap size={20} md:size={24} />
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-base md:text-lg">{cls.name}</h3>
+                    </div>
+                  </div>
+                </div>
 
-      {/* Empty State */}
-      {!loading && filteredClasses.length === 0 && (
-        <div className="text-center py-12 border-2 border-border bg-white">
-          <GraduationCap size={48} className="mx-auto text-gray-400 mb-4" />
-          <p className="text-gray-500">Tidak ada kelas ditemukan</p>
+                {/* Info */}
+                <div className="space-y-2 mb-4">
+                  <div className="flex items-center gap-2 text-xs md:text-sm">
+                    <Users size={14} md:size={16} className="text-gray-600" />
+                    <span>{cls.students_count} murid</span>
+                  </div>
+                  {cls.teacher_name && (
+                    <div className="text-xs md:text-sm">
+                      <span className="text-gray-600">Wali Kelas:</span>
+                      <span className="font-medium ml-2">{cls.teacher_name}</span>
+                    </div>
+                  )}
+                </div>
+
+                {/* Actions */}
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => window.location.href = `/admin/classes/${cls.id}/edit`}
+                    disabled={deleting === cls.id}
+                    className="flex-1 p-2 border-2 border-yellow-200 hover:bg-yellow-50 min-h-[36px] flex items-center justify-center gap-1 text-xs md:text-sm"
+                  >
+                    <Edit size={14} md:size={16} />
+                    Edit
+                  </button>
+                  <button
+                    onClick={() => handleDelete(cls.id)}
+                    disabled={deleting === cls.id}
+                    className="flex-1 p-2 border-2 border-red-200 hover:bg-red-50 min-h-[36px] flex items-center justify-center gap-1 disabled:opacity-50 text-xs md:text-sm"
+                  >
+                    <Trash2 size={14} md:size={16} />
+                    Hapus
+                  </button>
+                </div>
+              </div>
+            ))
+          )}
         </div>
       )}
 
       {/* Stats */}
-      <div className="mt-6 grid grid-cols-3 gap-4">
+      <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="border-2 border-border bg-white p-4 text-center">
           <div className="text-2xl font-bold">{classes.length}</div>
           <div className="text-sm text-gray-600">Total Kelas</div>

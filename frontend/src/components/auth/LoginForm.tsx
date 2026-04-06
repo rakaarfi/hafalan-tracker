@@ -6,7 +6,6 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useToast } from '@/hooks/use-toast'
-import api from '@/lib/api'
 import { useAuthStore } from '@/stores/authStore'
 
 const loginSchema = z.object({
@@ -19,17 +18,16 @@ type LoginFormData = z.infer<typeof loginSchema>
 export function LoginForm() {
   const { t } = useTranslation()
   const { toast } = useToast()
-  const { setAuth } = useAuthStore()
+  const { login, isAuthenticated, user, error, clearError } = useAuthStore()
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema)
   })
 
   const onSubmit = async (data: LoginFormData) => {
+    clearError()
     try {
-      const response = await api.post('/public/login', data)
-      const { token, user } = response.data
+      await login(data.email, data.password)
 
-      setAuth(user, token)
       toast({
         title: t('auth.loginSuccess'),
         description: "Login berhasil!",
@@ -41,16 +39,21 @@ export function LoginForm() {
         teacher: '/teacher/dashboard',
         parent: '/parent/dashboard'
       }
+
       setTimeout(() => {
-        window.location.href = redirectMap[user.role] || '/dashboard'
+        const currentUser = useAuthStore.getState().user
+        window.location.href = redirectMap[currentUser?.role || 'admin'] || '/admin/dashboard'
       }, 500)
 
-    } catch (error: any) {
-      toast({
-        variant: "destructive",
-        title: t('auth.loginError'),
-        description: error.response?.data?.error || "Login gagal",
-      })
+    } catch (err: any) {
+      // Error is already handled in the store
+      if (error) {
+        toast({
+          variant: "destructive",
+          title: t('auth.loginError'),
+          description: error,
+        })
+      }
     }
   }
 
@@ -91,6 +94,12 @@ export function LoginForm() {
       >
         {isSubmitting ? 'Memproses...' : t('auth.login')}
       </Button>
+
+      {error && (
+        <div className="p-3 border-2 border-red-200 bg-red-50 text-red-700 text-sm">
+          {error}
+        </div>
+      )}
     </form>
   )
 }

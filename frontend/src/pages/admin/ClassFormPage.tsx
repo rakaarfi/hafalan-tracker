@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -8,10 +8,12 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useToast } from '@/hooks/use-toast'
+import { classesApi, teachersApi } from '@/lib/api'
 
 const classSchema = z.object({
   name: z.string().min(1, 'Nama kelas wajib diisi'),
-  teacher_id: z.string().optional(),
+  grade_level: z.string().min(1, 'Tingkat kelas wajib diisi'),
+  homeroom_teacher_id: z.string().optional(),
 })
 
 type ClassFormData = z.infer<typeof classSchema>
@@ -22,17 +24,72 @@ export function ClassFormPage() {
   const navigate = useNavigate()
   const isEditing = !!classId
 
-  const [teachers, setTeachers] = useState([
-    { id: '1', name: 'Budi Santoso' },
-    { id: '2', name: 'Siti Rahayu' },
-  ])
+  const [isLoading, setIsLoading] = useState(false)
+  const [teachers, setTeachers] = useState<Array<{UserID: string, FullName: string}>>([])
 
-  const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<ClassFormData>({
+  const { register, handleSubmit, formState: { errors, isSubmitting }, reset } = useForm<ClassFormData>({
     resolver: zodResolver(classSchema),
   })
 
+  // Fetch teachers data
+  useEffect(() => {
+    const fetchTeachers = async () => {
+      try {
+        const data = await teachersApi.getAll()
+        setTeachers(data)
+      } catch (error) {
+        console.error('Failed to fetch teachers:', error)
+      }
+    }
+
+    fetchTeachers()
+  }, [])
+
+  // Fetch class data if editing
+  useEffect(() => {
+    const fetchClass = async () => {
+      if (!classId) return
+
+      try {
+        setIsLoading(true)
+        const classData = await classesApi.getById(classId)
+        reset({
+          name: classData.name,
+          grade_level: classData.grade_level,
+          homeroom_teacher_id: classData.homeroom_teacher_id || '',
+        })
+      } catch (error) {
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Gagal memuat data kelas",
+        })
+        navigate('/admin/classes')
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    fetchClass()
+  }, [classId, navigate, reset, toast])
+
   const onSubmit = async (data: ClassFormData) => {
     try {
+      if (isEditing && classId) {
+        await classesApi.update(classId, {
+          id: classId,
+          name: data.name,
+          grade_level: data.grade_level,
+          homeroom_teacher_id: data.homeroom_teacher_id || undefined,
+        })
+      } else {
+        await classesApi.create({
+          name: data.name,
+          grade_level: data.grade_level,
+          homeroom_teacher_id: data.homeroom_teacher_id || undefined,
+        })
+      }
+
       toast({
         title: "Berhasil",
         description: isEditing ? "Data kelas berhasil diupdate" : "Kelas baru berhasil ditambahkan"
@@ -45,7 +102,7 @@ export function ClassFormPage() {
       toast({
         variant: "destructive",
         title: "Gagal",
-        description: error.response?.data?.error || "Gagal menyimpan data kelas",
+        description: error.response?.data?.error || error.message || "Gagal menyimpan data kelas",
       })
     }
   }
@@ -61,14 +118,20 @@ export function ClassFormPage() {
           <ArrowLeft size={16} />
           Kembali
         </button>
-        <h1 className="text-2xl font-bold">
+        <h1 className="text-xl md:text-2xl font-bold">
           {isEditing ? 'Edit Kelas' : 'Tambah Kelas Baru'}
         </h1>
       </div>
 
-      {/* Form */}
-      <div className="border-2 border-border bg-white p-6 max-w-2xl">
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+      {/* Loading State */}
+      {isLoading ? (
+        <div className="flex justify-center items-center py-12">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+        </div>
+      ) : (
+      /* Form */
+      <div className="border-2 border-border bg-white p-4 md:p-6 max-w-2xl w-full">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 md:space-y-6">
           {/* Nama Kelas */}
           <div>
             <Label htmlFor="name">Nama Kelas *</Label>
@@ -81,17 +144,36 @@ export function ClassFormPage() {
             {errors.name && <p className="text-sm text-red-600 mt-1">{errors.name.message}</p>}
           </div>
 
+          {/* Tingkat Kelas */}
+          <div>
+            <Label htmlFor="grade_level">Tingkat Kelas *</Label>
+            <select
+              id="grade_level"
+              className="flex h-9 w-full rounded-none border-2 border-input bg-transparent px-3 py-1 text-base min-h-[44px]"
+              {...register('grade_level')}
+            >
+              <option value="">Pilih Tingkat Kelas</option>
+              <option value="Grade 1">Grade 1</option>
+              <option value="Grade 2">Grade 2</option>
+              <option value="Grade 3">Grade 3</option>
+              <option value="Grade 4">Grade 4</option>
+              <option value="Grade 5">Grade 5</option>
+              <option value="Grade 6">Grade 6</option>
+            </select>
+            {errors.grade_level && <p className="text-sm text-red-600 mt-1">{errors.grade_level.message}</p>}
+          </div>
+
           {/* Wali Kelas */}
           <div>
-            <Label htmlFor="teacher_id">Wali Kelas</Label>
+            <Label htmlFor="homeroom_teacher_id">Wali Kelas</Label>
             <select
-              id="teacher_id"
+              id="homeroom_teacher_id"
               className="flex h-9 w-full rounded-none border-2 border-input bg-transparent px-3 py-1 text-base min-h-[44px]"
-              {...register('teacher_id')}
+              {...register('homeroom_teacher_id')}
             >
               <option value="">Pilih Wali Kelas</option>
               {teachers.map((teacher) => (
-                <option key={teacher.id} value={teacher.id}>{teacher.name}</option>
+                <option key={teacher.UserID} value={teacher.UserID}>{teacher.FullName}</option>
               ))}
             </select>
             <p className="text-xs text-gray-500 mt-1">
@@ -131,6 +213,7 @@ export function ClassFormPage() {
           </div>
         </form>
       </div>
+      )}
     </div>
   )
 }

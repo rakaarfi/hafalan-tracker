@@ -1,80 +1,117 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Plus, Search, Edit, Trash2, GraduationCap } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
+import { teachersApi } from '@/lib/api'
 
 interface Teacher {
-  id: string
-  name: string
-  email: string
-  phone: string | null
-  classes: string[]
+  UserID: string
+  FullName: string
+  Phone: string
+  Email: string
+  CreatedAt: string
 }
 
 export function TeacherListPage() {
   const [teachers, setTeachers] = useState<Teacher[]>([])
   const [search, setSearch] = useState('')
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [deleting, setDeleting] = useState<string | null>(null)
 
-  const mockTeachers: Teacher[] = [
-    {
-      id: '1',
-      name: 'Budi Santoso',
-      email: 'budi.santoso@sekolah.sch.id',
-      phone: '08123456789',
-      classes: ['Kelas 6A', 'Kelas 6B']
-    },
-    {
-      id: '2',
-      name: 'Siti Rahayu',
-      email: 'siti.rahayu@sekolah.sch.id',
-      phone: '08129876543',
-      classes: ['Kelas 1A', 'Kelas 1B']
-    },
-  ]
+  useEffect(() => {
+    fetchTeachers()
+  }, [])
 
-  useState(() => {
-    setTimeout(() => {
-      setTeachers(mockTeachers)
+  const fetchTeachers = async (searchQuery?: string) => {
+    try {
+      setLoading(true)
+      setError(null)
+      const data = await teachersApi.getAll(searchQuery)
+      setTeachers(data)
+    } catch (err: any) {
+      console.error('Failed to fetch teachers:', err)
+      setError('Gagal memuat data guru')
+    } finally {
       setLoading(false)
-    }, 500)
-  })
-
-  const filteredTeachers = teachers.filter(teacher =>
-    teacher.name.toLowerCase().includes(search.toLowerCase()) ||
-    teacher.email.toLowerCase().includes(search.toLowerCase())
-  )
-
-  const handleDelete = (id: string) => {
-    if (confirm('Yakin ingin menghapus guru ini?')) {
-      setTeachers(teachers.filter(t => t.id !== id))
     }
+  }
+
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      if (search.length > 0 || search.length === 0) {
+        fetchTeachers(search || undefined)
+      }
+    }, 500)
+
+    return () => clearTimeout(timeoutId)
+  }, [search])
+
+  const filteredTeachers = teachers
+
+  const handleDelete = async (id: string) => {
+    if (!confirm('Yakin ingin menghapus guru ini?')) {
+      return
+    }
+
+    try {
+      setDeleting(id)
+      await teachersApi.delete(id)
+      setTeachers(teachers.filter(t => t.UserID !== id))
+      alert('Guru berhasil dihapus')
+    } catch (error: any) {
+      alert('Gagal menghapus guru: ' + (error.response?.data?.error || 'Unknown error'))
+    } finally {
+      setDeleting(null)
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="text-center py-12">
+        <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-gray-300 border-t-primary"></div>
+        <p className="mt-4 text-gray-600">Memuat data...</p>
+      </div>
+    )
   }
 
   return (
     <div>
       {/* Header */}
-      <div className="flex justify-between items-center mb-6">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
         <div>
-          <h1 className="text-2xl font-bold">Data Guru</h1>
+          <h1 className="text-xl md:text-2xl font-bold">Data Guru</h1>
           <p className="text-gray-600">Kelola data guru dan wali kelas</p>
         </div>
         <Button
           onClick={() => window.location.href = '/admin/teachers/new'}
-          className="min-h-[44px] min-w-[44px]"
+          className="min-h-[44px] min-w-[44px] w-full sm:w-auto"
         >
           <Plus size={20} className="mr-2 inline" />
           Tambah Guru
         </Button>
       </div>
 
+      {/* Error State */}
+      {error && (
+        <div className="border-2 border-red-200 bg-red-50 p-4 mb-6">
+          <p className="text-red-800 font-medium">{error}</p>
+          <button
+            onClick={() => fetchTeachers()}
+            className="mt-2 px-4 py-2 border-2 border-red-300 text-red-700 hover:bg-red-100 min-h-[44px] min-w-[44px]"
+          >
+            Coba Lagi
+          </button>
+        </div>
+      )}
+
       {/* Search */}
       <div className="mb-6">
         <div className="relative">
           <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-500" />
           <Input
-            placeholder="Cari nama atau email..."
+            placeholder="Cari nama atau email guru..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="pl-10 border-2 min-h-[44px]"
@@ -83,68 +120,61 @@ export function TeacherListPage() {
       </div>
 
       {/* Teachers Table */}
-      <div className="border-2 border-border bg-white overflow-x-auto">
-        <table className="w-full">
+      <div className="border-2 border-border bg-white overflow-x-auto rounded-lg">
+        <table className="w-full min-w-[600px]">
           <thead className="bg-gray-50 border-b-2 border-border">
             <tr>
-              <th className="text-left p-4 border-r-2 border-border">Nama</th>
-              <th className="text-left p-4 border-r-2 border-border">Email</th>
-              <th className="text-left p-4 border-r-2 border-border">No HP</th>
-              <th className="text-left p-4 border-r-2 border-border">Kelas</th>
-              <th className="text-center p-4">Aksi</th>
+              <th className="text-left p-2 md:p-4 border-r-2 border-border text-sm md:text-base">
+                <div className="flex items-center gap-2">
+                  <GraduationCap size={16} md:size={18} />
+                  Nama
+                </div>
+              </th>
+              <th className="text-left p-2 md:p-4 border-r-2 border-border text-sm md:text-base">Email</th>
+              <th className="text-left p-2 md:p-4 border-r-2 border-border text-sm md:text-base">No HP</th>
+              <th className="text-left p-2 md:p-4 border-r-2 border-border text-sm md:text-base">Kelas</th>
+              <th className="text-center p-2 md:p-4 text-sm md:text-base">Aksi</th>
             </tr>
           </thead>
           <tbody className="divide-y-2 divide-border">
-            {loading ? (
+            {filteredTeachers.length === 0 ? (
               <tr>
                 <td colSpan={5} className="p-8 text-center text-gray-500">
-                  Loading...
-                </td>
-              </tr>
-            ) : filteredTeachers.length === 0 ? (
-              <tr>
-                <td colSpan={5} className="p-8 text-center text-gray-500">
-                  Tidak ada guru ditemukan
+                  {search ? 'Tidak ada guru ditemukan' : 'Belum ada data guru'}
                 </td>
               </tr>
             ) : (
               filteredTeachers.map((teacher) => (
-                <tr key={teacher.id} className="hover:bg-gray-50">
-                  <td className="p-4 border-r-2 border-border">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-primary text-white flex items-center justify-center">
-                        <GraduationCap size={20} />
-                      </div>
-                      <div className="font-medium">{teacher.name}</div>
-                    </div>
+                <tr key={teacher.UserID} className="hover:bg-gray-50">
+                  <td className="p-2 md:p-4 border-r-2 border-border">
+                    <div className="font-medium text-sm md:text-base">{teacher.FullName}</div>
                   </td>
-                  <td className="p-4 border-r-2 border-border">
-                    {teacher.email}
+                  <td className="p-2 md:p-4 border-r-2 border-border text-sm md:text-sm">
+                    {teacher.Email}
                   </td>
-                  <td className="p-4 border-r-2 border-border">
-                    {teacher.phone || '-'}
+                  <td className="p-2 md:p-4 border-r-2 border-border text-sm md:text-sm">
+                    {teacher.Phone || '-'}
                   </td>
-                  <td className="p-4 border-r-2 border-border">
-                    <div className="flex flex-wrap gap-2">
-                      {teacher.classes.map((cls, idx) => (
-                        <Badge key={idx} variant="outline">{cls}</Badge>
-                      ))}
-                      {teacher.classes.length === 0 && '-'}
-                    </div>
+                  <td className="p-2 md:p-4 border-r-2 border-border text-sm md:text-sm">
+                    -
                   </td>
-                  <td className="p-4">
-                    <div className="flex justify-center gap-2">
+                  <td className="p-2 md:p-4">
+                    <div className="flex justify-center gap-1 md:gap-2">
                       <button
-                        onClick={() => window.location.href = `/admin/teachers/${teacher.id}/edit`}
-                        className="p-2 border-2 border-yellow-200 hover:bg-yellow-50 min-h-[36px] min-w-[36px]"
+                        onClick={() => window.location.href = `/admin/teachers/${teacher.UserID}/edit`}
+                        disabled={deleting === teacher.UserID}
+                        className="p-1.5 md:p-2 border-2 border-yellow-200 hover:bg-yellow-50 min-h-[36px] min-w-[36px]"
+                        title="Edit"
                       >
-                        <Edit size={16} />
+                        <Edit size={14} md:size={16} />
                       </button>
                       <button
-                        onClick={() => handleDelete(teacher.id)}
-                        className="p-2 border-2 border-red-200 hover:bg-red-50 min-h-[36px] min-w-[36px]"
+                        onClick={() => handleDelete(teacher.UserID)}
+                        disabled={deleting === teacher.UserID}
+                        className="p-1.5 md:p-2 border-2 border-red-200 hover:bg-red-50 min-h-[36px] min-w-[36px] disabled:opacity-50"
+                        title="Hapus"
                       >
-                        <Trash2 size={16} />
+                        <Trash2 size={14} md:size={16} />
                       </button>
                     </div>
                   </td>
@@ -156,7 +186,7 @@ export function TeacherListPage() {
       </div>
 
       {/* Stats */}
-      <div className="mt-6 grid grid-cols-3 gap-4">
+      <div className="mt-6 grid grid-cols-1 gap-4">
         <div className="border-2 border-border bg-white p-4 text-center">
           <div className="text-2xl font-bold">{teachers.length}</div>
           <div className="text-sm text-gray-600">Total Guru</div>

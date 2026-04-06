@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useToast } from '@/hooks/use-toast'
 import { ArrowLeft } from 'lucide-react'
-import api from '@/lib/api'
+import { studentsApi, classesApi, parentsApi } from '@/lib/api'
 
 const studentSchema = z.object({
   name: z.string().min(1, 'Nama wajib diisi'),
@@ -22,6 +22,17 @@ const studentSchema = z.object({
 
 type StudentFormData = z.infer<typeof studentSchema>
 
+interface Class {
+  id: string
+  name: string
+}
+
+interface Parent {
+  UserID: string
+  FullName: string
+  Email: string
+}
+
 export function StudentFormPage() {
   const { t } = useTranslation()
   const { toast } = useToast()
@@ -29,36 +40,67 @@ export function StudentFormPage() {
   const navigate = useNavigate()
   const isEditing = !!studentId
 
-  const [classes, setClasses] = useState([
-    { id: '1', name: 'Kelas 1A' },
-    { id: '2', name: 'Kelas 1B' },
-    { id: '3', name: 'Kelas 6A' },
-    { id: '4', name: 'Kelas 6B' },
-  ])
+  const [classes, setClasses] = useState<Class[]>([])
+  const [parents, setParents] = useState<Parent[]>([])
+  const [loadingData, setLoadingData] = useState(true)
 
-  const [parents, setParents] = useState([
-    { id: '1', name: 'Bapak Ahmad', email: 'bapak.ahmad@test.com' },
-    { id: '2', name: 'Ibu Siti', email: 'ibu.siti@test.com' },
-    { id: '3', name: 'Bapak Hasan', email: 'bapak.hasan@test.com' },
-    { id: '4', name: 'Ibu Fatimah', email: 'ibu.fatimah@test.com' },
-    { id: '5', name: 'Bapak Muhammad', email: 'bapak.muhammad@test.com' },
-    { id: '6', name: 'Ibu Aisyah', email: 'ibu.aisyah@test.com' },
-  ])
-
-  const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<StudentFormData>({
+  const { register, handleSubmit, formState: { errors, isSubmitting }, reset } = useForm<StudentFormData>({
     resolver: zodResolver(studentSchema),
     defaultValues: {
       parent_id_2: ''
     }
   })
 
+  useEffect(() => {
+    fetchData()
+    if (isEditing && studentId) {
+      fetchStudentData()
+    }
+  }, [studentId, isEditing])
+
+  const fetchData = async () => {
+    try {
+      setLoadingData(true)
+      const [classesData, parentsData] = await Promise.all([
+        classesApi.getAll(),
+        parentsApi.getAll()
+      ])
+      setClasses(classesData)
+      setParents(parentsData)
+    } catch (err: any) {
+      console.error('Failed to fetch form data:', err)
+      toast({
+        variant: "destructive",
+        title: "Gagal",
+        description: "Gagal memuat data form"
+      })
+    } finally {
+      setLoadingData(false)
+    }
+  }
+
+  const fetchStudentData = async () => {
+    if (!studentId) return
+    try {
+      const student = await studentsApi.getById(studentId)
+      reset({
+        name: student.Name,
+        class_id: student.ClassID,
+        parent_id_1: '', // TODO: Get from student data
+        parent_id_2: '',
+      })
+    } catch (err: any) {
+      console.error('Failed to fetch student:', err)
+    }
+  }
+
   const onSubmit = async (data: StudentFormData) => {
     try {
       if (isEditing) {
-        await api.put(`/admin/students/${studentId}`, data)
+        await studentsApi.update(studentId!, data)
         toast({ title: "Berhasil", description: "Data murid berhasil diupdate" })
       } else {
-        await api.post('/admin/students', data)
+        await studentsApi.create(data)
         toast({ title: "Berhasil", description: "Murid baru berhasil ditambahkan" })
       }
 
@@ -74,6 +116,14 @@ export function StudentFormPage() {
     }
   }
 
+  if (loadingData) {
+    return (
+      <div className="flex justify-center items-center py-12">
+        <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-gray-300 border-t-primary"></div>
+      </div>
+    )
+  }
+
   return (
     <div>
       {/* Header */}
@@ -85,14 +135,14 @@ export function StudentFormPage() {
           <ArrowLeft size={16} />
           Kembali
         </button>
-        <h1 className="text-2xl font-bold">
+        <h1 className="text-xl md:text-2xl font-bold">
           {isEditing ? 'Edit Murid' : 'Tambah Murid Baru'}
         </h1>
       </div>
 
       {/* Form */}
-      <div className="border-2 border-border bg-white p-6 max-w-2xl">
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+      <div className="border-2 border-border bg-white p-4 md:p-6 max-w-2xl w-full">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 md:space-y-6">
           {/* Nama */}
           <div>
             <Label htmlFor="name">Nama Lengkap *</Label>
@@ -129,8 +179,8 @@ export function StudentFormPage() {
               {...register('parent_id_1')}
             >
               <option value="">Pilih Ayah</option>
-              {parents.filter(p => p.name.includes('Bapak')).map((parent) => (
-                <option key={parent.id} value={parent.id}>{parent.name} ({parent.email})</option>
+              {parents.filter(p => p.FullName.includes('Bapak')).map((parent) => (
+                <option key={parent.UserID} value={parent.UserID}>{parent.FullName} ({parent.Email})</option>
               ))}
             </select>
             {errors.parent_id_1 && <p className="text-sm text-red-600 mt-1">{errors.parent_id_1.message}</p>}
@@ -145,8 +195,8 @@ export function StudentFormPage() {
               {...register('parent_id_2')}
             >
               <option value="">Pilih Ibu</option>
-              {parents.filter(p => p.name.includes('Ibu')).map((parent) => (
-                <option key={parent.id} value={parent.id}>{parent.name} ({parent.email})</option>
+              {parents.filter(p => p.FullName.includes('Ibu')).map((parent) => (
+                <option key={parent.UserID} value={parent.UserID}>{parent.FullName} ({parent.Email})</option>
               ))}
             </select>
           </div>

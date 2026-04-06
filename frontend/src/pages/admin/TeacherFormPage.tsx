@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useToast } from '@/hooks/use-toast'
+import { teachersApi } from '@/lib/api'
 
 const teacherSchema = z.object({
   name: z.string().min(1, 'Nama wajib diisi'),
@@ -24,19 +25,57 @@ export function TeacherFormPage() {
   const navigate = useNavigate()
   const isEditing = !!teacherId
 
-  const [classes, setClasses] = useState([
-    { id: '1', name: 'Kelas 1A' },
-    { id: '2', name: 'Kelas 1B' },
-    { id: '3', name: 'Kelas 6A' },
-    { id: '4', name: 'Kelas 6B' },
-  ])
+  const [isLoading, setIsLoading] = useState(false)
 
-  const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<TeacherFormData>({
+  const { register, handleSubmit, formState: { errors, isSubmitting }, reset } = useForm<TeacherFormData>({
     resolver: zodResolver(teacherSchema),
   })
 
+  // Fetch teacher data if editing
+  useEffect(() => {
+    const fetchTeacher = async () => {
+      if (!teacherId) return
+
+      try {
+        setIsLoading(true)
+        const teacher = await teachersApi.getById(teacherId)
+        reset({
+          name: teacher.FullName,
+          email: teacher.Email,
+          phone: teacher.Phone || '',
+        })
+      } catch (error) {
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Gagal memuat data guru",
+        })
+        navigate('/admin/teachers')
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    fetchTeacher()
+  }, [teacherId, navigate, reset, toast])
+
   const onSubmit = async (data: TeacherFormData) => {
     try {
+      if (isEditing && teacherId) {
+        await teachersApi.update(teacherId, {
+          name: data.name,
+          email: data.email,
+          phone: data.phone || '',
+        })
+      } else {
+        await teachersApi.create({
+          name: data.name,
+          email: data.email,
+          phone: data.phone || '',
+          password: data.password || '',
+        })
+      }
+
       toast({
         title: "Berhasil",
         description: isEditing ? "Data guru berhasil diupdate" : "Guru baru berhasil ditambahkan"
@@ -49,7 +88,7 @@ export function TeacherFormPage() {
       toast({
         variant: "destructive",
         title: "Gagal",
-        description: error.response?.data?.error || "Gagal menyimpan data guru",
+        description: error.response?.data?.error || error.message || "Gagal menyimpan data guru",
       })
     }
   }
@@ -65,14 +104,20 @@ export function TeacherFormPage() {
           <ArrowLeft size={16} />
           Kembali
         </button>
-        <h1 className="text-2xl font-bold">
+        <h1 className="text-xl md:text-2xl font-bold">
           {isEditing ? 'Edit Guru' : 'Tambah Guru Baru'}
         </h1>
       </div>
 
-      {/* Form */}
-      <div className="border-2 border-border bg-white p-6 max-w-2xl">
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+      {/* Loading State */}
+      {isLoading ? (
+        <div className="flex justify-center items-center py-12">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+        </div>
+      ) : (
+      /* Form */
+      <div className="border-2 border-border bg-white p-4 md:p-6 max-w-2xl w-full">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 md:space-y-6">
           {/* Nama */}
           <div>
             <Label htmlFor="name">Nama Lengkap *</Label>
@@ -157,6 +202,7 @@ export function TeacherFormPage() {
           </div>
         </form>
       </div>
+      )}
     </div>
   )
 }

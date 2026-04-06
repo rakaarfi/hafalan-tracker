@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useToast } from '@/hooks/use-toast'
+import { parentsApi } from '@/lib/api'
 
 const parentSchema = z.object({
   name: z.string().min(1, 'Nama wajib diisi'),
@@ -24,19 +25,61 @@ export function ParentFormPage() {
   const navigate = useNavigate()
   const isEditing = !!parentId
 
-  const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<ParentFormData>({
+  const [isLoading, setIsLoading] = useState(false)
+
+  const { register, handleSubmit, formState: { errors, isSubmitting }, reset } = useForm<ParentFormData>({
     resolver: zodResolver(parentSchema),
   })
 
+  // Fetch parent data if editing
+  useEffect(() => {
+    const fetchParent = async () => {
+      if (!parentId) return
+
+      try {
+        setIsLoading(true)
+        const parent = await parentsApi.getById(parentId)
+        reset({
+          name: parent.FullName,
+          email: parent.Email,
+          phone: parent.Phone || '',
+        })
+      } catch (error) {
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Gagal memuat data orang tua",
+        })
+        navigate('/admin/parents')
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    fetchParent()
+  }, [parentId, navigate, reset, toast])
+
   const onSubmit = async (data: ParentFormData) => {
     try {
-      if (isEditing) {
-        // Update parent
-        toast({ title: "Berhasil", description: "Data orang tua berhasil diupdate" })
+      if (isEditing && parentId) {
+        await parentsApi.update(parentId, {
+          user_id: parentId,
+          name: data.name,
+          phone: data.phone || '',
+        })
       } else {
-        // Create parent
-        toast({ title: "Berhasil", description: "Orang tua baru berhasil ditambahkan" })
+        await parentsApi.create({
+          name: data.name,
+          email: data.email,
+          phone: data.phone || '',
+          password: data.password || '',
+        })
       }
+
+      toast({
+        title: "Berhasil",
+        description: isEditing ? "Data orang tua berhasil diupdate" : "Orang tua baru berhasil ditambahkan"
+      })
 
       setTimeout(() => {
         navigate('/admin/parents')
@@ -45,7 +88,7 @@ export function ParentFormPage() {
       toast({
         variant: "destructive",
         title: "Gagal",
-        description: error.response?.data?.error || "Gagal menyimpan data",
+        description: error.response?.data?.error || error.message || "Gagal menyimpan data",
       })
     }
   }
@@ -61,14 +104,20 @@ export function ParentFormPage() {
           <ArrowLeft size={16} />
           Kembali
         </button>
-        <h1 className="text-2xl font-bold">
+        <h1 className="text-xl md:text-2xl font-bold">
           {isEditing ? 'Edit Orang Tua' : 'Tambah Orang Tua Baru'}
         </h1>
       </div>
 
-      {/* Form */}
-      <div className="border-2 border-border bg-white p-6 max-w-2xl">
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+      {/* Loading State */}
+      {isLoading ? (
+        <div className="flex justify-center items-center py-12">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+        </div>
+      ) : (
+      /* Form */
+      <div className="border-2 border-border bg-white p-4 md:p-6 max-w-2xl w-full">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 md:space-y-6">
           {/* Nama */}
           <div>
             <Label htmlFor="name">Nama Lengkap *</Label>
@@ -156,6 +205,7 @@ export function ParentFormPage() {
           </div>
         </form>
       </div>
+      )}
     </div>
   )
 }

@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
+import { authApi } from '@/lib/api'
 
 interface User {
   id: string
@@ -12,8 +13,12 @@ interface AuthState {
   user: User | null
   token: string | null
   isAuthenticated: boolean
+  isLoading: boolean
+  error: string | null
+  login: (email: string, password: string) => Promise<void>
   setAuth: (user: User, token: string) => void
   logout: () => void
+  clearError: () => void
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -22,16 +27,42 @@ export const useAuthStore = create<AuthState>()(
       user: null,
       token: null,
       isAuthenticated: false,
+      isLoading: false,
+      error: null,
+      login: async (email: string, password: string) => {
+        set({ isLoading: true, error: null })
+        try {
+          const response = await authApi.login({ email, password })
+          set({
+            user: response.user,
+            token: response.token,
+            isAuthenticated: true,
+            isLoading: false,
+            error: null,
+          })
+        } catch (error: any) {
+          set({
+            isLoading: false,
+            error: error.response?.data?.error || 'Login failed. Please check your credentials.',
+          })
+          throw error
+        }
+      },
       setAuth: (user, token) => set({
         user,
         token,
         isAuthenticated: true
       }),
-      logout: () => set({
-        user: null,
-        token: null,
-        isAuthenticated: false
-      }),
+      logout: () => {
+        authApi.logout()
+        set({
+          user: null,
+          token: null,
+          isAuthenticated: false,
+          error: null,
+        })
+      },
+      clearError: () => set({ error: null }),
     }),
     { name: 'auth-storage' }
   )
