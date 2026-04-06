@@ -19,11 +19,9 @@ func NewParentRepository(db *sqlx.DB) *ParentRepository {
 
 // Parent represents a parent in the system
 type Parent struct {
-	ID        string `db:"id"`
 	UserID    string `db:"user_id"`
+	FullName  string `db:"full_name"`
 	Phone     string `db:"phone"`
-	Address   string `db:"address"`
-	IsActive  bool   `db:"is_active"`
 	CreatedAt string `db:"created_at"`
 }
 
@@ -31,16 +29,15 @@ type Parent struct {
 type ParentWithUser struct {
 	Parent
 	Email string `db:"email"`
-	Name  string `db:"name"`
 }
 
 // GetByUserID retrieves a parent by user ID
 func (r *ParentRepository) GetByUserID(ctx context.Context, userID string) (*ParentWithUser, error) {
 	query := `
-		SELECT p.id, p.user_id, p.phone, p.address, p.is_active, p.created_at, u.email, u.name
+		SELECT p.user_id, p.full_name, p.phone, p.created_at, u.email
 		FROM parents p
 		JOIN users u ON p.user_id = u.id
-		WHERE p.user_id = $1 AND p.is_active = true
+		WHERE p.user_id = $1
 	`
 
 	var parent ParentWithUser
@@ -55,13 +52,13 @@ func (r *ParentRepository) GetByUserID(ctx context.Context, userID string) (*Par
 	return &parent, nil
 }
 
-// GetByID retrieves a parent by ID
+// GetByID retrieves a parent by ID (user_id)
 func (r *ParentRepository) GetByID(ctx context.Context, id string) (*ParentWithUser, error) {
 	query := `
-		SELECT p.id, p.user_id, p.phone, p.address, p.is_active, p.created_at, u.email, u.name
+		SELECT p.user_id, p.full_name, p.phone, p.created_at, u.email
 		FROM parents p
 		JOIN users u ON p.user_id = u.id
-		WHERE p.id = $1 AND p.is_active = true
+		WHERE p.user_id = $1
 	`
 
 	var parent ParentWithUser
@@ -74,4 +71,59 @@ func (r *ParentRepository) GetByID(ctx context.Context, id string) (*ParentWithU
 	}
 
 	return &parent, nil
+}
+
+// GetAll retrieves all parents with optional search
+func (r *ParentRepository) GetAll(ctx context.Context, search string) ([]ParentWithUser, error) {
+	query := `
+		SELECT p.user_id, p.full_name, p.phone, p.created_at, u.email
+		FROM parents p
+		JOIN users u ON p.user_id = u.id
+	`
+
+	args := []interface{}{}
+	if search != "" {
+		query += " WHERE p.full_name ILIKE $1 OR u.email ILIKE $1"
+		args = append(args, "%"+search+"%")
+	}
+
+	query += " ORDER BY p.full_name"
+
+	var parents []ParentWithUser
+	err := r.db.SelectContext(ctx, &parents, query, args...)
+	if err != nil {
+		return nil, err
+	}
+
+	return parents, nil
+}
+
+// Create creates a new parent (user account must be created first)
+func (r *ParentRepository) Create(ctx context.Context, parent *Parent) error {
+	query := `
+		INSERT INTO parents (user_id, full_name, phone)
+		VALUES ($1, $2, $3)
+	`
+
+	_, err := r.db.ExecContext(ctx, query, parent.UserID, parent.FullName, parent.Phone)
+	return err
+}
+
+// Update updates a parent
+func (r *ParentRepository) Update(ctx context.Context, userID string, parent *Parent) error {
+	query := `
+		UPDATE parents
+		SET full_name = $1, phone = $2
+		WHERE user_id = $3
+	`
+
+	_, err := r.db.ExecContext(ctx, query, parent.FullName, parent.Phone, userID)
+	return err
+}
+
+// Delete deletes a parent (cascades to user account)
+func (r *ParentRepository) Delete(ctx context.Context, userID string) error {
+	query := `DELETE FROM parents WHERE user_id = $1`
+	_, err := r.db.ExecContext(ctx, query, userID)
+	return err
 }

@@ -1,9 +1,11 @@
 package server
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/lib/pq"
 	"github.com/rakaarfi/hafalan-tracker/backend/internal/repository"
 	"github.com/rakaarfi/hafalan-tracker/backend/internal/service"
 )
@@ -186,6 +188,15 @@ func (s *Server) createMemorization(c *gin.Context) {
 	userID := c.GetString("user_id")
 	role := c.GetString("role")
 
+	// Convert userID to int
+	teacherID := 0
+	if _, err := fmt.Sscanf(userID, "%d", &teacherID); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Invalid user ID",
+		})
+		return
+	}
+
 	// Only teachers can create memorization records
 	if role != "teacher" {
 		c.JSON(http.StatusForbidden, gin.H{
@@ -194,8 +205,55 @@ func (s *Server) createMemorization(c *gin.Context) {
 		return
 	}
 
-	// Set teacher ID to current user
+	// Set teacher ID to current user (convert back to string)
 	req.TeacherID = userID
+
+	// VALIDATION: Check if student is in teacher's assigned class
+	academicYear := "2025/2026"
+	assignments, err := s.classQuranTeacherRepo.GetActiveByTeacher(c.Request.Context(), teacherID, academicYear)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Failed to verify teacher assignment",
+		})
+		return
+	}
+
+	// Get student's class ID
+	student, err := s.studentRepo.GetByID(c.Request.Context(), req.StudentID)
+	if err != nil || student == nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Student not found",
+		})
+		return
+	}
+
+	// Parse student's class ID as integer
+	studentClassID := 0
+	if student.ClassID != "" {
+		_, err := fmt.Sscanf(student.ClassID, "%d", &studentClassID)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"error": "Invalid student class ID",
+			})
+			return
+		}
+	}
+
+	// Check if student's class is in teacher's assignments
+	isAssigned := false
+	for _, assignment := range assignments {
+		if assignment.ClassID == studentClassID {
+			isAssigned = true
+			break
+		}
+	}
+
+	if !isAssigned {
+		c.JSON(http.StatusForbidden, gin.H{
+			"error": "You are not authorized to input memorization for this student. This student is not in your assigned classes.",
+		})
+		return
+	}
 
 	// Create memorization
 	mem, err := s.memorizationService.Create(c.Request.Context(), &req, userID)
@@ -228,10 +286,84 @@ func (s *Server) updateMemorization(c *gin.Context) {
 	userID := c.GetString("user_id")
 	role := c.GetString("role")
 
+	// Convert userID to int
+	teacherID := 0
+	if _, err := fmt.Sscanf(userID, "%d", &teacherID); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Invalid user ID",
+		})
+		return
+	}
+
 	// Only teachers can update memorization records
 	if role != "teacher" {
 		c.JSON(http.StatusForbidden, gin.H{
 			"error": "Only teachers can update memorization records",
+		})
+		return
+	}
+
+	// VALIDATION: Get the existing memorization to check ownership
+	existingMem, err := s.memorizationService.GetByID(c.Request.Context(), id)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{
+			"error": "Memorization record not found",
+		})
+		return
+	}
+
+	// Check if the teacher owns this record
+	if existingMem.TeacherID != teacherID {
+		c.JSON(http.StatusForbidden, gin.H{
+			"error": "You are not authorized to update this memorization record",
+		})
+		return
+	}
+
+	// Additional validation: Check if student is still in teacher's assigned class
+	academicYear := "2025/2026"
+	assignments, err := s.classQuranTeacherRepo.GetActiveByTeacher(c.Request.Context(), teacherID, academicYear)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Failed to verify teacher assignment",
+		})
+		return
+	}
+
+	// Get student's class ID from the existing record
+	studentID := fmt.Sprintf("%d", existingMem.StudentID)
+	student, err := s.studentRepo.GetByID(c.Request.Context(), studentID)
+	if err != nil || student == nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Student not found",
+		})
+		return
+	}
+
+	// Parse student's class ID as integer
+	studentClassID := 0
+	if student.ClassID != "" {
+		_, err := fmt.Sscanf(student.ClassID, "%d", &studentClassID)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"error": "Invalid student class ID",
+			})
+			return
+		}
+	}
+
+	// Check if student's class is still in teacher's assignments
+	isAssigned := false
+	for _, assignment := range assignments {
+		if assignment.ClassID == studentClassID {
+			isAssigned = true
+			break
+		}
+	}
+
+	if !isAssigned {
+		c.JSON(http.StatusForbidden, gin.H{
+			"error": "This student is no longer in your assigned classes",
 		})
 		return
 	}
@@ -290,19 +422,79 @@ func (s *Server) getParentChildProgress(c *gin.Context) {
 	c.JSON(http.StatusOK, progress)
 }
 
-// getTeacherStudents returns all students for the current teacher
+// getTeacherStudents returns all students for the current teacher's assigned classes
 func (s *Server) getTeacherStudents(c *gin.Context) {
-	// Get teacher ID from context (currently not used, but will be used for filtering)
-	_ = c.GetString("user_id")
+	// Get teacher ID from context and convert to int
+	userID := c.GetString("user_id")
+	teacherID := 0
+	if _, err := fmt.Sscanf(userID, "%d", &teacherID); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Invalid teacher ID",
+		})
+		return
+	}
 
-	// For now, return all students (this can be optimized to filter by teacher)
-	// TODO: Implement proper filtering by teacher's memorizations
-	students, err := s.studentRepo.GetAll(c.Request.Context(), "")
+	ctx := c.Request.Context()
+
+	// Get all active class assignments for this teacher in current academic year
+	// For now, use 2025/2026 as default - this should be configurable later
+	academicYear := "2025/2026"
+	assignments, err := s.classQuranTeacherRepo.GetActiveByTeacher(ctx, teacherID, academicYear)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Failed to retrieve teacher assignments",
+			"details": err.Error(),
+		})
+		return
+	}
+
+	// If no assignments found, return empty array
+	if len(assignments) == 0 {
+		c.JSON(http.StatusOK, []gin.H{})
+		return
+	}
+
+	// Get class IDs from assignments
+	classIDs := make([]int, len(assignments))
+	for i, assignment := range assignments {
+		classIDs[i] = assignment.ClassID
+	}
+
+	// Get students from assigned classes
+	query := `
+		SELECT s.id, s.name, s.class_id, c.name as class_name, c.grade_level
+		FROM students s
+		INNER JOIN classes c ON CAST(s.class_id AS INTEGER) = c.id
+		WHERE CAST(s.class_id AS INTEGER) = ANY($1::int[])
+		  AND s.is_active = true
+		  AND c.is_active = true
+		ORDER BY c.name, s.name
+	`
+
+	rows, err := s.db.QueryContext(ctx, query, pq.Array(classIDs))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"error": "Failed to retrieve students",
+			"details": err.Error(),
 		})
 		return
+	}
+	defer rows.Close()
+
+	students := []gin.H{}
+	for rows.Next() {
+		var id, name, classID, className, gradeLevel string
+		if err := rows.Scan(&id, &name, &classID, &className, &gradeLevel); err != nil {
+			continue
+		}
+
+		students = append(students, gin.H{
+			"id":          id,
+			"name":        name,
+			"class_id":    classID,
+			"class_name":  className,
+			"grade_level": gradeLevel,
+		})
 	}
 
 	c.JSON(http.StatusOK, students)

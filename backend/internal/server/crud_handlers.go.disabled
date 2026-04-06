@@ -1,0 +1,590 @@
+package server
+
+import (
+	"net/http"
+	"strconv"
+
+	"github.com/gin-gonic/gin"
+)
+
+// Student CRUD handlers
+
+func (s *Server) getStudents(c *gin.Context) {
+	search := c.Query("search")
+
+	students, err := s.studentRepo.GetAll(c.Request.Context(), search)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Failed to retrieve students",
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, students)
+}
+
+func (s *Server) getStudent(c *gin.Context) {
+	id := c.Param("studentId")
+
+	student, err := s.studentRepo.GetByID(c.Request.Context(), id)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{
+			"error": "Student not found",
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, student)
+}
+
+func (s *Server) createStudent(c *gin.Context) {
+	var req struct {
+		Name        string `json:"name" binding:"required"`
+		ClassID     string `json:"class_id" binding:"required"`
+		Parent1ID   string `json:"parent_1_id" binding:"required"`
+		Parent2ID   string `json:"parent_2_id"`
+		BirthDate   string `json:"birth_date"`
+		Phone       string `json:"phone"`
+		PhotoURL    string `json:"photo_url"`
+	}
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Invalid request format",
+		})
+		return
+	}
+
+	student, err := s.studentRepo.Create(c.Request.Context(), &req)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusCreated, student)
+}
+
+func (s *Server) updateStudent(c *gin.Context) {
+	id := c.Param("studentId")
+
+	var req struct {
+		Name        string `json:"name" binding:"required"`
+		ClassID     string `json:"class_id" binding:"required"`
+		Parent1ID   string `json:"parent_1_id" binding:"required"`
+		Parent2ID   string `json:"parent_2_id"`
+		BirthDate   string `json:"birth_date"`
+		Phone       string `json:"phone"`
+		PhotoURL    string `json:"photo_url"`
+	}
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Invalid request format",
+		})
+		return
+	}
+
+	student, err := s.studentRepo.Update(c.Request.Context(), id, &req)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, student)
+}
+
+func (s *Server) deleteStudent(c *gin.Context) {
+	id := c.Param("studentId")
+
+	err := s.studentRepo.Delete(c.Request.Context(), id)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Student deleted successfully",
+	})
+}
+
+// Teacher CRUD handlers
+
+func (s *Server) getTeachers(c *gin.Context) {
+	search := c.Query("search")
+
+	teachers, err := s.userRepo.GetTeachers(c.Request.Context(), search)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Failed to retrieve teachers",
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, teachers)
+}
+
+func (s *Server) getTeacher(c *gin.Context) {
+	id := c.Param("teacherId")
+
+	teacher, err := s.userRepo.GetTeacherByID(c.Request.Context(), id)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{
+			"error": "Teacher not found",
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, teacher)
+}
+
+func (s *Server) createTeacher(c *gin.Context) {
+	var req struct {
+		Name     string `json:"name" binding:"required"`
+		Email    string `json:"email" binding:"required,email"`
+		Phone    string `json:"phone"`
+		Password string `json:"password" binding:"required,min=6"`
+	}
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Invalid request format",
+		})
+		return
+	}
+
+	teacher, err := s.authService.RegisterTeacher(c.Request.Context(), &req)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusCreated, teacher)
+}
+
+func (s *Server) updateTeacher(c *gin.Context) {
+	id := c.Param("teacherId")
+
+	var req struct {
+		Name  string `json:"name" binding:"required"`
+		Email string `json:"email" binding:"required,email"`
+		Phone string `json:"phone"`
+	}
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Invalid request format",
+		})
+		return
+	}
+
+	teacher, err := s.userRepo.UpdateTeacher(c.Request.Context(), id, &req)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, teacher)
+}
+
+func (s *Server) deleteTeacher(c *gin.Context) {
+	id := c.Param("teacherId")
+
+	err := s.userRepo.DeleteTeacher(c.Request.Context(), id)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Teacher deleted successfully",
+	})
+}
+
+// Parent CRUD handlers
+
+func (s *Server) getParents(c *gin.Context) {
+	search := c.Query("search")
+
+	parents, err := s.parentRepo.GetAll(c.Request.Context(), search)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Failed to retrieve parents",
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, parents)
+}
+
+func (s *Server) getParent(c *gin.Context) {
+	id := c.Param("parentId")
+
+	parent, err := s.parentRepo.GetByID(c.Request.Context(), id)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{
+			"error": "Parent not found",
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, parent)
+}
+
+func (s *Server) createParent(c *gin.Context) {
+	var req struct {
+		Name     string `json:"name" binding:"required"`
+		Email    string `json:"email" binding:"required,email"`
+		Phone    string `json:"phone"`
+		Password string `json:"password" binding:"required,min=6"`
+	}
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Invalid request format",
+		})
+		return
+	}
+
+	parent, err := s.authService.RegisterParent(c.Request.Context(), &req)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusCreated, parent)
+}
+
+func (s *Server) updateParent(c *gin.Context) {
+	id := c.Param("parentId")
+
+	var req struct {
+		Name  string `json:"name" binding:"required"`
+		Email string `json:"email" binding:"required,email"`
+		Phone string `json:"phone"`
+	}
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Invalid request format",
+		})
+		return
+	}
+
+	parent, err := s.parentRepo.Update(c.Request.Context(), id, &req)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, parent)
+}
+
+func (s *Server) deleteParent(c *gin.Context) {
+	id := c.Param("parentId")
+
+	err := s.parentRepo.Delete(c.Request.Context(), id)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Parent deleted successfully",
+	})
+}
+
+// Class CRUD handlers
+
+func (s *Server) getClasses(c *gin.Context) {
+	search := c.Query("search")
+
+	classes, err := s.classRepo.GetAll(c.Request.Context(), search)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Failed to retrieve classes",
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, classes)
+}
+
+func (s *Server) getClass(c *gin.Context) {
+	id := c.Param("classId")
+
+	class, err := s.classRepo.GetByID(c.Request.Context(), id)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{
+			"error": "Class not found",
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, class)
+}
+
+func (s *Server) createClass(c *gin.Context) {
+	var req struct {
+		Name      string `json:"name" binding:"required"`
+		TeacherID string `json:"teacher_id"`
+	}
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Invalid request format",
+		})
+		return
+	}
+
+	class, err := s.classRepo.Create(c.Request.Context(), &req)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusCreated, class)
+}
+
+func (s *Server) updateClass(c *gin.Context) {
+	id := c.Param("classId")
+
+	var req struct {
+		Name      string `json:"name" binding:"required"`
+		TeacherID string `json:"teacher_id"`
+	}
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Invalid request format",
+		})
+		return
+	}
+
+	class, err := s.classRepo.Update(c.Request.Context(), id, &req)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, class)
+}
+
+func (s *Server) deleteClass(c *gin.Context) {
+	id := c.Param("classId")
+
+	err := s.classRepo.Delete(c.Request.Context(), id)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Class deleted successfully",
+	})
+}
+
+// Dashboard handlers
+
+func (s *Server) getDashboardStats(c *gin.Context) {
+	stats, err := s.statsRepo.GetDashboardStats(c.Request.Context())
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Failed to retrieve dashboard stats",
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, stats)
+}
+
+// Settings handlers
+
+func (s *Server) getSettings(c *gin.Context) {
+	settings, err := s.settingsRepo.Get(c.Request.Context())
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Failed to retrieve settings",
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, settings)
+}
+
+func (s *Server) updateSettings(c *gin.Context) {
+	var req struct {
+		SchoolName    string `json:"school_name"`
+		SchoolLogo    string `json:"school_logo"`
+		SchoolAddress string `json:"school_address"`
+		SchoolPhone   string `json:"school_phone"`
+		SchoolEmail   string `json:"school_email"`
+		AcademicYear  string `json:"academic_year"`
+	}
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Invalid request format",
+		})
+		return
+	}
+
+	settings, err := s.settingsRepo.Update(c.Request.Context(), &req)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, settings)
+}
+
+// User profile handlers
+
+func (s *Server) getProfile(c *gin.Context) {
+	userID := c.GetString("user_id")
+
+	user, err := s.userRepo.GetByID(c.Request.Context(), userID)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{
+			"error": "User not found",
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, user)
+}
+
+func (s *Server) updateProfile(c *gin.Context) {
+	userID := c.GetString("user_id")
+
+	var req struct {
+		Name  string `json:"name" binding:"required"`
+		Email string `json:"email" binding:"required,email"`
+		Phone string `json:"phone"`
+	}
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Invalid request format",
+		})
+		return
+	}
+
+	user, err := s.userRepo.UpdateProfile(c.Request.Context(), userID, &req)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, user)
+}
+
+func (s *Server) changePassword(c *gin.Context) {
+	userID := c.GetString("user_id")
+
+	var req struct {
+		CurrentPassword string `json:"current_password" binding:"required"`
+		NewPassword     string `json:"new_password" binding:"required,min=6"`
+	}
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Invalid request format",
+		})
+		return
+	}
+
+	err := s.authService.ChangePassword(c.Request.Context(), userID, req.CurrentPassword, req.NewPassword)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Password changed successfully",
+	})
+}
+
+func (s *Server) resetUserPassword(c *gin.Context) {
+	var req struct {
+		UserID string `json:"user_id" binding:"required"`
+	}
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Invalid request format",
+		})
+		return
+	}
+
+	err := s.authService.ResetPassword(c.Request.Context(), req.UserID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Password reset successfully",
+	})
+}
+
+// Student progress for teachers
+
+func (s *Server) getTeacherStudents(c *gin.Context) {
+	userID := c.GetString("user_id")
+
+	students, err := s.studentRepo.GetByTeacherID(c.Request.Context(), userID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Failed to retrieve students",
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, students)
+}
+
+func (s *Server) getStudentProgress(c *gin.Context) {
+	studentID := c.Param("studentId")
+
+	progress, err := s.memorizationService.GetStudentProgress(c.Request.Context(), studentID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Failed to retrieve student progress",
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, progress)
+}
