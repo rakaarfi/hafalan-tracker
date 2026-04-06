@@ -3,7 +3,6 @@ package repository
 import (
 	"context"
 
-	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
 )
 
@@ -19,54 +18,41 @@ func NewHistoryRepository(db *sqlx.DB) *HistoryRepository {
 
 // MemorizationHistory represents a historical record of memorization changes
 type MemorizationHistory struct {
-	ID              string  `db:"id"`
-	MemorizationID  string  `db:"memorization_id"`
-	StudentID       string  `db:"student_id"`
-	TeacherID       string  `db:"teacher_id"`
-	SurahID         *string `db:"surah_id"`
-	JuzID           *string `db:"juz_id"`
-	UnitType        string  `db:"unit_type"`
-	PageNumber      *int    `db:"page_number"`
-	StartAyah       *int    `db:"start_ayah"`
-	EndAyah         *int    `db:"end_ayah"`
-	Score           float64 `db:"score"`
-	Notes           string  `db:"notes"`
-	TestDate        string  `db:"test_date"`
-	ChangeType      string  `db:"change_type"` // created, updated
-	ChangedBy       string  `db:"changed_by"`
-	CreatedAt       string  `db:"created_at"`
+	ID             int     `db:"id"`
+	MemorizationID int     `db:"memorization_id"`
+	StudentID      int     `db:"student_id"`
+	TeacherID      int     `db:"teacher_id"`
+	OldStatus      *string `db:"old_status"`
+	NewStatus      string  `db:"new_status"`
+	Notes          string  `db:"notes"`
+	ChangedAt      string  `db:"changed_at"`
 }
 
 // CreateHistory creates a new history record
 func (r *HistoryRepository) CreateHistory(ctx context.Context, history *MemorizationHistory) error {
 	query := `
-		INSERT INTO memorization_history (id, memorization_id, student_id, teacher_id,
-			surah_id, juz_id, unit_type, page_number, start_ayah, end_ayah,
-			score, notes, test_date, change_type, changed_by)
-		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
+		INSERT INTO memorization_history (memorization_id, student_id, teacher_id,
+			old_status, new_status, notes)
+		VALUES ($1, $2, $3, $4, $5, $6)
+		RETURNING id, changed_at
 	`
 
-	history.ID = uuid.New().String()
-
-	_, err := r.db.ExecContext(ctx, query,
-		history.ID, history.MemorizationID, history.StudentID, history.TeacherID,
-		history.SurahID, history.JuzID, history.UnitType, history.PageNumber,
-		history.StartAyah, history.EndAyah, history.Score, history.Notes,
-		history.TestDate, history.ChangeType, history.ChangedBy,
-	)
+	err := r.db.QueryRowContext(ctx, query,
+		history.MemorizationID, history.StudentID, history.TeacherID,
+		history.OldStatus, history.NewStatus, history.Notes,
+	).Scan(&history.ID, &history.ChangedAt)
 
 	return err
 }
 
 // GetByMemorizationID retrieves all history records for a memorization
-func (r *HistoryRepository) GetByMemorizationID(ctx context.Context, memorizationID string) ([]MemorizationHistory, error) {
+func (r *HistoryRepository) GetByMemorizationID(ctx context.Context, memorizationID int) ([]MemorizationHistory, error) {
 	query := `
-		SELECT id, memorization_id, student_id, teacher_id, surah_id, juz_id,
-			unit_type, page_number, start_ayah, end_ayah, score, notes, test_date,
-			change_type, changed_by, created_at
+		SELECT id, memorization_id, student_id, teacher_id,
+			old_status, new_status, notes, changed_at
 		FROM memorization_history
 		WHERE memorization_id = $1
-		ORDER BY created_at DESC
+		ORDER BY changed_at DESC
 	`
 
 	var history []MemorizationHistory
@@ -79,14 +65,13 @@ func (r *HistoryRepository) GetByMemorizationID(ctx context.Context, memorizatio
 }
 
 // GetByStudentID retrieves all history records for a student
-func (r *HistoryRepository) GetByStudentID(ctx context.Context, studentID string) ([]MemorizationHistory, error) {
+func (r *HistoryRepository) GetByStudentID(ctx context.Context, studentID int) ([]MemorizationHistory, error) {
 	query := `
-		SELECT id, memorization_id, student_id, teacher_id, surah_id, juz_id,
-			unit_type, page_number, start_ayah, end_ayah, score, notes, test_date,
-			change_type, changed_by, created_at
+		SELECT id, memorization_id, student_id, teacher_id,
+			old_status, new_status, notes, changed_at
 		FROM memorization_history
 		WHERE student_id = $1
-		ORDER BY created_at DESC
+		ORDER BY changed_at DESC
 	`
 
 	var history []MemorizationHistory

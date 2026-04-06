@@ -103,3 +103,8 @@ func roleMiddleware(roles ...string) gin.HandlerFunc {
 func (s *Server) parentRoleMiddleware() gin.HandlerFunc {
 	return roleMiddleware("parent")
 }
+
+// teacherRoleMiddleware checks if user is a teacher
+func (s *Server) teacherRoleMiddleware() gin.HandlerFunc {
+	return roleMiddleware("teacher")
+}

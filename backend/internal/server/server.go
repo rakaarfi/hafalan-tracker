@@ -24,10 +24,11 @@ type Server struct {
 	teacherService      *service.TeacherService
 	classService        *service.ClassService
 	settingsService     *service.SettingsService
-	studentRepo         *repository.StudentRepository
-	teacherRepo         *repository.TeacherRepository
-	parentRepo          *repository.ParentRepository
-	classRepo           *repository.ClassRepository
+	studentRepo             *repository.StudentRepository
+	teacherRepo             *repository.TeacherRepository
+	parentRepo              *repository.ParentRepository
+	classRepo               *repository.ClassRepository
+	classQuranTeacherRepo    *repository.ClassQuranTeacherRepository
 }
 
 // New creates a new server instance
@@ -54,6 +55,7 @@ func New(cfg *config.Config, db *database.DB) *Server {
 	studentRepo := repository.NewStudentRepository(db.DB)
 	teacherRepo := repository.NewTeacherRepository(db.DB)
 	classRepo := repository.NewClassRepository(db.DB)
+	classQuranTeacherRepo := repository.NewClassQuranTeacherRepository(db.DB)
 	settingsRepo := repository.NewSettingsRepository(db.DB)
 
 	// Initialize services
@@ -74,14 +76,15 @@ func New(cfg *config.Config, db *database.DB) *Server {
 		jwtManager:          jwtManager,
 		memorizationService: memorizationService,
 		parentService:       parentService,
-		studentService:      studentService,
-		teacherService:      teacherService,
-		classService:        classService,
-		settingsService:     settingsService,
-		studentRepo:         studentRepo,
-		teacherRepo:         teacherRepo,
-		parentRepo:          parentRepo,
-		classRepo:           classRepo,
+		studentService:          studentService,
+		teacherService:          teacherService,
+		classService:            classService,
+		settingsService:         settingsService,
+		studentRepo:             studentRepo,
+		teacherRepo:             teacherRepo,
+		parentRepo:              parentRepo,
+		classRepo:               classRepo,
+		classQuranTeacherRepo:    classQuranTeacherRepo,
 	}
 
 	// Setup routes

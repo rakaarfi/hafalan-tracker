@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"errors"
+	"strconv"
 
 	"github.com/rakaarfi/hafalan-tracker/backend/internal/repository"
 )
@@ -28,42 +29,40 @@ type CreateMemorizationRequest struct {
 	UnitType   string  `json:"unit_type" binding:"required,oneof=surah juz page"`
 	SurahID    *string `json:"surah_id,omitempty" binding:"omitempty_if=UnitType surah"`
 	JuzID      *string `json:"juz_id,omitempty" binding:"omitempty_if=UnitType juz"`
-	PageNumber *int    `json:"page_number,omitempty" binding:"omitempty_if=UnitType page,min=1,max=604"`
-	StartAyah  *int    `json:"start_ayah,omitempty" binding:"omitempty,min=1"`
-	EndAyah    *int    `json:"end_ayah,omitempty" binding:"omitempty,min=1"`
-	Score      float64 `json:"score" binding:"required,min=0,max=100"`
+	PageStart  *int    `json:"page_start,omitempty" binding:"omitempty_if=UnitType page,min=1,max=604"`
+	PageEnd    *int    `json:"page_end,omitempty" binding:"omitempty_if=UnitType page,min=1,max=604"`
+	Status     string  `json:"status" binding:"required,oneof=fluent good needs_improvement"`
 	Notes      string  `json:"notes"`
 	TestDate   string  `json:"test_date" binding:"required"`
 }
 
 // UpdateMemorizationRequest represents a request to update a memorization
 type UpdateMemorizationRequest struct {
-	ID         string  `json:"id" binding:"required"`
-	UnitType   string  `json:"unit_type" binding:"required,oneof=surah juz page"`
-	SurahID    *string `json:"surah_id,omitempty" binding:"omitempty_if=UnitType surah"`
-	JuzID      *string `json:"juz_id,omitempty" binding:"omitempty_if=UnitType juz"`
-	PageNumber *int    `json:"page_number,omitempty" binding:"omitempty_if=UnitType page,min=1,max=604"`
-	StartAyah  *int    `json:"start_ayah,omitempty" binding:"omitempty,min=1"`
-	EndAyah    *int    `json:"end_ayah,omitempty" binding:"omitempty,min=1"`
-	Score      float64 `json:"score" binding:"required,min=0,max=100"`
-	Notes      string  `json:"notes"`
-	TestDate   string  `json:"test_date" binding:"required"`
+	ID        string  `json:"id" binding:"required"`
+	UnitType  string  `json:"unit_type" binding:"required,oneof=surah juz page"`
+	SurahID   *string `json:"surah_id,omitempty" binding:"omitempty_if=UnitType surah"`
+	JuzID     *string `json:"juz_id,omitempty" binding:"omitempty_if=UnitType juz"`
+	PageStart *int    `json:"page_start,omitempty" binding:"omitempty_if=UnitType page,min=1,max=604"`
+	PageEnd   *int    `json:"page_end,omitempty" binding:"omitempty_if=UnitType page,min=1,max=604"`
+	Status    string  `json:"status" binding:"required,oneof=fluent good needs_improvement"`
+	Notes     string  `json:"notes"`
+	TestDate  string  `json:"test_date" binding:"required"`
 }
 
 // Validate validates the memorization request based on unit type
 func (s *MemorizationService) Validate(req interface{}) error {
 	switch r := req.(type) {
 	case *CreateMemorizationRequest:
-		return s.validateUnitType(r.UnitType, r.SurahID, r.JuzID, r.PageNumber)
+		return s.validateUnitType(r.UnitType, r.SurahID, r.JuzID, r.PageStart, r.PageEnd)
 	case *UpdateMemorizationRequest:
-		return s.validateUnitType(r.UnitType, r.SurahID, r.JuzID, r.PageNumber)
+		return s.validateUnitType(r.UnitType, r.SurahID, r.JuzID, r.PageStart, r.PageEnd)
 	default:
 		return errors.New("invalid request type")
 	}
 }
 
 // validateUnitType validates that the correct fields are set based on unit type
-func (s *MemorizationService) validateUnitType(unitType string, surahID, juzID *string, pageNumber *int) error {
+func (s *MemorizationService) validateUnitType(unitType string, surahID, juzID *string, pageStart, pageEnd *int) error {
 	switch unitType {
 	case "surah":
 		if surahID == nil {
@@ -74,8 +73,8 @@ func (s *MemorizationService) validateUnitType(unitType string, surahID, juzID *
 			return errors.New("juz_id is required when unit_type is juz")
 		}
 	case "page":
-		if pageNumber == nil {
-			return errors.New("page_number is required when unit_type is page")
+		if pageStart == nil || pageEnd == nil {
+			return errors.New("page_start and page_end are required when unit_type is page")
 		}
 	default:
 		return errors.New("invalid unit_type")
@@ -90,17 +89,46 @@ func (s *MemorizationService) Create(ctx context.Context, req *CreateMemorizatio
 		return nil, err
 	}
 
+	// Convert string IDs to int
+	studentID, err := strconv.Atoi(req.StudentID)
+	if err != nil {
+		return nil, errors.New("invalid student_id")
+	}
+	teacherID, err := strconv.Atoi(req.TeacherID)
+	if err != nil {
+		return nil, errors.New("invalid teacher_id")
+	}
+
+	// Convert optional SurahID
+	var surahID *int
+	if req.SurahID != nil {
+		id, err := strconv.Atoi(*req.SurahID)
+		if err != nil {
+			return nil, errors.New("invalid surah_id")
+		}
+		surahID = &id
+	}
+
+	// Convert optional JuzID
+	var juzID *int
+	if req.JuzID != nil {
+		id, err := strconv.Atoi(*req.JuzID)
+		if err != nil {
+			return nil, errors.New("invalid juz_id")
+		}
+		juzID = &id
+	}
+
 	// Create memorization record
 	mem := &repository.Memorization{
-		StudentID:  req.StudentID,
-		TeacherID:  req.TeacherID,
+		StudentID:  studentID,
+		TeacherID:  teacherID,
 		UnitType:   req.UnitType,
-		SurahID:    req.SurahID,
-		JuzID:      req.JuzID,
-		PageNumber: req.PageNumber,
-		StartAyah:  req.StartAyah,
-		EndAyah:    req.EndAyah,
-		Score:      req.Score,
+		SurahID:    surahID,
+		JuzID:      juzID,
+		PageStart:  req.PageStart,
+		PageEnd:    req.PageEnd,
+		Status:     req.Status,
 		Notes:      req.Notes,
 		TestDate:   req.TestDate,
 	}
@@ -109,28 +137,8 @@ func (s *MemorizationService) Create(ctx context.Context, req *CreateMemorizatio
 		return nil, err
 	}
 
-	// Create history record
-	history := &repository.MemorizationHistory{
-		MemorizationID: mem.ID,
-		StudentID:      req.StudentID,
-		TeacherID:      req.TeacherID,
-		UnitType:       req.UnitType,
-		SurahID:        req.SurahID,
-		JuzID:          req.JuzID,
-		PageNumber:     req.PageNumber,
-		StartAyah:      req.StartAyah,
-		EndAyah:        req.EndAyah,
-		Score:          req.Score,
-		Notes:          req.Notes,
-		TestDate:       req.TestDate,
-		ChangeType:     "created",
-		ChangedBy:      changedBy,
-	}
-
-	if err := s.historyRepo.CreateHistory(ctx, history); err != nil {
-		// Log error but don't fail the operation
-		// In production, you might want to handle this differently
-	}
+	// TODO: Create history record
+	// History structure needs to be updated to match database schema
 
 	// Get the created record with details
 	return s.memorizationRepo.GetByID(ctx, mem.ID)
@@ -143,8 +151,14 @@ func (s *MemorizationService) Update(ctx context.Context, req *UpdateMemorizatio
 		return nil, err
 	}
 
+	// Convert ID to int
+	id, err := strconv.Atoi(req.ID)
+	if err != nil {
+		return nil, errors.New("invalid id")
+	}
+
 	// Get existing record
-	existing, err := s.memorizationRepo.GetByID(ctx, req.ID)
+	existing, err := s.memorizationRepo.GetByID(ctx, id)
 	if err != nil {
 		return nil, err
 	}
@@ -152,47 +166,47 @@ func (s *MemorizationService) Update(ctx context.Context, req *UpdateMemorizatio
 		return nil, errors.New("memorization not found")
 	}
 
+	// Convert optional SurahID
+	var surahID *int
+	if req.SurahID != nil {
+		id, err := strconv.Atoi(*req.SurahID)
+		if err != nil {
+			return nil, errors.New("invalid surah_id")
+		}
+		surahID = &id
+	}
+
+	// Convert optional JuzID
+	var juzID *int
+	if req.JuzID != nil {
+		id, err := strconv.Atoi(*req.JuzID)
+		if err != nil {
+			return nil, errors.New("invalid juz_id")
+		}
+		juzID = &id
+	}
+
 	// Create updated record (soft delete old, create new)
 	mem := &repository.Memorization{
-		ID:         req.ID,
-		StudentID:  existing.StudentID,
-		TeacherID:  existing.TeacherID,
-		UnitType:   req.UnitType,
-		SurahID:    req.SurahID,
-		JuzID:      req.JuzID,
-		PageNumber: req.PageNumber,
-		StartAyah:  req.StartAyah,
-		EndAyah:    req.EndAyah,
-		Score:      req.Score,
-		Notes:      req.Notes,
-		TestDate:   req.TestDate,
+		ID:        id,
+		StudentID: existing.StudentID,
+		TeacherID: existing.TeacherID,
+		UnitType:  req.UnitType,
+		SurahID:   surahID,
+		JuzID:     juzID,
+		PageStart: req.PageStart,
+		PageEnd:   req.PageEnd,
+		Status:    req.Status,
+		Notes:     req.Notes,
+		TestDate:  req.TestDate,
 	}
 
 	if err := s.memorizationRepo.Update(ctx, mem); err != nil {
 		return nil, err
 	}
 
-	// Create history record
-	history := &repository.MemorizationHistory{
-		MemorizationID: mem.ID,
-		StudentID:      existing.StudentID,
-		TeacherID:      existing.TeacherID,
-		UnitType:       req.UnitType,
-		SurahID:        req.SurahID,
-		JuzID:          req.JuzID,
-		PageNumber:     req.PageNumber,
-		StartAyah:      req.StartAyah,
-		EndAyah:        req.EndAyah,
-		Score:          req.Score,
-		Notes:          req.Notes,
-		TestDate:       req.TestDate,
-		ChangeType:     "updated",
-		ChangedBy:      changedBy,
-	}
-
-	if err := s.historyRepo.CreateHistory(ctx, history); err != nil {
-		// Log error but don't fail the operation
-	}
+	// TODO: Create history record
+	// History structure needs to be updated to match database schema
 
 	// Get the updated record with details
 	return s.memorizationRepo.GetByID(ctx, mem.ID)
@@ -200,25 +214,45 @@ func (s *MemorizationService) Update(ctx context.Context, req *UpdateMemorizatio
 
 // GetByStudentID retrieves all memorizations for a student
 func (s *MemorizationService) GetByStudentID(ctx context.Context, studentID string) ([]repository.MemorizationWithDetails, error) {
-	return s.memorizationRepo.GetByStudentID(ctx, studentID)
+	id, err := strconv.Atoi(studentID)
+	if err != nil {
+		return nil, errors.New("invalid student_id")
+	}
+	return s.memorizationRepo.GetByStudentID(ctx, id)
 }
 
 // GetByTeacherID retrieves all memorizations for a teacher
 func (s *MemorizationService) GetByTeacherID(ctx context.Context, teacherID string) ([]repository.MemorizationWithDetails, error) {
-	return s.memorizationRepo.GetByTeacherID(ctx, teacherID)
+	id, err := strconv.Atoi(teacherID)
+	if err != nil {
+		return nil, errors.New("invalid teacher_id")
+	}
+	return s.memorizationRepo.GetByTeacherID(ctx, id)
 }
 
 // GetByID retrieves a specific memorization
 func (s *MemorizationService) GetByID(ctx context.Context, id string) (*repository.MemorizationWithDetails, error) {
-	return s.memorizationRepo.GetByID(ctx, id)
+	memID, err := strconv.Atoi(id)
+	if err != nil {
+		return nil, errors.New("invalid id")
+	}
+	return s.memorizationRepo.GetByID(ctx, memID)
 }
 
 // GetHistory retrieves the history of a memorization
 func (s *MemorizationService) GetHistory(ctx context.Context, memorizationID string) ([]repository.MemorizationHistory, error) {
-	return s.historyRepo.GetByMemorizationID(ctx, memorizationID)
+	id, err := strconv.Atoi(memorizationID)
+	if err != nil {
+		return nil, errors.New("invalid memorization_id")
+	}
+	return s.historyRepo.GetByMemorizationID(ctx, id)
 }
 
 // GetStudentHistory retrieves all history for a student
 func (s *MemorizationService) GetStudentHistory(ctx context.Context, studentID string) ([]repository.MemorizationHistory, error) {
-	return s.historyRepo.GetByStudentID(ctx, studentID)
+	id, err := strconv.Atoi(studentID)
+	if err != nil {
+		return nil, errors.New("invalid student_id")
+	}
+	return s.historyRepo.GetByStudentID(ctx, id)
 }

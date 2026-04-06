@@ -3,23 +3,26 @@ package service
 import (
 	"context"
 	"errors"
+	"strconv"
 
 	"github.com/rakaarfi/hafalan-tracker/backend/internal/repository"
 )
 
 // ParentService handles parent business logic
 type ParentService struct {
-	parentRepo  *repository.ParentRepository
-	studentRepo *repository.StudentRepository
+	parentRepo       *repository.ParentRepository
+	studentRepo      *repository.StudentRepository
 	memorizationRepo *repository.MemorizationRepository
+	userRepo         *repository.UserRepository
 }
 
 // NewParentService creates a new parent service
-func NewParentService(parentRepo *repository.ParentRepository, studentRepo *repository.StudentRepository, memorizationRepo *repository.MemorizationRepository) *ParentService {
+func NewParentService(parentRepo *repository.ParentRepository, studentRepo *repository.StudentRepository, memorizationRepo *repository.MemorizationRepository, userRepo *repository.UserRepository) *ParentService {
 	return &ParentService{
-		parentRepo:  parentRepo,
-		studentRepo: studentRepo,
+		parentRepo:       parentRepo,
+		studentRepo:      studentRepo,
 		memorizationRepo: memorizationRepo,
+		userRepo:         userRepo,
 	}
 }
 
@@ -62,22 +65,20 @@ func (s *ParentService) GetChildrenProgress(ctx context.Context, parentID string
 
 // getChildProgress retrieves progress for a specific student
 func (s *ParentService) getChildProgress(ctx context.Context, studentID string) (*ChildProgress, error) {
+	// Convert student ID to int
+	id, err := strconv.Atoi(studentID)
+	if err != nil {
+		return nil, errors.New("invalid student_id")
+	}
+
 	// Get all memorizations for this student
-	memorizations, err := s.memorizationRepo.GetByStudentID(ctx, studentID)
+	memorizations, err := s.memorizationRepo.GetByStudentID(ctx, id)
 	if err != nil {
 		return nil, err
 	}
 
 	// Calculate statistics
 	totalTests := len(memorizations)
-	var averageScore float64
-	if totalTests > 0 {
-		var sum float64
-		for _, mem := range memorizations {
-			sum += mem.Score
-		}
-		averageScore = sum / float64(totalTests)
-	}
 
 	// Get recent tests (last 5)
 	recentTests := memorizations
@@ -94,7 +95,7 @@ func (s *ParentService) getChildProgress(ctx context.Context, studentID string) 
 	return &ChildProgress{
 		RecentTests:  recentTests,
 		TotalTests:   totalTests,
-		AverageScore: averageScore,
+		AverageScore: 0, // TODO: Calculate based on status
 		LatestTest:   latestTest,
 	}, nil
 }
@@ -107,7 +108,7 @@ func (s *ParentService) GetChildProgress(ctx context.Context, parentID, studentI
 		return nil, err
 	}
 
- belongsToParent := false
+	belongsToParent := false
 	for _, student := range students {
 		if student.ID == studentID {
 			belongsToParent = true
@@ -150,7 +151,7 @@ func (s *ParentService) GetChildrenProgressByUserID(ctx context.Context, userID 
 		return nil, errors.New("parent profile not found")
 	}
 
-	return s.GetChildrenProgress(ctx, parent.ID)
+	return s.GetChildrenProgress(ctx, parent.UserID)
 }
 
 // GetChildProgressByUserID retrieves progress for a specific child by user ID
@@ -164,5 +165,113 @@ func (s *ParentService) GetChildProgressByUserID(ctx context.Context, userID, st
 		return nil, errors.New("parent profile not found")
 	}
 
-	return s.GetChildProgress(ctx, parent.ID, studentID)
+	return s.GetChildProgress(ctx, parent.UserID, studentID)
+}
+
+// CreateParentRequest represents the request to create a parent
+type CreateParentRequest struct {
+	Name     string `json:"name" binding:"required"`
+	Email    string `json:"email" binding:"required,email"`
+	Phone    string `json:"phone"`
+	Password string `json:"password"`
+}
+
+// UpdateParentRequest represents the request to update a parent
+type UpdateParentRequest struct {
+	UserID string `json:"user_id" binding:"required"`
+	Name    string `json:"name" binding:"required"`
+	Phone   string `json:"phone"`
+}
+
+// Create creates a new parent with user account
+func (s *ParentService) Create(ctx context.Context, req *CreateParentRequest) (*repository.ParentWithUser, error) {
+	// Create user account first
+	user := &repository.User{
+		Email:    req.Email,
+		Password: req.Password,
+		RoleID:   "3", // Parent role
+		IsActive: true,
+	}
+
+	err := s.userRepo.Create(ctx, user)
+	if err != nil {
+		return nil, errors.New("failed to create user account")
+	}
+
+	// Create parent profile
+	parent := &repository.Parent{
+		UserID:   user.ID,
+		FullName: req.Name,
+		Phone:    req.Phone,
+	}
+
+	err = s.parentRepo.Create(ctx, parent)
+	if err != nil {
+		return nil, errors.New("failed to create parent profile")
+	}
+
+	// Get the created parent with user info
+	result, err := s.parentRepo.GetByID(ctx, user.ID)
+	if err != nil {
+		return nil, errors.New("failed to retrieve created parent")
+	}
+
+	return result, nil
+}
+
+// Update updates an existing parent
+func (s *ParentService) Update(ctx context.Context, req *UpdateParentRequest) (*repository.ParentWithUser, error) {
+	// Get existing parent
+	existing, err := s.parentRepo.GetByUserID(ctx, req.UserID)
+	if err != nil {
+		return nil, errors.New("failed to retrieve parent")
+	}
+	if existing == nil {
+		return nil, errors.New("parent not found")
+	}
+
+	// Update parent profile
+	updateReq := &repository.Parent{
+		FullName: req.Name,
+		Phone:    req.Phone,
+	}
+
+	err = s.parentRepo.Update(ctx, req.UserID, updateReq)
+	if err != nil {
+		return nil, errors.New("failed to update parent profile")
+	}
+
+	// Get updated parent with user info
+	result, err := s.parentRepo.GetByID(ctx, req.UserID)
+	if err != nil {
+		return nil, errors.New("failed to retrieve updated parent")
+	}
+
+	return result, nil
+}
+
+// Delete deletes a parent
+func (s *ParentService) Delete(ctx context.Context, userID string) error {
+	// Get parent by user ID
+	parent, err := s.parentRepo.GetByUserID(ctx, userID)
+	if err != nil {
+		return errors.New("failed to retrieve parent")
+	}
+	if parent == nil {
+		return errors.New("parent not found")
+	}
+
+	// Delete parent profile
+	err = s.parentRepo.Delete(ctx, userID)
+	if err != nil {
+		return errors.New("failed to delete parent profile")
+	}
+
+	// Delete user account
+	err = s.userRepo.Delete(ctx, userID)
+	if err != nil {
+		return errors.New("failed to delete user account")
+	}
+
+	return nil
 }

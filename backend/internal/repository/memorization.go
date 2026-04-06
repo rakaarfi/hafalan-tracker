@@ -5,7 +5,6 @@ import (
 	"database/sql"
 
 	"github.com/jmoiron/sqlx"
-	"github.com/google/uuid"
 )
 
 // MemorizationRepository handles memorization data operations
@@ -20,16 +19,15 @@ func NewMemorizationRepository(db *sqlx.DB) *MemorizationRepository {
 
 // Memorization represents a hafalan memorization record
 type Memorization struct {
-	ID              string  `db:"id"`
-	StudentID       string  `db:"student_id"`
-	TeacherID       string  `db:"teacher_id"`
-	SurahID         *string `db:"surah_id"`
-	JuzID           *string `db:"juz_id"`
+	ID              int     `db:"id"`
+	StudentID       int     `db:"student_id"`
+	TeacherID       int     `db:"teacher_id"`
+	SurahID         *int    `db:"surah_id"`
+	JuzID           *int    `db:"juz_id"`
 	UnitType        string  `db:"unit_type"` // surah, juz, page
-	PageNumber      *int    `db:"page_number"`
-	StartAyah       *int    `db:"start_ayah"`
-	EndAyah         *int    `db:"end_ayah"`
-	Score           float64 `db:"score"`
+	PageStart       *int    `db:"page_start"`
+	PageEnd         *int    `db:"page_end"`
+	Status          string  `db:"status"`
 	Notes           string  `db:"notes"`
 	TestDate        string  `db:"test_date"`
 	IsActive        bool    `db:"is_active"`
@@ -44,41 +42,38 @@ type MemorizationWithDetails struct {
 	TeacherName     string  `db:"teacher_name"`
 	SurahNumber     *int    `db:"surah_number"`
 	SurahName       *string `db:"surah_name"`
-	SurahNameIndo   *string `db:"surah_name_indo"`
 	JuzNumber       *int    `db:"juz_number"`
 }
 
 // Create inserts a new memorization record
 func (r *MemorizationRepository) Create(ctx context.Context, mem *Memorization) error {
 	query := `
-		INSERT INTO memorization (id, student_id, teacher_id, surah_id, juz_id, unit_type,
-			page_number, start_ayah, end_ayah, score, notes, test_date)
-		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+		INSERT INTO memorization (student_id, teacher_id, surah_id, juz_id, unit_type,
+			page_start, page_end, status, notes, test_date)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
 		RETURNING id, created_at, updated_at
 	`
 
-	mem.ID = uuid.New().String()
-
 	err := r.db.QueryRowContext(ctx, query,
-		mem.ID, mem.StudentID, mem.TeacherID, mem.SurahID, mem.JuzID, mem.UnitType,
-		mem.PageNumber, mem.StartAyah, mem.EndAyah, mem.Score, mem.Notes, mem.TestDate,
+		mem.StudentID, mem.TeacherID, mem.SurahID, mem.JuzID, mem.UnitType,
+		mem.PageStart, mem.PageEnd, mem.Status, mem.Notes, mem.TestDate,
 	).Scan(&mem.ID, &mem.CreatedAt, &mem.UpdatedAt)
 
 	return err
 }
 
 // GetByID retrieves a memorization by ID
-func (r *MemorizationRepository) GetByID(ctx context.Context, id string) (*MemorizationWithDetails, error) {
+func (r *MemorizationRepository) GetByID(ctx context.Context, id int) (*MemorizationWithDetails, error) {
 	query := `
 		SELECT m.id, m.student_id, m.teacher_id, m.surah_id, m.juz_id, m.unit_type,
-			m.page_number, m.start_ayah, m.end_ayah, m.score, m.notes, m.test_date,
+			m.page_start, m.page_end, m.status, m.notes, m.test_date,
 			m.is_active, m.created_at, m.updated_at,
-			s.name as student_name, t.name as teacher_name,
-			sur.number as surah_number, sur.name as surah_name, sur.name_indo as surah_name_indo,
-			j.number as juz_number
+			s.name as student_name, t.full_name as teacher_name,
+			sur.surah_number, sur.name_latin as surah_name,
+			j.juz_number
 		FROM memorization m
 		JOIN students s ON m.student_id = s.id
-		JOIN teachers t ON m.teacher_id = t.id
+		JOIN teachers t ON m.teacher_id = t.user_id
 		LEFT JOIN surah sur ON m.surah_id = sur.id
 		LEFT JOIN juz j ON m.juz_id = j.id
 		WHERE m.id = $1 AND m.is_active = true
@@ -97,17 +92,17 @@ func (r *MemorizationRepository) GetByID(ctx context.Context, id string) (*Memor
 }
 
 // GetByStudentID retrieves all memorizations for a student
-func (r *MemorizationRepository) GetByStudentID(ctx context.Context, studentID string) ([]MemorizationWithDetails, error) {
+func (r *MemorizationRepository) GetByStudentID(ctx context.Context, studentID int) ([]MemorizationWithDetails, error) {
 	query := `
 		SELECT m.id, m.student_id, m.teacher_id, m.surah_id, m.juz_id, m.unit_type,
-			m.page_number, m.start_ayah, m.end_ayah, m.score, m.notes, m.test_date,
+			m.page_start, m.page_end, m.status, m.notes, m.test_date,
 			m.is_active, m.created_at, m.updated_at,
-			s.name as student_name, t.name as teacher_name,
-			sur.number as surah_number, sur.name as surah_name, sur.name_indo as surah_name_indo,
-			j.number as juz_number
+			s.name as student_name, t.full_name as teacher_name,
+			sur.surah_number, sur.name_latin as surah_name,
+			j.juz_number
 		FROM memorization m
 		JOIN students s ON m.student_id = s.id
-		JOIN teachers t ON m.teacher_id = t.id
+		JOIN teachers t ON m.teacher_id = t.user_id
 		LEFT JOIN surah sur ON m.surah_id = sur.id
 		LEFT JOIN juz j ON m.juz_id = j.id
 		WHERE m.student_id = $1 AND m.is_active = true
@@ -124,17 +119,17 @@ func (r *MemorizationRepository) GetByStudentID(ctx context.Context, studentID s
 }
 
 // GetByTeacherID retrieves all memorizations for a teacher
-func (r *MemorizationRepository) GetByTeacherID(ctx context.Context, teacherID string) ([]MemorizationWithDetails, error) {
+func (r *MemorizationRepository) GetByTeacherID(ctx context.Context, teacherID int) ([]MemorizationWithDetails, error) {
 	query := `
 		SELECT m.id, m.student_id, m.teacher_id, m.surah_id, m.juz_id, m.unit_type,
-			m.page_number, m.start_ayah, m.end_ayah, m.score, m.notes, m.test_date,
+			m.page_start, m.page_end, m.status, m.notes, m.test_date,
 			m.is_active, m.created_at, m.updated_at,
-			s.name as student_name, t.name as teacher_name,
-			sur.number as surah_number, sur.name as surah_name, sur.name_indo as surah_name_indo,
-			j.number as juz_number
+			s.name as student_name, t.full_name as teacher_name,
+			sur.surah_number, sur.name_latin as surah_name,
+			j.juz_number
 		FROM memorization m
 		JOIN students s ON m.student_id = s.id
-		JOIN teachers t ON m.teacher_id = t.id
+		JOIN teachers t ON m.teacher_id = t.user_id
 		LEFT JOIN surah sur ON m.surah_id = sur.id
 		LEFT JOIN juz j ON m.juz_id = j.id
 		WHERE m.teacher_id = $1 AND m.is_active = true
