@@ -91,3 +91,83 @@ func (r *StudentRepository) GetByClassID(ctx context.Context, classID string) ([
 
 	return students, nil
 }
+
+// GetAll retrieves all students with optional search
+func (r *StudentRepository) GetAll(ctx context.Context, search string) ([]StudentWithClass, error) {
+	query := `
+		SELECT s.id, s.name, s.class_id, s.is_active, s.created_at, c.name as class_name
+		FROM students s
+		LEFT JOIN classes c ON s.class_id = c.id
+		WHERE s.is_active = true
+	`
+
+	args := []interface{}{}
+	if search != "" {
+		query += " AND s.name ILIKE $1"
+		args = append(args, "%"+search+"%")
+	}
+
+	query += " ORDER BY s.name"
+
+	var students []StudentWithClass
+	err := r.db.SelectContext(ctx, &students, query, args...)
+	if err != nil {
+		return nil, err
+	}
+
+	return students, nil
+}
+
+// Create creates a new student
+func (r *StudentRepository) Create(ctx context.Context, student *Student) error {
+	query := `
+		INSERT INTO students (name, class_id, enrollment_year, semester)
+		VALUES ($1, $2, $3, $4)
+		RETURNING id, created_at
+	`
+
+	return r.db.QueryRowContext(ctx, query,
+		student.Name,
+		student.ClassID,
+		2025, // enrollment_year
+		1,    // semester
+	).Scan(&student.ID, &student.CreatedAt)
+}
+
+// Update updates a student
+func (r *StudentRepository) Update(ctx context.Context, id string, student *Student) error {
+	query := `
+		UPDATE students
+		SET name = $1, class_id = $2
+		WHERE id = $3
+	`
+
+	_, err := r.db.ExecContext(ctx, query, student.Name, student.ClassID, id)
+	return err
+}
+
+// Delete deletes a student (soft delete by setting is_active to false)
+func (r *StudentRepository) Delete(ctx context.Context, id string) error {
+	query := `UPDATE students SET is_active = false WHERE id = $1`
+	_, err := r.db.ExecContext(ctx, query, id)
+	return err
+}
+
+// AddParent links a parent to a student
+func (r *StudentRepository) AddParent(ctx context.Context, studentID, parentID string) error {
+	query := `
+		INSERT INTO student_parents (student_id, parent_id, relationship_type, is_active)
+		VALUES ($1, $2, 'guardian', true)
+		ON CONFLICT (student_id, parent_id)
+		DO UPDATE SET is_active = true
+	`
+	_, err := r.db.ExecContext(ctx, query, studentID, parentID)
+	return err
+}
+
+// RemoveParents removes all parent relationships for a student
+func (r *StudentRepository) RemoveParents(ctx context.Context, studentID string) error {
+	query := `UPDATE student_parents SET is_active = false WHERE student_id = $1`
+	_, err := r.db.ExecContext(ctx, query, studentID)
+	return err
+}

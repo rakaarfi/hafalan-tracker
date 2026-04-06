@@ -5,11 +5,12 @@ import { Search } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 
 interface Student {
-  id: string
-  name: string
-  class_name: string
-  last_test_date: string
-  last_status: string
+  ID: string
+  Name: string
+  ClassID: string
+  ClassName: string
+  IsActive: boolean
+  CreatedAt: string
 }
 
 export function StudentList({ students }: { students: Student[] }) {
@@ -17,7 +18,7 @@ export function StudentList({ students }: { students: Student[] }) {
   const [search, setSearch] = useState('')
 
   const filteredStudents = students.filter(student =>
-    student.name.toLowerCase().includes(search.toLowerCase())
+    student.Name.toLowerCase().includes(search.toLowerCase())
   )
 
   return (
@@ -38,7 +39,7 @@ export function StudentList({ students }: { students: Student[] }) {
       {/* Student list - LIST VIEW for hybrid approach */}
       <div className="divide-y-2 divide-border">
         {filteredStudents.map((student) => (
-          <StudentListItem key={student.id} student={student} />
+          <StudentListItem key={student.ID} student={student} />
         ))}
       </div>
 

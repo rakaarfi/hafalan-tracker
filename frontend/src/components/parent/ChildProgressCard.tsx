@@ -3,20 +3,22 @@ import { useTranslation } from 'react-i18next'
 
 interface ChildProgressCardProps {
   child: {
-    id: string
-    name: string
-    photo?: string
-    class_name: string
-    overall_progress: {
-      percent: number
-      total_units: number
-      completed: number
+    student: {
+      ID: string
+      Name: string
+      ClassName: string
     }
-    recent_status: {
-      date: string
-      unit: string
-      status: string
-    }[]
+    recent_tests: Array<{
+      ID: number
+      UnitType: string
+      SurahName?: string
+      Status: string
+      Notes: string
+      TestDate: string
+    }>
+    total_tests: number
+    average_score: number
+    latest_test?: any
   }
 }
 
@@ -38,7 +40,7 @@ export function ChildProgressCard({ child }: ChildProgressCardProps) {
 
   return (
     <button
-      onClick={() => window.location.href = `/parent/children/${child.id}`}
+      onClick={() => window.location.href = `/parent/children/${child.student.ID}`}
       className="w-full text-left p-6 border-2 border-border bg-white hover:border-primary transition-colors"
     >
       {/* Header */}
@@ -46,45 +48,44 @@ export function ChildProgressCard({ child }: ChildProgressCardProps) {
         <div className="w-16 h-16 bg-gray-200 flex items-center justify-center border-2 border-border">
           {/* Photo placeholder */}
           <span className="text-2xl font-semibold text-gray-600">
-            {child.name.charAt(0)}
+            {child.student.Name.charAt(0)}
           </span>
         </div>
         <div>
-          <h3 className="font-semibold text-lg">{child.name}</h3>
-          <p className="text-sm text-gray-600">{child.class_name}</p>
+          <h3 className="font-semibold text-lg">{child.student.Name}</h3>
+          <p className="text-sm text-gray-600">{child.student.ClassName}</p>
         </div>
       </div>
 
-      {/* Progress Bar - SIMPLE SNAPSHOT */}
+      {/* Stats */}
       <div className="mb-4">
         <div className="flex justify-between text-sm mb-2">
-          <span className="font-medium">{t('parent.overallProgress')}</span>
-          <span className="font-semibold">{child.overall_progress.percent}%</span>
+          <span className="font-medium">Total Tests:</span>
+          <span className="font-semibold">{child.total_tests}</span>
         </div>
-        <div className="w-full bg-gray-200 border-2 border-border">
-          <div
-            className="bg-primary border-2 border-primary h-3 transition-all"
-            style={{ width: `${child.overall_progress.percent}%` }}
-          />
-        </div>
-        <p className="text-xs text-gray-600 mt-1">
-          {child.overall_progress.completed} dari {child.overall_progress.total_units} unit selesai
-        </p>
+        {child.latest_test && (
+          <div className="text-xs text-gray-600 mt-1">
+            Latest: {child.latest_test.SurahName || child.latest_test.UnitType} - {child.latest_test.Status}
+          </div>
+        )}
       </div>
 
       {/* Recent Status - SNAPSHOT VIEW (max 3) */}
       <div className="mb-4">
         <p className="text-sm font-medium mb-2">{t('parent.recentTests')}:</p>
         <div className="space-y-2">
-          {child.recent_status.slice(0, 3).map((status, index) => (
-            <div key={index} className="flex items-center gap-2 text-sm">
-              <span className="text-gray-600">{status.date}:</span>
-              <span className="font-medium flex-1">{status.unit}</span>
-              <Badge className={getStatusColor(status.status)}>
-                {getStatusLabel(status.status)}
+          {child.recent_tests.slice(0, 3).map((test) => (
+            <div key={test.ID} className="flex items-center gap-2 text-sm">
+              <span className="text-gray-600">{new Date(test.TestDate).toLocaleDateString('id-ID')}:</span>
+              <span className="font-medium flex-1">{test.SurahName || test.UnitType}</span>
+              <Badge className={getStatusColor(test.Status)}>
+                {getStatusLabel(test.Status)}
               </Badge>
             </div>
           ))}
+          {child.recent_tests.length === 0 && (
+            <div className="text-sm text-gray-500">Belum ada data hafalan</div>
+          )}
         </div>
       </div>
 

@@ -79,3 +79,53 @@ func (s *AuthService) Login(ctx context.Context, req *LoginRequest) (*LoginRespo
 func (s *AuthService) ValidateToken(tokenString string) (*auth.Claims, error) {
 	return s.jwtManager.Validate(tokenString)
 }
+
+// RegisterTeacherRequest represents a teacher registration request
+type RegisterTeacherRequest struct {
+	Email    string `json:"email" binding:"required,email"`
+	Password string `json:"password" binding:"required"`
+	FullName string `json:"full_name" binding:"required"`
+	Phone    string `json:"phone"`
+}
+
+// RegisterTeacher registers a new teacher
+func (s *AuthService) RegisterTeacher(ctx context.Context, req *RegisterTeacherRequest) (*UserResponse, error) {
+	// TODO: Implement teacher registration
+	// For now, return a placeholder response
+	return &UserResponse{
+		ID:    "0",
+		Email: req.Email,
+		Role:  "teacher",
+	}, nil
+}
+
+// RegisterParentRequest represents a parent registration request
+type RegisterParentRequest struct {
+	Email    string `json:"email" binding:"required,email"`
+	Password string `json:"password" binding:"required"`
+	FullName string `json:"full_name" binding:"required"`
+	Phone    string `json:"phone"`
+}
+
+// RegisterParent registers a new parent
+func (s *AuthService) RegisterParent(ctx context.Context, req *RegisterParentRequest) (*UserResponse, error) {
+	// TODO: Implement parent registration
+	// For now, return a placeholder response
+	return &UserResponse{
+		ID:    "0",
+		Email: req.Email,
+		Role:  "parent",
+	}, nil
+}
+
+// ChangePassword changes a user's password
+func (s *AuthService) ChangePassword(ctx context.Context, userID, currentPassword, newPassword string) error {
+	// TODO: Implement password change with proper bcrypt hashing
+	return nil
+}
+
+// ResetPassword resets a user's password to a default value
+func (s *AuthService) ResetPassword(ctx context.Context, userID string) error {
+	// TODO: Implement password reset
+	return nil
+}

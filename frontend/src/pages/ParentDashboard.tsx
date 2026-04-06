@@ -1,45 +1,54 @@
+import { useState, useEffect } from 'react'
 import { ChildProgressCard } from '@/components/parent/ChildProgressCard'
 import { MobileNav } from '@/components/common/MobileNav'
 import { useAuthStore } from '@/stores/authStore'
 import { useTranslation } from 'react-i18next'
+import { parentsApi } from '@/lib/api'
+import { Users, Baby, AlertCircle } from 'lucide-react'
+
+interface Child {
+  student: {
+    ID: string
+    Name: string
+    ClassName: string
+  }
+  recent_tests: Array<{
+    ID: number
+    UnitType: string
+    SurahName?: string
+    Status: string
+    Notes: string
+    TestDate: string
+  }>
+  total_tests: number
+  average_score: number
+  latest_test?: any
+}
 
 export function ParentDashboard() {
   const { t } = useTranslation()
   const { user, logout } = useAuthStore()
+  const [children, setChildren] = useState<Child[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
-  // Mock data - will fetch from API
-  const children = [
-    {
-      id: '1',
-      name: 'Ahmad Fauzi',
-      class_name: 'Kelas 6A',
-      overall_progress: {
-        percent: 40,
-        total_units: 114, // 30 juz
-        completed: 45
-      },
-      recent_status: [
-        { date: '2026-04-01', unit: 'Juz 30', status: 'fluent' },
-        { date: '2026-03-28', unit: 'An-Naba', status: 'good' },
-        { date: '2026-03-25', unit: 'Al-Baqarah 1-10', status: 'fluent' }
-      ]
-    },
-    {
-      id: '2',
-      name: 'Siti Aminah',
-      class_name: 'Kelas 6A',
-      overall_progress: {
-        percent: 25,
-        total_units: 114,
-        completed: 28
-      },
-      recent_status: [
-        { date: '2026-04-03', unit: 'Al-Fatihah', status: 'good' },
-        { date: '2026-03-30', unit: 'Juz 1', status: 'needs_improvement' },
-        { date: '2026-03-27', unit: 'Yasin', status: 'good' }
-      ]
+  useEffect(() => {
+    fetchChildren()
+  }, [])
+
+  const fetchChildren = async () => {
+    try {
+      setLoading(true)
+      setError(null)
+      const data = await parentsApi.getMyChildren()
+      setChildren(data)
+    } catch (err: any) {
+      console.error('Failed to fetch children:', err)
+      setError('Gagal memuat data anak')
+    } finally {
+      setLoading(false)
     }
-  ]
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -58,24 +67,90 @@ export function ParentDashboard() {
               onClick={logout}
               className="hidden lg:block px-4 py-2 border-2 border-border hover:bg-gray-50 min-h-[44px] min-w-[44px]"
             >
-              {t('auth.logout')}
+              Keluar
             </button>
             {/* Mobile menu button */}
-            <MobileNav onLogout={logout} userRole="parent" />
+            <MobileNav />
           </div>
         </div>
       </header>
 
-      {/* Main content - SNAPSHOT VIEW, NOT detailed analytics */}
+      {/* Main content */}
       <main className="container mx-auto py-6 px-4">
-        <h2 className="text-lg md:text-xl font-semibold mb-4">{t('parent.children')}</h2>
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+          <div className="border-2 border-border bg-white p-4">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 bg-primary text-white flex items-center justify-center">
+                <Baby size={24} />
+              </div>
+              <div>
+                <div className="text-2xl font-bold">{children.length}</div>
+                <div className="text-sm text-gray-600">Total Anak</div>
+              </div>
+            </div>
+          </div>
 
-        {/* STATUS SNAPSHOT - one card per child */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {children.map((child) => (
-            <ChildProgressCard key={child.id} child={child} />
-          ))}
+          <div className="border-2 border-border bg-white p-4">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 bg-green-600 text-white flex items-center justify-center">
+                <Users size={24} />
+              </div>
+              <div>
+                <div className="text-2xl font-bold">
+                  {children.length > 0
+                    ? Math.round(children.reduce((sum, child) => sum + (child.total_tests || 0), 0) / children.length)
+                    : 0}
+                </div>
+                <div className="text-sm text-gray-600">Rata-rata Total Tes</div>
+              </div>
+            </div>
+          </div>
+
+          <div className="border-2 border-border bg-white p-4">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 bg-blue-600 text-white flex items-center justify-center">
+                <AlertCircle size={24} />
+              </div>
+              <div>
+                <div className="text-2xl font-bold">
+                  {children.reduce((sum, child) => sum + (child.total_tests || 0), 0)}
+                </div>
+                <div className="text-sm text-gray-600">Total Tes Semua Anak</div>
+              </div>
+            </div>
+          </div>
         </div>
+
+        {/* Children List */}
+        {loading ? (
+          <div className="text-center py-12">
+            <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-gray-300 border-t-primary"></div>
+            <p className="mt-4 text-gray-600">Memuat data...</p>
+          </div>
+        ) : error ? (
+          <div className="border-2 border-red-200 bg-red-50 p-6 text-center">
+            <p className="text-red-800 font-medium">{error}</p>
+            <button
+              onClick={fetchChildren}
+              className="mt-4 px-4 py-2 border-2 border-red-300 text-red-700 hover:bg-red-100 min-h-[44px] min-w-[44px]"
+            >
+              Coba Lagi
+            </button>
+          </div>
+        ) : children.length === 0 ? (
+          <div className="border-2 border-border bg-white p-6 text-center">
+            <Baby size={48} className="mx-auto text-gray-400 mb-4" />
+            <p className="text-gray-500">Belum ada data anak</p>
+            <p className="text-sm text-gray-400 mt-2">Silakan hubungi admin untuk penambahan data anak</p>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {children.map((child) => (
+              <ChildProgressCard key={child.student.ID} child={child} />
+            ))}
+          </div>
+        )}
       </main>
     </div>
   )
