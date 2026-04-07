@@ -177,11 +177,22 @@ func (s *Server) getMemorizations(c *gin.Context) {
 		mems, err = s.memorizationService.GetByTeacherID(c.Request.Context(), userID)
 	} else if role == "parent" {
 		// Parents can only see their children's memorizations
-		// TODO: Implement parent-child relationship check
-		c.JSON(http.StatusNotImplemented, gin.H{
-			"error": "Parent view not yet implemented",
-		})
-		return
+		// Get all children's progress (includes parent-child relationship validation)
+		childProgress, err := s.parentService.GetChildrenProgressByUserID(c.Request.Context(), userID)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"error": "Failed to retrieve children's memorizations",
+			})
+			return
+		}
+
+		// Flatten all memorizations from all children into a single array
+		allMems := []repository.MemorizationWithDetails{}
+		for _, child := range childProgress {
+			allMems = append(allMems, child.RecentTests...)
+		}
+
+		mems = allMems
 	} else {
 		// Admins can see all memorizations
 		c.JSON(http.StatusBadRequest, gin.H{

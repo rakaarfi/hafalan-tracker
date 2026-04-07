@@ -4,6 +4,8 @@ import (
 	"context"
 	"errors"
 
+	"golang.org/x/crypto/bcrypt"
+
 	"github.com/rakaarfi/hafalan-tracker/backend/internal/repository"
 )
 
@@ -77,8 +79,14 @@ func (s *SettingsService) ResetPassword(ctx context.Context, req *ResetPasswordR
 		return errors.New("user not found")
 	}
 
-	// Update password
-	err = s.userRepo.UpdatePassword(ctx, req.UserID, req.Password)
+	// Hash new password using bcrypt
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
+	if err != nil {
+		return errors.New("failed to hash new password")
+	}
+
+	// Update password with hashed password
+	err = s.userRepo.UpdatePassword(ctx, req.UserID, string(hashedPassword))
 	if err != nil {
 		return errors.New("failed to update password")
 	}
@@ -103,14 +111,19 @@ func (s *SettingsService) ChangePassword(ctx context.Context, userID string, req
 		return errors.New("user not found")
 	}
 
-	// Verify current password
-	// In production, you should compare hashed passwords
-	if user.Password != req.CurrentPassword {
+	// Verify current password using bcrypt
+	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(req.CurrentPassword)); err != nil {
 		return errors.New("current password is incorrect")
 	}
 
-	// Update password
-	err = s.userRepo.UpdatePassword(ctx, userID, req.NewPassword)
+	// Hash new password using bcrypt
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(req.NewPassword), bcrypt.DefaultCost)
+	if err != nil {
+		return errors.New("failed to hash new password")
+	}
+
+	// Update password with hashed password
+	err = s.userRepo.UpdatePassword(ctx, userID, string(hashedPassword))
 	if err != nil {
 		return errors.New("failed to update password")
 	}

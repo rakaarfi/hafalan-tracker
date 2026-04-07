@@ -95,7 +95,7 @@ func (s *ParentService) getChildProgress(ctx context.Context, studentID string) 
 	return &ChildProgress{
 		RecentTests:  recentTests,
 		TotalTests:   totalTests,
-		AverageScore: 0, // TODO: Calculate based on status
+		AverageScore: calculateAverageScore(recentTests),
 		LatestTest:   latestTest,
 	}, nil
 }
@@ -274,4 +274,36 @@ func (s *ParentService) Delete(ctx context.Context, userID string) error {
 	}
 
 	return nil
+}
+
+// calculateAverageScore calculates average score from memorization statuses
+func calculateAverageScore(tests []repository.MemorizationWithDetails) float64 {
+	if len(tests) == 0 {
+		return 0
+	}
+
+	// Score mapping for statuses
+	scoreMap := map[string]float64{
+		"fluent":             100,
+		"good":               75,
+		"needs_improvement":  50,
+		"in_progress":        25,
+		"completed":          100,
+	}
+
+	total := 0.0
+	count := 0
+
+	for _, test := range tests {
+		if score, ok := scoreMap[test.Status]; ok {
+			total += score
+			count++
+		}
+	}
+
+	if count == 0 {
+		return 0
+	}
+
+	return total / float64(count)
 }
