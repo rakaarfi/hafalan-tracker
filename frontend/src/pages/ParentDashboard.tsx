@@ -145,9 +145,9 @@ export function ParentDashboard() {
             <p className="text-sm text-gray-400 mt-2">Silakan hubungi admin untuk penambahan data anak</p>
           </div>
         ) : (
-          <div className="space-y-4">
+          <div className="flex flex-col space-y-4">
             {children.map((child) => (
-              <ChildProgressCard key={child.student.ID} child={child} />
+              <ChildProgressCard key={child.student.id} child={child} />
             ))}
           </div>
         )}
