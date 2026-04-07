@@ -3,16 +3,8 @@ import { StudentList } from '@/components/teacher/StudentList'
 import { MobileNav } from '@/components/common/MobileNav'
 import { useAuthStore } from '@/stores/authStore'
 import { useTranslation } from 'react-i18next'
-import { teacherApi } from '@/lib/api'
+import { teacherApi, Student } from '@/lib/api'
 import { GraduationCap, Users } from 'lucide-react'
-
-interface Student {
-  id: string
-  name: string
-  class_name: string
-  last_test_date?: string
-  last_status?: string
-}
 
 export function TeacherDashboard() {
   const { t } = useTranslation()
