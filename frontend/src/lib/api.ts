@@ -75,7 +75,9 @@ export interface Student {
   name: string
   class_id: string
   class_name?: string
-  parent_1_id: string
+  is_active: boolean
+  created_at: string
+  parent_1_id?: string
   parent_1_name?: string
   parent_2_id?: string
   parent_2_name?: string

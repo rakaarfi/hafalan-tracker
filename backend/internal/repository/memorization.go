@@ -19,30 +19,30 @@ func NewMemorizationRepository(db *sqlx.DB) *MemorizationRepository {
 
 // Memorization represents a hafalan memorization record
 type Memorization struct {
-	ID              int     `db:"id"`
-	StudentID       int     `db:"student_id"`
-	TeacherID       int     `db:"teacher_id"`
-	SurahID         *int    `db:"surah_id"`
-	JuzID           *int    `db:"juz_id"`
-	UnitType        string  `db:"unit_type"` // surah, juz, page
-	PageStart       *int    `db:"page_start"`
-	PageEnd         *int    `db:"page_end"`
-	Status          string  `db:"status"`
-	Notes           string  `db:"notes"`
-	TestDate        string  `db:"test_date"`
-	IsActive        bool    `db:"is_active"`
-	CreatedAt       string  `db:"created_at"`
-	UpdatedAt       string  `db:"updated_at"`
+	ID              int     `db:"id" json:"id"`
+	StudentID       int     `db:"student_id" json:"student_id"`
+	TeacherID       int     `db:"teacher_id" json:"teacher_id"`
+	SurahID         *int    `db:"surah_id" json:"surah_id"`
+	JuzID           *int    `db:"juz_id" json:"juz_id"`
+	UnitType        string  `db:"unit_type" json:"unit_type"` // surah, juz, page
+	PageStart       *int    `db:"page_start" json:"page_start"`
+	PageEnd         *int    `db:"page_end" json:"page_end"`
+	Status          string  `db:"status" json:"status"`
+	Notes           string  `db:"notes" json:"notes"`
+	TestDate        string  `db:"test_date" json:"test_date"`
+	IsActive        bool    `db:"is_active" json:"is_active"`
+	CreatedAt       string  `db:"created_at" json:"created_at"`
+	UpdatedAt       string  `db:"updated_at" json:"updated_at"`
 }
 
 // MemorizationWithDetails represents a memorization with related data
 type MemorizationWithDetails struct {
 	Memorization
-	StudentName     string  `db:"student_name"`
-	TeacherName     string  `db:"teacher_name"`
-	SurahNumber     *int    `db:"surah_number"`
-	SurahName       *string `db:"surah_name"`
-	JuzNumber       *int    `db:"juz_number"`
+	StudentName     string  `db:"student_name" json:"student_name"`
+	TeacherName     string  `db:"teacher_name" json:"teacher_name"`
+	SurahNumber     *int    `db:"surah_number" json:"surah_number"`
+	SurahName       *string `db:"surah_name" json:"surah_name"`
+	JuzNumber       *int    `db:"juz_number" json:"juz_number"`
 }
 
 // Create inserts a new memorization record

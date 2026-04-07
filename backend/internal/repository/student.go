@@ -19,17 +19,17 @@ func NewStudentRepository(db *sqlx.DB) *StudentRepository {
 
 // Student represents a student in the system
 type Student struct {
-	ID        string `db:"id"`
-	Name      string `db:"name"`
-	ClassID   string `db:"class_id"`
-	IsActive  bool   `db:"is_active"`
-	CreatedAt string `db:"created_at"`
+	ID        string `db:"id" json:"id"`
+	Name      string `db:"name" json:"name"`
+	ClassID   string `db:"class_id" json:"class_id"`
+	IsActive  bool   `db:"is_active" json:"is_active"`
+	CreatedAt string `db:"created_at" json:"created_at"`
 }
 
 // StudentWithClass represents a student with class information
 type StudentWithClass struct {
 	Student
-	ClassName string `db:"class_name"`
+	ClassName string `db:"class_name" json:"class_name"`
 }
 
 // GetByID retrieves a student by ID
