@@ -62,6 +62,13 @@ export function ParentDashboard() {
             </p>
           </div>
           <div className="flex items-center gap-2">
+            {/* Desktop profile button */}
+            <a
+              href="/profile"
+              className="hidden lg:block px-4 py-2 border-2 border-border hover:bg-gray-50 min-h-[44px] min-w-[44px]"
+            >
+              Profile
+            </a>
             {/* Desktop logout button */}
             <button
               onClick={logout}
@@ -70,7 +77,7 @@ export function ParentDashboard() {
               Keluar
             </button>
             {/* Mobile menu button */}
-            <MobileNav />
+            <MobileNav userRole={user?.role} onLogout={logout} />
           </div>
         </div>
       </header>
