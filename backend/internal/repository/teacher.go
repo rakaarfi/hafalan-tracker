@@ -31,6 +31,13 @@ type TeacherWithUser struct {
 	Email string `db:"email"`
 }
 
+// TeacherWithClasses represents a teacher with class information
+type TeacherWithClasses struct {
+	TeacherWithUser
+	HomeroomClasses  []string `db:"homeroom_classes"`  // Classes where teacher is homeroom
+	QuranTeacherClasses []string `db:"quran_classes"` // Classes where teacher is Quran teacher
+}
+
 // GetByUserID retrieves a teacher by user ID
 func (r *TeacherRepository) GetByUserID(ctx context.Context, userID string) (*TeacherWithUser, error) {
 	query := `
@@ -77,6 +84,73 @@ func (r *TeacherRepository) GetAll(ctx context.Context, search string) ([]Teache
 	err := r.db.SelectContext(ctx, &teachers, query, args...)
 	if err != nil {
 		return nil, err
+	}
+
+	return teachers, nil
+}
+
+// GetAllWithClasses retrieves all teachers with their assigned classes
+func (r *TeacherRepository) GetAllWithClasses(ctx context.Context, search string) ([]TeacherWithClasses, error) {
+	// First, get all teachers
+	query := `
+		SELECT t.user_id, t.full_name, t.phone, t.created_at, u.email
+		FROM teachers t
+		JOIN users u ON t.user_id = u.id
+	`
+
+	args := []interface{}{}
+	if search != "" {
+		query += " WHERE t.full_name ILIKE $1 OR u.email ILIKE $1"
+		args = append(args, "%"+search+"%")
+	}
+
+	query += " ORDER BY t.full_name"
+
+	rows, err := r.db.QueryContext(ctx, query, args...)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var teachers []TeacherWithClasses
+	for rows.Next() {
+		var t TeacherWithClasses
+		if err := rows.Scan(&t.UserID, &t.FullName, &t.Phone, &t.CreatedAt, &t.Email); err != nil {
+			return nil, err
+		}
+		teachers = append(teachers, t)
+	}
+
+	// Now, get class information for each teacher
+	for i := range teachers {
+		// Get homeroom classes
+		homeroomQuery := `
+			SELECT c.name
+			FROM classes c
+			WHERE c.homeroom_teacher_id = $1
+			ORDER BY c.name
+		`
+		var homeroomClasses []string
+		err := r.db.SelectContext(ctx, &homeroomClasses, homeroomQuery, teachers[i].UserID)
+		if err != nil {
+			return nil, err
+		}
+		teachers[i].HomeroomClasses = homeroomClasses
+
+		// Get Quran teacher classes
+		quranQuery := `
+			SELECT DISTINCT c.name
+			FROM classes c
+			INNER JOIN class_quran_teachers cqt ON c.id = cqt.class_id
+			WHERE cqt.quran_teacher_id = $1 AND cqt.is_active = true
+			ORDER BY c.name
+		`
+		var quranClasses []string
+		err = r.db.SelectContext(ctx, &quranClasses, quranQuery, teachers[i].UserID)
+		if err != nil {
+			return nil, err
+		}
+		teachers[i].QuranTeacherClasses = quranClasses
 	}
 
 	return teachers, nil

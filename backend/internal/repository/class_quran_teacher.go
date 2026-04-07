@@ -148,6 +148,21 @@ func (r *ClassQuranTeacherRepository) EndAssignment(ctx context.Context, id int,
 	return err
 }
 
+// EndActiveAssignmentForClassAndYear ends the active assignment for a specific class and academic year
+func (r *ClassQuranTeacherRepository) EndActiveAssignmentForClassAndYear(ctx context.Context, classID int, academicYear string, notes *string) error {
+	query := `
+		UPDATE class_quran_teachers
+		SET is_active = false,
+		    end_date = CURRENT_DATE,
+		    notes = $3,
+		    updated_at = NOW()
+		WHERE class_id = $1 AND academic_year = $2 AND is_active = true
+	`
+
+	_, err := r.db.ExecContext(ctx, query, classID, academicYear, notes)
+	return err
+}
+
 // UpdateNotes updates the notes for an assignment
 func (r *ClassQuranTeacherRepository) UpdateNotes(ctx context.Context, id int, notes string) error {
 	query := `

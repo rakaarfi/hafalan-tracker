@@ -1,8 +1,11 @@
 import { useState, useEffect } from 'react'
+import { Link } from 'react-router-dom'
 import { Plus, Search, Edit, Trash2, GraduationCap, Users } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
+import { ConfirmDialog } from '@/components/ui/confirm-dialog'
+import { useToast } from '@/hooks/use-toast'
 import { classesApi } from '@/lib/api'
 
 interface Class {
@@ -22,6 +25,10 @@ export function ClassListPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [deleting, setDeleting] = useState<string | null>(null)
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [pendingDeleteClass, setPendingDeleteClass] = useState<Class | null>(null)
+
+  const { toast } = useToast()
 
   useEffect(() => {
     fetchClasses()
@@ -53,20 +60,33 @@ export function ClassListPage() {
 
   const filteredClasses = classes
 
-  const handleDelete = async (id: string) => {
-    if (!confirm('Yakin ingin menghapus kelas ini?')) {
-      return
-    }
+  const handleDelete = (cls: Class) => {
+    setPendingDeleteClass(cls)
+    setDeleteDialogOpen(true)
+  }
+
+  const executeDelete = async () => {
+    if (!pendingDeleteClass) return
 
     try {
-      setDeleting(id)
-      await classesApi.delete(id)
-      setClasses(classes.filter(c => c.id !== id))
-      alert('Kelas berhasil dihapus')
+      setDeleting(pendingDeleteClass.id)
+      await classesApi.delete(pendingDeleteClass.id)
+      setClasses(classes.filter(c => c.id !== pendingDeleteClass.id))
+      toast({
+        title: "Berhasil",
+        description: "Kelas berhasil dihapus",
+      })
     } catch (error: any) {
-      alert('Gagal menghapus kelas: ' + (error.response?.data?.error || 'Unknown error'))
+      console.error('Delete error:', error)
+      toast({
+        variant: "destructive",
+        title: "Gagal",
+        description: error.response?.data?.error || error.message || "Gagal menghapus kelas",
+      })
     } finally {
       setDeleting(null)
+      setDeleteDialogOpen(false)
+      setPendingDeleteClass(null)
     }
   }
 
@@ -87,13 +107,14 @@ export function ClassListPage() {
           <h1 className="text-xl md:text-2xl font-bold">Data Kelas</h1>
           <p className="text-gray-600">Kelola kelas dan wali kelas</p>
         </div>
-        <Button
-          onClick={() => window.location.href = '/admin/classes/new'}
-          className="min-h-[44px] min-w-[44px] w-full sm:w-auto"
-        >
-          <Plus size={20} className="mr-2 inline" />
-          Tambah Kelas
-        </Button>
+        <Link to="/admin/classes/new">
+          <Button
+            className="min-h-[44px] min-w-[44px] w-full sm:w-auto"
+          >
+            <Plus size={20} className="mr-2 inline" />
+            Tambah Kelas
+          </Button>
+        </Link>
       </div>
 
       {/* Error State */}
@@ -139,7 +160,7 @@ export function ClassListPage() {
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex items-center gap-2 md:gap-3">
                     <div className="w-10 h-10 md:w-12 md:h-12 bg-primary text-white flex items-center justify-center flex-shrink-0">
-                      <GraduationCap size={20} md:size={24} />
+                      <GraduationCap size={20} className="md:size-[24px]" />
                     </div>
                     <div>
                       <h3 className="font-semibold text-base md:text-lg">{cls.name}</h3>
@@ -150,7 +171,7 @@ export function ClassListPage() {
                 {/* Info */}
                 <div className="space-y-2 mb-4">
                   <div className="flex items-center gap-2 text-xs md:text-sm">
-                    <Users size={14} md:size={16} className="text-gray-600" />
+                    <Users size={14} className="md:size-[16px] text-gray-600" />
                     <span>{cls.students_count} murid</span>
                   </div>
                   {cls.teacher_name && (
@@ -163,20 +184,19 @@ export function ClassListPage() {
 
                 {/* Actions */}
                 <div className="flex gap-2">
-                  <button
-                    onClick={() => window.location.href = `/admin/classes/${cls.id}/edit`}
-                    disabled={deleting === cls.id}
+                  <Link
+                    to={`/admin/classes/${cls.id}/edit`}
                     className="flex-1 p-2 border-2 border-yellow-200 hover:bg-yellow-50 min-h-[36px] flex items-center justify-center gap-1 text-xs md:text-sm"
                   >
-                    <Edit size={14} md:size={16} />
+                    <Edit size={14} className="md:size-[16px]" />
                     Edit
-                  </button>
+                  </Link>
                   <button
-                    onClick={() => handleDelete(cls.id)}
+                    onClick={() => handleDelete(cls)}
                     disabled={deleting === cls.id}
                     className="flex-1 p-2 border-2 border-red-200 hover:bg-red-50 min-h-[36px] flex items-center justify-center gap-1 disabled:opacity-50 text-xs md:text-sm"
                   >
-                    <Trash2 size={14} md:size={16} />
+                    <Trash2 size={14} className="md:size-[16px]" />
                     Hapus
                   </button>
                 </div>
@@ -199,6 +219,23 @@ export function ClassListPage() {
           <div className="text-sm text-gray-600">Total Murid</div>
         </div>
       </div>
+
+      {/* Delete Confirmation Dialog */}
+      <ConfirmDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        title="Hapus Kelas?"
+        description={
+          pendingDeleteClass
+            ? `Apakah Anda yakin ingin menghapus kelas ${pendingDeleteClass.name}?`
+            : 'Hapus kelas?'
+        }
+        confirmLabel="Ya, Hapus"
+        cancelLabel="Batal"
+        variant="danger"
+        onConfirm={executeDelete}
+        isLoading={deleting !== null}
+      />
     </div>
   )
 }

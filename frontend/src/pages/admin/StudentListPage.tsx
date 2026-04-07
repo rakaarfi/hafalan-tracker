@@ -1,9 +1,12 @@
 import { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
+import { Link } from 'react-router-dom'
 import { Plus, Search, Edit, Trash2, Eye } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
+import { ConfirmDialog } from '@/components/ui/confirm-dialog'
+import { useToast } from '@/hooks/use-toast'
 import { studentsApi } from '@/lib/api'
 
 interface Student {
@@ -22,6 +25,10 @@ export function StudentListPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [deleting, setDeleting] = useState<string | null>(null)
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [pendingDeleteStudent, setPendingDeleteStudent] = useState<Student | null>(null)
+
+  const { toast } = useToast()
 
   useEffect(() => {
     fetchStudents()
@@ -54,20 +61,33 @@ export function StudentListPage() {
 
   const filteredStudents = students
 
-  const handleDelete = async (id: string) => {
-    if (!confirm('Yakin ingin menghapus murid ini? Semua data hafalan juga akan dihapus.')) {
-      return
-    }
+  const handleDelete = (student: Student) => {
+    setPendingDeleteStudent(student)
+    setDeleteDialogOpen(true)
+  }
+
+  const executeDelete = async () => {
+    if (!pendingDeleteStudent) return
 
     try {
-      setDeleting(id)
-      await studentsApi.delete(id)
-      setStudents(students.filter(s => s.id !== id))
-      alert('Murid berhasil dihapus')
+      setDeleting(pendingDeleteStudent.ID)
+      await studentsApi.delete(pendingDeleteStudent.ID)
+      setStudents(students.filter(s => s.ID !== pendingDeleteStudent.ID))
+      toast({
+        title: "Berhasil",
+        description: "Murid berhasil dihapus",
+      })
     } catch (error: any) {
-      alert('Gagal menghapus murid: ' + (error.response?.data?.error || 'Unknown error'))
+      console.error('Delete error:', error)
+      toast({
+        variant: "destructive",
+        title: "Gagal",
+        description: error.response?.data?.error || error.message || "Gagal menghapus murid",
+      })
     } finally {
       setDeleting(null)
+      setDeleteDialogOpen(false)
+      setPendingDeleteStudent(null)
     }
   }
 
@@ -88,13 +108,14 @@ export function StudentListPage() {
           <h1 className="text-xl md:text-2xl font-bold">Data Murid</h1>
           <p className="text-gray-600">Kelola data murid sekolah</p>
         </div>
-        <Button
-          onClick={() => window.location.href = '/admin/students/new'}
-          className="min-h-[44px] min-w-[44px] w-full sm:w-auto"
-        >
-          <Plus size={20} className="mr-2 inline" />
-          Tambah Murid
-        </Button>
+        <Link to="/admin/students/new">
+          <Button
+            className="min-h-[44px] min-w-[44px] w-full sm:w-auto"
+          >
+            <Plus size={20} className="mr-2 inline" />
+            Tambah Murid
+          </Button>
+        </Link>
       </div>
 
       {/* Error State */}
@@ -161,22 +182,24 @@ export function StudentListPage() {
                   </td>
                   <td className="p-2 md:p-4">
                     <div className="flex justify-center gap-1 md:gap-2">
+                      <Link to={`/admin/students/${student.ID}`} className="inline-block">
+                        <button
+                          className="p-1.5 md:p-2 border-2 border-blue-200 hover:bg-blue-50 min-h-[36px] min-w-[36px]"
+                          title="Lihat"
+                        >
+                          <Eye size={14} md:size={16} />
+                        </button>
+                      </Link>
+                      <Link to={`/admin/students/${student.ID}/edit`} className="inline-block">
+                        <button
+                          className="p-1.5 md:p-2 border-2 border-yellow-200 hover:bg-yellow-50 min-h-[36px] min-w-[36px]"
+                          title="Edit"
+                        >
+                          <Edit size={14} md:size={16} />
+                        </button>
+                      </Link>
                       <button
-                        onClick={() => window.location.href = `/admin/students/${student.ID}`}
-                        className="p-1.5 md:p-2 border-2 border-blue-200 hover:bg-blue-50 min-h-[36px] min-w-[36px]"
-                        title="Lihat"
-                      >
-                        <Eye size={14} md:size={16} />
-                      </button>
-                      <button
-                        onClick={() => window.location.href = `/admin/students/${student.ID}/edit`}
-                        className="p-1.5 md:p-2 border-2 border-yellow-200 hover:bg-yellow-50 min-h-[36px] min-w-[36px]"
-                        title="Edit"
-                      >
-                        <Edit size={14} md:size={16} />
-                      </button>
-                      <button
-                        onClick={() => handleDelete(student.ID)}
+                        onClick={() => handleDelete(student)}
                         disabled={deleting === student.ID}
                         className="p-1.5 md:p-2 border-2 border-red-200 hover:bg-red-50 min-h-[36px] min-w-[36px] disabled:opacity-50"
                         title="Hapus"
@@ -199,6 +222,23 @@ export function StudentListPage() {
           <div className="text-sm text-gray-600">Total Murid</div>
         </div>
       </div>
+
+      {/* Delete Confirmation Dialog */}
+      <ConfirmDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        title="Hapus Murid?"
+        description={
+          pendingDeleteStudent
+            ? `Apakah Anda yakin ingin menghapus murid ${pendingDeleteStudent.Name}?\n\nSemua data hafalan juga akan dihapus.`
+            : 'Hapus murid?'
+        }
+        confirmLabel="Ya, Hapus"
+        cancelLabel="Batal"
+        variant="danger"
+        onConfirm={executeDelete}
+        isLoading={deleting !== null}
+      />
     </div>
   )
 }
