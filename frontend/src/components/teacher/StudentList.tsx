@@ -18,7 +18,7 @@ export function StudentList({ students }: { students: Student[] }) {
   const [search, setSearch] = useState('')
 
   const filteredStudents = students.filter(student =>
-    student.Name.toLowerCase().includes(search.toLowerCase())
+    student.Name?.toLowerCase().includes(search.toLowerCase())
   )
 
   return (
