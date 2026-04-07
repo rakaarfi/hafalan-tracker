@@ -1,8 +1,11 @@
 import { useState, useEffect } from 'react'
+import { Link } from 'react-router-dom'
 import { Plus, Search, Edit, Trash2, GraduationCap } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
+import { ConfirmDialog } from '@/components/ui/confirm-dialog'
+import { useToast } from '@/hooks/use-toast'
 import { teachersApi } from '@/lib/api'
 
 interface Teacher {
@@ -11,6 +14,8 @@ interface Teacher {
   Phone: string
   Email: string
   CreatedAt: string
+  HomeroomClasses?: string[]
+  QuranTeacherClasses?: string[]
 }
 
 export function TeacherListPage() {
@@ -19,6 +24,10 @@ export function TeacherListPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [deleting, setDeleting] = useState<string | null>(null)
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [pendingDeleteTeacher, setPendingDeleteTeacher] = useState<Teacher | null>(null)
+
+  const { toast } = useToast()
 
   useEffect(() => {
     fetchTeachers()
@@ -50,20 +59,33 @@ export function TeacherListPage() {
 
   const filteredTeachers = teachers
 
-  const handleDelete = async (id: string) => {
-    if (!confirm('Yakin ingin menghapus guru ini?')) {
-      return
-    }
+  const handleDelete = (teacher: Teacher) => {
+    setPendingDeleteTeacher(teacher)
+    setDeleteDialogOpen(true)
+  }
+
+  const executeDelete = async () => {
+    if (!pendingDeleteTeacher) return
 
     try {
-      setDeleting(id)
-      await teachersApi.delete(id)
-      setTeachers(teachers.filter(t => t.UserID !== id))
-      alert('Guru berhasil dihapus')
+      setDeleting(pendingDeleteTeacher.UserID)
+      await teachersApi.delete(pendingDeleteTeacher.UserID)
+      setTeachers(teachers.filter(t => t.UserID !== pendingDeleteTeacher.UserID))
+      toast({
+        title: "Berhasil",
+        description: "Guru berhasil dihapus",
+      })
     } catch (error: any) {
-      alert('Gagal menghapus guru: ' + (error.response?.data?.error || 'Unknown error'))
+      console.error('Delete error:', error)
+      toast({
+        variant: "destructive",
+        title: "Gagal",
+        description: error.response?.data?.error || error.message || "Gagal menghapus guru",
+      })
     } finally {
       setDeleting(null)
+      setDeleteDialogOpen(false)
+      setPendingDeleteTeacher(null)
     }
   }
 
@@ -84,13 +106,14 @@ export function TeacherListPage() {
           <h1 className="text-xl md:text-2xl font-bold">Data Guru</h1>
           <p className="text-gray-600">Kelola data guru dan wali kelas</p>
         </div>
-        <Button
-          onClick={() => window.location.href = '/admin/teachers/new'}
-          className="min-h-[44px] min-w-[44px] w-full sm:w-auto"
-        >
-          <Plus size={20} className="mr-2 inline" />
-          Tambah Guru
-        </Button>
+        <Link to="/admin/teachers/new">
+          <Button
+            className="min-h-[44px] min-w-[44px] w-full sm:w-auto"
+          >
+            <Plus size={20} className="mr-2 inline" />
+            Tambah Guru
+          </Button>
+        </Link>
       </div>
 
       {/* Error State */}
@@ -126,7 +149,7 @@ export function TeacherListPage() {
             <tr>
               <th className="text-left p-2 md:p-4 border-r-2 border-border text-sm md:text-base">
                 <div className="flex items-center gap-2">
-                  <GraduationCap size={16} md:size={18} />
+                  <GraduationCap size={16} className="md:size-[18px]" />
                   Nama
                 </div>
               </th>
@@ -156,25 +179,61 @@ export function TeacherListPage() {
                     {teacher.Phone || '-'}
                   </td>
                   <td className="p-2 md:p-4 border-r-2 border-border text-sm md:text-sm">
-                    -
+                    <div className="flex flex-col gap-1">
+                      {(() => {
+                        const homeroomSet = new Set(teacher.HomeroomClasses || []);
+                        const quranSet = new Set(teacher.QuranTeacherClasses || []);
+                        const allClasses = new Set([...homeroomSet, ...quranSet]);
+
+                        if (allClasses.size === 0) return '-';
+
+                        return Array.from(allClasses).map((className) => {
+                          const isHomeroom = homeroomSet.has(className);
+                          const isQuran = quranSet.has(className);
+
+                          let badgeClass = '';
+                          let title = '';
+
+                          if (isHomeroom && isQuran) {
+                            badgeClass = 'px-2 py-0.5 bg-purple-100 text-purple-800 rounded text-xs';
+                            title = 'Homeroom & Quran Teacher';
+                          } else if (isHomeroom) {
+                            badgeClass = 'px-2 py-0.5 bg-blue-100 text-blue-800 rounded text-xs';
+                            title = 'Homeroom Teacher';
+                          } else {
+                            badgeClass = 'px-2 py-0.5 bg-green-100 text-green-800 rounded text-xs';
+                            title = 'Quran Teacher';
+                          }
+
+                          return (
+                            <span
+                              key={className}
+                              className={badgeClass}
+                              title={title}
+                            >
+                              {className}
+                            </span>
+                          );
+                        });
+                      })()}
+                    </div>
                   </td>
                   <td className="p-2 md:p-4">
                     <div className="flex justify-center gap-1 md:gap-2">
-                      <button
-                        onClick={() => window.location.href = `/admin/teachers/${teacher.UserID}/edit`}
-                        disabled={deleting === teacher.UserID}
-                        className="p-1.5 md:p-2 border-2 border-yellow-200 hover:bg-yellow-50 min-h-[36px] min-w-[36px]"
+                      <Link
+                        to={`/admin/teachers/${teacher.UserID}/edit`}
+                        className="p-1.5 md:p-2 border-2 border-yellow-200 hover:bg-yellow-50 min-h-[36px] min-w-[36px] inline-block"
                         title="Edit"
                       >
-                        <Edit size={14} md:size={16} />
-                      </button>
+                        <Edit size={14} className="md:size-[16px]" />
+                      </Link>
                       <button
-                        onClick={() => handleDelete(teacher.UserID)}
+                        onClick={() => handleDelete(teacher)}
                         disabled={deleting === teacher.UserID}
                         className="p-1.5 md:p-2 border-2 border-red-200 hover:bg-red-50 min-h-[36px] min-w-[36px] disabled:opacity-50"
                         title="Hapus"
                       >
-                        <Trash2 size={14} md:size={16} />
+                        <Trash2 size={14} className="md:size-[16px]" />
                       </button>
                     </div>
                   </td>
@@ -192,6 +251,23 @@ export function TeacherListPage() {
           <div className="text-sm text-gray-600">Total Guru</div>
         </div>
       </div>
+
+      {/* Delete Confirmation Dialog */}
+      <ConfirmDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        title="Hapus Guru?"
+        description={
+          pendingDeleteTeacher
+            ? `Apakah Anda yakin ingin menghapus guru ${pendingDeleteTeacher.FullName}?`
+            : 'Hapus guru?'
+        }
+        confirmLabel="Ya, Hapus"
+        cancelLabel="Batal"
+        variant="danger"
+        onConfirm={executeDelete}
+        isLoading={deleting !== null}
+      />
     </div>
   )
 }

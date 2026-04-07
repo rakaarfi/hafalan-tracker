@@ -95,6 +95,8 @@ export interface Teacher {
   Phone: string
   Email: string
   CreatedAt: string
+  HomeroomClasses?: string[]
+  QuranTeacherClasses?: string[]
 }
 
 export interface Parent {
@@ -114,6 +116,18 @@ export interface Class {
   students_count: number
   created_at: string
   updated_at: string
+}
+
+export interface QuranTeacherAssignment {
+  id: number
+  class_id: number
+  quran_teacher_id: number
+  quran_teacher_name: string
+  academic_year: string
+  start_date: string
+  end_date: string | null
+  is_active: boolean
+  notes: string | null
 }
 
 export interface Memorization {
@@ -287,6 +301,36 @@ export const classesApi = {
 
   delete: async (id: string): Promise<void> => {
     await api.delete(`/classes/${id}`)
+  },
+
+  // Quran teacher assignments
+  getQuranTeachers: async (id: string): Promise<QuranTeacherAssignment[]> => {
+    const response = await api.get<QuranTeacherAssignment[]>(`/classes/${id}/quran-teachers`)
+    return response.data
+  },
+
+  assignQuranTeacher: async (id: string, data: {
+    quran_teacher_id: number
+    academic_year: string
+    notes?: string
+  }): Promise<QuranTeacherAssignment> => {
+    const response = await api.post<QuranTeacherAssignment>(`/classes/${id}/quran-teachers`, data)
+    return response.data
+  },
+
+  updateQuranTeacherAssignment: async (id: string, assignmentId: string, data: {
+    notes?: string
+  }): Promise<void> => {
+    await api.put(`/classes/${id}/quran-teachers/${assignmentId}`, data)
+  },
+
+  endQuranTeacherAssignment: async (id: string, assignmentId: string, notes?: string): Promise<void> => {
+    await api.delete(`/classes/${id}/quran-teachers/${assignmentId}`, {
+      data: { notes },
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    })
   },
 }
 

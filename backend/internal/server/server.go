@@ -166,6 +166,12 @@ func (s *Server) setupRoutes() {
 			protected.PUT("/classes/:id", s.updateClass)
 			protected.DELETE("/classes/:id", s.deleteClass)
 
+			// Quran teacher assignment routes
+			protected.GET("/classes/:id/quran-teachers", s.getClassQuranTeachers)
+			protected.POST("/classes/:id/quran-teachers", s.assignQuranTeacherToClass)
+			protected.PUT("/classes/:id/quran-teachers/:assignmentId", s.updateQuranTeacherAssignment)
+			protected.DELETE("/classes/:id/quran-teachers/:assignmentId", s.endQuranTeacherAssignment)
+
 			// Dashboard routes
 			protected.GET("/dashboard/stats", s.getDashboardStats)
 

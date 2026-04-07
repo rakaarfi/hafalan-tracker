@@ -1,8 +1,11 @@
 import { useState, useEffect } from 'react'
+import { Link } from 'react-router-dom'
 import { Plus, Search, Edit, Trash2, Users } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
+import { ConfirmDialog } from '@/components/ui/confirm-dialog'
+import { useToast } from '@/hooks/use-toast'
 import { parentsApi } from '@/lib/api'
 
 interface Parent {
@@ -19,6 +22,10 @@ export function ParentListPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [deleting, setDeleting] = useState<string | null>(null)
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [pendingDeleteParent, setPendingDeleteParent] = useState<Parent | null>(null)
+
+  const { toast } = useToast()
 
   useEffect(() => {
     fetchParents()
@@ -50,20 +57,33 @@ export function ParentListPage() {
 
   const filteredParents = parents
 
-  const handleDelete = async (id: string) => {
-    if (!confirm('Yakin ingin menghapus orang tua ini?')) {
-      return
-    }
+  const handleDelete = (parent: Parent) => {
+    setPendingDeleteParent(parent)
+    setDeleteDialogOpen(true)
+  }
+
+  const executeDelete = async () => {
+    if (!pendingDeleteParent) return
 
     try {
-      setDeleting(id)
-      await parentsApi.delete(id)
-      setParents(parents.filter(p => p.UserID !== id))
-      alert('Orang tua berhasil dihapus')
+      setDeleting(pendingDeleteParent.UserID)
+      await parentsApi.delete(pendingDeleteParent.UserID)
+      setParents(parents.filter(p => p.UserID !== pendingDeleteParent.UserID))
+      toast({
+        title: "Berhasil",
+        description: "Orang tua berhasil dihapus",
+      })
     } catch (error: any) {
-      alert('Gagal menghapus orang tua: ' + (error.response?.data?.error || 'Unknown error'))
+      console.error('Delete error:', error)
+      toast({
+        variant: "destructive",
+        title: "Gagal",
+        description: error.response?.data?.error || error.message || "Gagal menghapus orang tua",
+      })
     } finally {
       setDeleting(null)
+      setDeleteDialogOpen(false)
+      setPendingDeleteParent(null)
     }
   }
 
@@ -88,13 +108,14 @@ export function ParentListPage() {
           <h1 className="text-xl md:text-2xl font-bold">Data Orang Tua</h1>
           <p className="text-gray-600">Kelola data orang tua murid</p>
         </div>
-        <Button
-          onClick={() => window.location.href = '/admin/parents/new'}
-          className="min-h-[44px] min-w-[44px] w-full sm:w-auto"
-        >
-          <Plus size={20} className="mr-2 inline" />
-          Tambah Orang Tua
-        </Button>
+        <Link to="/admin/parents/new">
+          <Button
+            className="min-h-[44px] min-w-[44px] w-full sm:w-auto"
+          >
+            <Plus size={20} className="mr-2 inline" />
+            Tambah Orang Tua
+          </Button>
+        </Link>
       </div>
 
       {/* Error State */}
@@ -154,16 +175,17 @@ export function ParentListPage() {
 
               {/* Actions */}
               <div className="flex gap-2">
+                <Link to={`/admin/parents/${parent.UserID}/edit`} className="flex-1">
+                  <button
+                    disabled={deleting === parent.UserID}
+                    className="w-full p-2 border-2 border-yellow-200 hover:bg-yellow-50 min-h-[36px] flex items-center justify-center gap-1 text-xs md:text-sm"
+                  >
+                    <Edit size={14} md:size={16} />
+                    Edit
+                  </button>
+                </Link>
                 <button
-                  onClick={() => window.location.href = `/admin/parents/${parent.UserID}/edit`}
-                  disabled={deleting === parent.UserID}
-                  className="flex-1 p-2 border-2 border-yellow-200 hover:bg-yellow-50 min-h-[36px] flex items-center justify-center gap-1 text-xs md:text-sm"
-                >
-                  <Edit size={14} md:size={16} />
-                  Edit
-                </button>
-                <button
-                  onClick={() => handleDelete(parent.UserID)}
+                  onClick={() => handleDelete(parent)}
                   disabled={deleting === parent.UserID}
                   className="flex-1 p-2 border-2 border-red-200 hover:bg-red-50 min-h-[36px] flex items-center justify-center gap-1 disabled:opacity-50 text-xs md:text-sm"
                 >
@@ -183,6 +205,23 @@ export function ParentListPage() {
           <div className="text-sm text-gray-600">Total Orang Tua</div>
         </div>
       </div>
+
+      {/* Delete Confirmation Dialog */}
+      <ConfirmDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        title="Hapus Orang Tua?"
+        description={
+          pendingDeleteParent
+            ? `Apakah Anda yakin ingin menghapus orang tua ${pendingDeleteParent.FullName}?`
+            : 'Hapus orang tua?'
+        }
+        confirmLabel="Ya, Hapus"
+        cancelLabel="Batal"
+        variant="danger"
+        onConfirm={executeDelete}
+        isLoading={deleting !== null}
+      />
     </div>
   )
 }
