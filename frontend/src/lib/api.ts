@@ -8,31 +8,7 @@ const api = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
-})
-
-// Add auth token to requests
-api.interceptors.request.use((config) => {
-  // Try to get token from auth-storage first (Zustand persistence)
-  const authStorage = localStorage.getItem('auth-storage')
-  if (authStorage) {
-    try {
-      const { state } = JSON.parse(authStorage)
-      if (state?.token) {
-        config.headers.Authorization = `Bearer ${state.token}`
-        return config
-      }
-    } catch (e) {
-      // Continue to next method
-    }
-  }
-
-  // Fallback to direct token storage
-  const token = localStorage.getItem('auth_token')
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`
-  }
-
-  return config
+  withCredentials: true, // Important: Allow cookies to be sent/received
 })
 
 // Handle response errors
@@ -40,9 +16,7 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      // Clear token and redirect to login
-      localStorage.removeItem('auth_token')
-      localStorage.removeItem('auth-storage')
+      // Redirect to login (cookie will be cleared by backend)
       window.location.href = '/login'
     }
     return Promise.reject(error)
@@ -182,13 +156,17 @@ export interface User {
 // Auth API
 export const authApi = {
   login: async (credentials: LoginRequest): Promise<LoginResponse> => {
-    const response = await api.post<LoginResponse>('/public/login', credentials)
-    return response.data
+    const response = await api.post<{ user: User }>('/public/login', credentials)
+    // Return user info without token (token is in httpOnly cookie)
+    return {
+      token: '', // Token stored in httpOnly cookie
+      user: response.data.user
+    }
   },
 
-  logout: () => {
-    localStorage.removeItem('auth_token')
-    localStorage.removeItem('auth-storage')
+  logout: async () => {
+    // Call backend logout to clear cookie
+    await api.post('/public/logout')
   },
 }
 

@@ -106,6 +106,7 @@ func (s *Server) setupRoutes() {
 		public := v1.Group("/public")
 		{
 			public.POST("/login", s.login)
+			public.POST("/logout", s.logout)
 		}
 
 		// Protected routes (require authentication)

@@ -53,7 +53,41 @@ func (s *Server) login(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, resp)
+	// Set JWT token in httpOnly cookie (secure against XSS)
+	c.SetSameSite(http.SameSiteStrictMode)
+	c.SetCookie(
+		"auth_token",
+		resp.Token,
+		3600*24*7, // 7 days
+		"/",
+		"",
+		false, // Set to true in production with HTTPS
+		true,  // httpOnly
+	)
+
+	// Return user info without token (token is in cookie)
+	c.JSON(http.StatusOK, gin.H{
+		"user": resp.User,
+	})
+}
+
+// logout handles user logout
+func (s *Server) logout(c *gin.Context) {
+	// Clear the auth_token cookie
+	c.SetSameSite(http.SameSiteStrictMode)
+	c.SetCookie(
+		"auth_token",
+		"",
+		-1,    // Expire immediately
+		"/",
+		"",
+		false,
+		true,
+	)
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Logged out successfully",
+	})
 }
 
 // getUsers returns all users
