@@ -131,36 +131,66 @@ func (r *StudentRepository) GetAll(ctx context.Context, search string) ([]Studen
 
 // GetAllWithDetails retrieves all students with class and parent information
 func (r *StudentRepository) GetAllWithDetails(ctx context.Context, search string) ([]StudentWithDetails, error) {
-	query := `
-		SELECT s.id, s.name, s.class_id, s.is_active, s.created_at,
-		       c.name as class_name,
-		       p1.user_id as parent_1_id, p1.full_name as parent_1_name,
-		       p2.user_id as parent_2_id, p2.full_name as parent_2_name,
-		       COALESCE(p1.phone, p2.phone) as phone
-		FROM students s
-		LEFT JOIN classes c ON s.class_id = c.id
-		LEFT JOIN student_parents sp1 ON s.id = sp1.student_id AND sp1.parent_type = 'parent_1'
-		LEFT JOIN parents p1 ON sp1.parent_id = p1.user_id
-		LEFT JOIN student_parents sp2 ON s.id = sp2.student_id AND sp2.parent_type = 'parent_2'
-		LEFT JOIN parents p2 ON sp.parent_id = sp2.parent_id
-		WHERE s.is_active = true
-	`
-
-	args := []interface{}{}
-	if search != "" {
-		query += " AND s.name ILIKE $1"
-		args = append(args, "%"+search+"%")
-	}
-
-	query += " ORDER BY s.name"
-
-	var students []StudentWithDetails
-	err := r.db.SelectContext(ctx, &students, query, args...)
+	// First, get all students with class info using the existing method
+	students, err := r.GetAll(ctx, search)
 	if err != nil {
 		return nil, err
 	}
 
-	return students, nil
+	// Convert to StudentWithDetails and fetch parent info for each student
+	result := make([]StudentWithDetails, len(students))
+	for i, student := range students {
+		result[i] = StudentWithDetails{
+			Student:   student.Student,
+			ClassName: student.ClassName,
+		}
+
+		// Fetch parents for this student
+		parents, err := r.getParentsForStudent(ctx, student.ID)
+		if err == nil && len(parents) > 0 {
+			for _, p := range parents {
+				if p.RelationshipType == "father" {
+					result[i].Parent1ID = p.UserID
+					result[i].Parent1Name = p.FullName
+					result[i].Phone = p.Phone
+				} else if p.RelationshipType == "mother" {
+					result[i].Parent2ID = p.UserID
+					result[i].Parent2Name = p.FullName
+					if result[i].Phone == "" {
+						result[i].Phone = p.Phone
+					}
+				}
+			}
+		}
+	}
+
+	return result, nil
+}
+
+// getParentsForStudent fetches all parents for a student
+type parentInfo struct {
+	UserID          string `db:"user_id"`
+	FullName        string `db:"full_name"`
+	Phone           string `db:"phone"`
+	RelationshipType string `db:"relationship_type"`
+}
+
+func (r *StudentRepository) getParentsForStudent(ctx context.Context, studentID string) ([]parentInfo, error) {
+	query := `
+		SELECT p.user_id, p.full_name, p.phone, sp.relationship_type
+		FROM student_parents sp
+		JOIN parents p ON sp.parent_id = p.user_id
+		WHERE sp.student_id = $1 AND sp.is_active = true
+		ORDER BY sp.relationship_type
+	`
+
+	var parents []parentInfo
+	err := r.db.SelectContext(ctx, &parents, query, studentID)
+	if err != nil {
+		return nil, err
+	}
+
+	return parents, nil
 }
 
 // Create creates a new student
