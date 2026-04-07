@@ -7,16 +7,7 @@ import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { useToast } from '@/hooks/use-toast'
-import { studentsApi } from '@/lib/api'
-
-interface Student {
-  ID: string
-  Name: string
-  ClassID: string
-  ClassName: string
-  IsActive: boolean
-  CreatedAt: string
-}
+import { studentsApi, Student } from '@/lib/api'
 
 export function StudentListPage() {
   const { t } = useTranslation()
@@ -70,9 +61,9 @@ export function StudentListPage() {
     if (!pendingDeleteStudent) return
 
     try {
-      setDeleting(pendingDeleteStudent.ID)
-      await studentsApi.delete(pendingDeleteStudent.ID)
-      setStudents(students.filter(s => s.ID !== pendingDeleteStudent.ID))
+      setDeleting(pendingDeleteStudent.id)
+      await studentsApi.delete(pendingDeleteStudent.id)
+      setStudents(students.filter(s => s.id !== pendingDeleteStudent.id))
       toast({
         title: "Berhasil",
         description: "Murid berhasil dihapus",
@@ -165,46 +156,46 @@ export function StudentListPage() {
               </tr>
             ) : (
               filteredStudents.map((student) => (
-                <tr key={student.ID} className="hover:bg-gray-50">
+                <tr key={student.id} className="hover:bg-gray-50">
                   <td className="p-2 md:p-4 border-r-2 border-border">
-                    <div className="font-medium text-sm md:text-base">{student.Name}</div>
+                    <div className="font-medium text-sm md:text-base">{student.name}</div>
                   </td>
                   <td className="p-2 md:p-4 border-r-2 border-border">
-                    <Badge className="text-xs md:text-sm">{student.ClassName || '-'}</Badge>
+                    <Badge className="text-xs md:text-sm">{student.class_name || '-'}</Badge>
                   </td>
                   <td className="p-2 md:p-4 border-r-2 border-border">
                     <div className="text-sm text-gray-500 text-xs md:text-sm">
-                      Data orang tua tidak tersedia
+                      {student.parent_1_name || '-'}
                     </div>
                   </td>
                   <td className="p-2 md:p-4 border-r-2 border-border text-xs md:text-sm">
-                    -
+                    {student.phone || '-'}
                   </td>
                   <td className="p-2 md:p-4">
                     <div className="flex justify-center gap-1 md:gap-2">
-                      <Link to={`/admin/students/${student.ID}`} className="inline-block">
+                      <Link to={`/admin/students/${student.id}`} className="inline-block">
                         <button
                           className="p-1.5 md:p-2 border-2 border-blue-200 hover:bg-blue-50 min-h-[36px] min-w-[36px]"
                           title="Lihat"
                         >
-                          <Eye size={14} md:size={16} />
+                          <Eye size={14} className="md:size-[16px]" />
                         </button>
                       </Link>
-                      <Link to={`/admin/students/${student.ID}/edit`} className="inline-block">
+                      <Link to={`/admin/students/${student.id}/edit`} className="inline-block">
                         <button
                           className="p-1.5 md:p-2 border-2 border-yellow-200 hover:bg-yellow-50 min-h-[36px] min-w-[36px]"
                           title="Edit"
                         >
-                          <Edit size={14} md:size={16} />
+                          <Edit size={14} className="md:size-[16px]" />
                         </button>
                       </Link>
                       <button
                         onClick={() => handleDelete(student)}
-                        disabled={deleting === student.ID}
+                        disabled={deleting === student.id}
                         className="p-1.5 md:p-2 border-2 border-red-200 hover:bg-red-50 min-h-[36px] min-w-[36px] disabled:opacity-50"
                         title="Hapus"
                       >
-                        <Trash2 size={14} md:size={16} />
+                        <Trash2 size={14} className="md:size-[16px]" />
                       </button>
                     </div>
                   </td>
@@ -230,7 +221,7 @@ export function StudentListPage() {
         title="Hapus Murid?"
         description={
           pendingDeleteStudent
-            ? `Apakah Anda yakin ingin menghapus murid ${pendingDeleteStudent.Name}?\n\nSemua data hafalan juga akan dihapus.`
+            ? `Apakah Anda yakin ingin menghapus murid ${pendingDeleteStudent.name}?\n\nSemua data hafalan juga akan dihapus.`
             : 'Hapus murid?'
         }
         confirmLabel="Ya, Hapus"
