@@ -55,14 +55,19 @@ func (s *Server) login(c *gin.Context) {
 
 	// Set JWT token in httpOnly cookie (secure against XSS)
 	c.SetSameSite(http.SameSiteStrictMode)
+
+	// Check if running in production (HTTPS)
+	isProduction := c.GetHeader("X-Forwarded-Proto") == "https"
+	secureFlag := isProduction // true if HTTPS, false if HTTP
+
 	c.SetCookie(
 		"auth_token",
 		resp.Token,
 		3600*24*7, // 7 days
 		"/",
 		"",
-		false, // Set to true in production with HTTPS
-		true,  // httpOnly
+		secureFlag, // true in production (HTTPS), false in development (HTTP)
+		true,       // httpOnly - prevents JavaScript access (XSS protection)
 	)
 
 	// Return user info without token (token is in cookie)
@@ -75,14 +80,19 @@ func (s *Server) login(c *gin.Context) {
 func (s *Server) logout(c *gin.Context) {
 	// Clear the auth_token cookie
 	c.SetSameSite(http.SameSiteStrictMode)
+
+	// Check if running in production (HTTPS)
+	isProduction := c.GetHeader("X-Forwarded-Proto") == "https"
+	secureFlag := isProduction
+
 	c.SetCookie(
 		"auth_token",
 		"",
-		-1,    // Expire immediately
+		-1,          // Expire immediately
 		"/",
 		"",
-		false,
-		true,
+		secureFlag,  // Must match login cookie settings
+		true,        // httpOnly
 	)
 
 	c.JSON(http.StatusOK, gin.H{
