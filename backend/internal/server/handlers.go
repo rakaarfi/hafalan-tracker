@@ -504,6 +504,80 @@ func (s *Server) getTeacherStudents(c *gin.Context) {
 	c.JSON(http.StatusOK, students)
 }
 
+// getTeacherClasses returns all classes assigned to the current teacher
+func (s *Server) getTeacherClasses(c *gin.Context) {
+	// Get teacher ID from context and convert to int
+	userID := c.GetString("user_id")
+	teacherID := 0
+	if _, err := fmt.Sscanf(userID, "%d", &teacherID); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Invalid teacher ID",
+		})
+		return
+	}
+
+	ctx := c.Request.Context()
+
+	// Get all active class assignments for this teacher in current academic year
+	academicYear := "2025/2026"
+	assignments, err := s.classQuranTeacherRepo.GetActiveByTeacher(ctx, teacherID, academicYear)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Failed to retrieve teacher assignments",
+			"details": err.Error(),
+		})
+		return
+	}
+
+	// If no assignments found, return empty array
+	if len(assignments) == 0 {
+		c.JSON(http.StatusOK, []gin.H{})
+		return
+	}
+
+	// Get class IDs from assignments
+	classIDs := make([]int, len(assignments))
+	for i, assignment := range assignments {
+		classIDs[i] = assignment.ClassID
+	}
+
+	// Get class details
+	query := `
+		SELECT c.id, c.name, c.grade_level
+		FROM classes c
+		WHERE c.id = ANY($1::int[])
+		  AND c.is_active = true
+		ORDER BY c.name
+	`
+
+	rows, err := s.db.QueryContext(ctx, query, pq.Array(classIDs))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Failed to retrieve classes",
+			"details": err.Error(),
+		})
+		return
+	}
+	defer rows.Close()
+
+	classes := []gin.H{}
+	for rows.Next() {
+		var id int
+		var name, gradeLevel string
+		if err := rows.Scan(&id, &name, &gradeLevel); err != nil {
+			continue
+		}
+
+		classes = append(classes, gin.H{
+			"id":          fmt.Sprintf("%d", id),
+			"name":        name,
+			"grade_level": gradeLevel,
+		})
+	}
+
+	c.JSON(http.StatusOK, classes)
+}
+
 // getStudent retrieves a specific student by ID
 func (s *Server) getStudent(c *gin.Context) {
 	studentID := c.Param("id")
