@@ -3,34 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { HafalanInputForm } from '@/components/teacher/HafalanInputForm'
 import { useTranslation } from 'react-i18next'
 import { ArrowLeft } from 'lucide-react'
-import { studentsApi, memorizationsApi } from '@/lib/api'
-
-interface Student {
-  ID: string
-  Name: string
-  ClassID: string
-  ClassName: string
-  IsActive: boolean
-  CreatedAt: string
-}
-
-interface Memorization {
-  ID: number
-  StudentID: number
-  TeacherID: number
-  SurahID: number | null
-  JuzID: number | null
-  UnitType: string
-  PageStart: number | null
-  PageEnd: number | null
-  Status: string
-  Notes: string
-  TestDate: string
-  StudentName: string
-  TeacherName: string
-  SurahName: string | null
-  JuzNumber: number | null
-}
+import { studentsApi, memorizationsApi, Student, Memorization } from '@/lib/api'
 
 export function StudentDetailPage() {
   const { t } = useTranslation()
@@ -80,12 +53,7 @@ export function StudentDetailPage() {
   }
 
   const getStatusText = (status: string) => {
-    switch (status) {
-      case 'fluent': return 'Lancar'
-      case 'good': return 'Cukup'
-      case 'needs_improvement': return 'Perlu Perbaikan'
-      default: return status
-    }
+    return t(`teacher.status.${status}`)
   }
 
   return (
@@ -110,7 +78,7 @@ export function StudentDetailPage() {
             <>
               <h1 className="text-2xl font-bold">{t('teacher.inputHafalan')}</h1>
               <p className="text-sm text-gray-600">
-                {student.Name} - {student.ClassName}
+                {student.name} - {student.class_name || '-'}
               </p>
             </>
           ) : null}
@@ -142,11 +110,11 @@ export function StudentDetailPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <p className="text-sm text-gray-600">Nama Lengkap</p>
-                  <p className="font-semibold">{student.Name}</p>
+                  <p className="font-semibold">{student.name}</p>
                 </div>
                 <div>
                   <p className="text-sm text-gray-600">Kelas</p>
-                  <p className="font-semibold">{student.ClassName}</p>
+                  <p className="font-semibold">{student.class_name || '-'}</p>
                 </div>
               </div>
             </div>
@@ -157,20 +125,20 @@ export function StudentDetailPage() {
                 <h2 className="text-lg font-semibold mb-4">Riwayat Hafalan Terakhir</h2>
                 <div className="space-y-3">
                   {memorizations.slice(0, 5).map((mem) => (
-                    <div key={mem.ID} className="border-2 border-gray-100 p-3">
+                    <div key={mem.id} className="border-2 border-gray-100 p-3">
                       <div className="flex justify-between items-start">
                         <div className="flex-1">
-                          <p className="font-medium">{mem.SurahName || mem.UnitType}</p>
-                          <p className="text-sm text-gray-600">{new Date(mem.TestDate).toLocaleDateString('id-ID')}</p>
-                          {mem.Notes && (
-                            <p className="text-sm text-gray-500 mt-1">{mem.Notes}</p>
+                          <p className="font-medium">{mem.unit}</p>
+                          <p className="text-sm text-gray-600">{new Date(mem.date).toLocaleDateString('id-ID')}</p>
+                          {mem.notes && (
+                            <p className="text-sm text-gray-500 mt-1">{mem.notes}</p>
                           )}
                         </div>
                         <div className="text-right">
-                          <span className={`text-sm font-medium ${getStatusColor(mem.Status)}`}>
-                            {getStatusText(mem.Status)}
+                          <span className={`text-sm font-medium ${getStatusColor(mem.status)}`}>
+                            {getStatusText(mem.status)}
                           </span>
-                          <p className="text-xs text-gray-500 mt-1">{mem.TeacherName}</p>
+                          <p className="text-xs text-gray-500 mt-1">{mem.teacher_name}</p>
                         </div>
                       </div>
                     </div>
@@ -182,7 +150,7 @@ export function StudentDetailPage() {
             {/* Input Form */}
             <div className="border-2 border-border bg-white p-6">
               <h2 className="text-lg font-semibold mb-4">Input Hafalan Baru</h2>
-              <HafalanInputForm studentId={student.ID} onSuccess={fetchData} />
+              <HafalanInputForm studentId={student.id} onSuccess={fetchData} />
             </div>
           </div>
         ) : null}
