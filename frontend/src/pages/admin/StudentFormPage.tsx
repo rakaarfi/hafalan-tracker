@@ -84,10 +84,10 @@ export function StudentFormPage() {
     try {
       const student = await studentsApi.getById(studentId)
       reset({
-        name: student.Name,
-        class_id: student.ClassID,
-        parent_id_1: '', // TODO: Get from student data
-        parent_id_2: '',
+        name: student.name,
+        class_id: student.class_id,
+        parent_id_1: student.parent_1_id || '',
+        parent_id_2: student.parent_2_id || '',
       })
     } catch (err: any) {
       console.error('Failed to fetch student:', err)
