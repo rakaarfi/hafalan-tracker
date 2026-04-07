@@ -53,7 +53,12 @@ export function StudentDetailPage() {
   }
 
   const getStatusText = (status: string) => {
-    return t(`teacher.status.${status}`)
+    switch (status) {
+      case 'fluent': return 'Lancar'
+      case 'good': return 'Cukup'
+      case 'needs_improvement': return 'Perlu Perbaikan'
+      default: return status
+    }
   }
 
   const getUnitDisplay = (mem: Memorization) => {
