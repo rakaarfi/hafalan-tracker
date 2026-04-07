@@ -246,3 +246,41 @@ func (r *StudentRepository) RemoveParents(ctx context.Context, studentID string)
 	_, err := r.db.ExecContext(ctx, query, studentID)
 	return err
 }
+
+// GetByIDWithDetails retrieves a student by ID with full details including parents
+func (r *StudentRepository) GetByIDWithDetails(ctx context.Context, id string) (*StudentWithDetails, error) {
+	// First get the student with class info
+	student, err := r.GetByID(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	if student == nil {
+		return nil, nil
+	}
+
+	// Convert to StudentWithDetails
+	result := &StudentWithDetails{
+		Student:   student.Student,
+		ClassName: student.ClassName,
+	}
+
+	// Fetch parents for this student
+	parents, err := r.getParentsForStudent(ctx, id)
+	if err == nil && len(parents) > 0 {
+		for _, p := range parents {
+			if p.RelationshipType == "father" {
+				result.Parent1ID = p.UserID
+				result.Parent1Name = p.FullName
+				result.Phone = p.Phone
+			} else if p.RelationshipType == "mother" {
+				result.Parent2ID = p.UserID
+				result.Parent2Name = p.FullName
+				if result.Phone == "" {
+					result.Phone = p.Phone
+				}
+			}
+		}
+	}
+
+	return result, nil
+}
