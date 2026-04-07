@@ -25,7 +25,7 @@ export const useAuthStore = create<AuthState>()(
   persist(
     (set) => ({
       user: null,
-      token: null,
+      token: null, // Kept for compatibility but not used with httpOnly cookies
       isAuthenticated: false,
       isLoading: false,
       error: null,
@@ -35,7 +35,7 @@ export const useAuthStore = create<AuthState>()(
           const response = await authApi.login({ email, password })
           set({
             user: response.user,
-            token: response.token,
+            token: 'cookie', // Token stored in httpOnly cookie
             isAuthenticated: true,
             isLoading: false,
             error: null,
@@ -50,11 +50,11 @@ export const useAuthStore = create<AuthState>()(
       },
       setAuth: (user, token) => set({
         user,
-        token,
+        token: token || 'cookie',
         isAuthenticated: true
       }),
-      logout: () => {
-        authApi.logout()
+      logout: async () => {
+        await authApi.logout()
         set({
           user: null,
           token: null,

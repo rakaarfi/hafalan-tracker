@@ -31,27 +31,35 @@ func corsMiddleware() gin.HandlerFunc {
 // authMiddleware validates JWT tokens
 func (s *Server) authMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		// Get Authorization header
-		authHeader := c.GetHeader("Authorization")
-		if authHeader == "" {
-			c.JSON(http.StatusUnauthorized, gin.H{
-				"error": "Authorization header required",
-			})
-			c.Abort()
-			return
-		}
+		var token string
 
-		// Check if it's a Bearer token
-		parts := strings.Split(authHeader, " ")
-		if len(parts) != 2 || parts[0] != "Bearer" {
-			c.JSON(http.StatusUnauthorized, gin.H{
-				"error": "Invalid authorization format",
-			})
-			c.Abort()
-			return
-		}
+		// First, try to get token from httpOnly cookie (more secure)
+		cookieToken, err := c.Cookie("auth_token")
+		if err == nil && cookieToken != "" {
+			token = cookieToken
+		} else {
+			// Fallback to Authorization header (for backward compatibility)
+			authHeader := c.GetHeader("Authorization")
+			if authHeader == "" {
+				c.JSON(http.StatusUnauthorized, gin.H{
+					"error": "Authentication required",
+				})
+				c.Abort()
+				return
+			}
 
-		token := parts[1]
+			// Check if it's a Bearer token
+			parts := strings.Split(authHeader, " ")
+			if len(parts) != 2 || parts[0] != "Bearer" {
+				c.JSON(http.StatusUnauthorized, gin.H{
+					"error": "Invalid authorization format",
+				})
+				c.Abort()
+				return
+			}
+
+			token = parts[1]
+		}
 
 		// Validate JWT token
 		claims, err := s.jwtManager.Validate(token)
