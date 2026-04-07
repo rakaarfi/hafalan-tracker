@@ -21,7 +21,7 @@
     "surah": "Surah",
     "juz": "Juz",
     "page": "Halaman",
-    "status": "Status",
+    "statusLabel": "Status",
     "notes": "Catatan",
     "testDate": "Tanggal Tes",
     "submit": "Simpan",

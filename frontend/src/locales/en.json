@@ -21,7 +21,7 @@
     "surah": "Surah",
     "juz": "Juz",
     "page": "Page",
-    "status": "Status",
+    "statusLabel": "Status",
     "notes": "Notes",
     "testDate": "Test Date",
     "submit": "Submit",

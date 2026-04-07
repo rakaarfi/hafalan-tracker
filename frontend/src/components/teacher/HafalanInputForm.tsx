@@ -150,7 +150,7 @@ export function HafalanInputForm({ studentId }: { studentId: string }) {
 
       {/* Status Selector */}
       <div>
-        <Label>{t('teacher.status')}</Label>
+        <Label>{t('teacher.statusLabel')}</Label>
         <div className="flex gap-4 mt-2">
           {(['fluent', 'good', 'needs_improvement'] as const).map((status) => (
             <button
