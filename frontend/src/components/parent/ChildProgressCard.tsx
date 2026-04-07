@@ -60,12 +60,12 @@ export function ChildProgressCard({ child }: ChildProgressCardProps) {
       {/* Stats */}
       <div className="mb-4">
         <div className="flex justify-between text-sm mb-2">
-          <span className="font-medium">Total Tests:</span>
+          <span className="font-medium">Total Tes:</span>
           <span className="font-semibold">{child.total_tests}</span>
         </div>
         {child.latest_test && (
           <div className="text-xs text-gray-600 mt-1">
-            Latest: {child.latest_test.SurahName || child.latest_test.UnitType} - {child.latest_test.Status}
+            Terbaru: {child.latest_test.SurahName || child.latest_test.UnitType} - {getStatusLabel(child.latest_test.Status)}
           </div>
         )}
       </div>
