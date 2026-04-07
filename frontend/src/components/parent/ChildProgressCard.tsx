@@ -35,7 +35,7 @@ export function ChildProgressCard({ child }: ChildProgressCardProps) {
   return (
     <button
       onClick={() => window.location.href = `/parent/children/${child.student.id}`}
-      className="w-full text-left p-6 border-2 border-border bg-white hover:border-primary transition-colors"
+      className="text-left p-6 border-2 border-border bg-white hover:border-primary transition-colors"
     >
       {/* Header */}
       <div className="flex items-center gap-4 mb-4">
