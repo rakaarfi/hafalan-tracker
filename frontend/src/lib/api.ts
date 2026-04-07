@@ -379,6 +379,11 @@ export const teacherApi = {
     return response.data
   },
 
+  getMyClasses: async (): Promise<Class[]> => {
+    const response = await api.get<Class[]>('/teachers/me/classes')
+    return response.data
+  },
+
   getStudentProgress: async (studentId: string): Promise<Student & { memorizations: Memorization[] }> => {
     const response = await api.get(`/teachers/me/students/${studentId}/progress`)
     return response.data

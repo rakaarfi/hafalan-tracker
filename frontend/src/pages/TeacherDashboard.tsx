@@ -3,33 +3,43 @@ import { StudentList } from '@/components/teacher/StudentList'
 import { MobileNav } from '@/components/common/MobileNav'
 import { useAuthStore } from '@/stores/authStore'
 import { useTranslation } from 'react-i18next'
-import { teacherApi, Student } from '@/lib/api'
+import { teacherApi, Student, Class } from '@/lib/api'
 import { GraduationCap, Users } from 'lucide-react'
 
 export function TeacherDashboard() {
   const { t } = useTranslation()
   const { user, logout } = useAuthStore()
   const [students, setStudents] = useState<Student[]>([])
+  const [classes, setClasses] = useState<Class[]>([])
+  const [selectedClass, setSelectedClass] = useState<string>('all')
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    fetchStudents()
+    fetchData()
   }, [])
 
-  const fetchStudents = async () => {
+  const fetchData = async () => {
     try {
       setLoading(true)
       setError(null)
-      const data = await teacherApi.getMyStudents()
-      setStudents(data)
+      const [studentsData, classesData] = await Promise.all([
+        teacherApi.getMyStudents(),
+        teacherApi.getMyClasses()
+      ])
+      setStudents(studentsData)
+      setClasses(classesData)
     } catch (err: any) {
-      console.error('Failed to fetch students:', err)
-      setError('Gagal memuat data murid')
+      console.error('Failed to fetch data:', err)
+      setError('Gagal memuat data')
     } finally {
       setLoading(false)
     }
   }
+
+  const filteredStudents = selectedClass === 'all'
+    ? students
+    : students.filter(student => student.class_id === selectedClass)
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -101,6 +111,39 @@ export function TeacherDashboard() {
           </div>
         </div>
 
+        {/* Class Tabs - Only show if teacher has more than 1 class */}
+        {!loading && classes.length > 1 && (
+          <div className="mb-6">
+            <div className="border-2 border-border bg-white">
+              <div className="flex overflow-x-auto">
+                <button
+                  onClick={() => setSelectedClass('all')}
+                  className={`px-6 py-3 min-w-[120px] text-sm font-medium border-r-2 border-border transition-colors ${
+                    selectedClass === 'all'
+                      ? 'bg-primary text-white'
+                      : 'bg-white text-gray-700 hover:bg-gray-50'
+                  }`}
+                >
+                  Semua Kelas ({students.length})
+                </button>
+                {classes.map((cls) => (
+                  <button
+                    key={cls.id}
+                    onClick={() => setSelectedClass(cls.id)}
+                    className={`px-6 py-3 min-w-[120px] text-sm font-medium border-r-2 border-border last:border-r-0 transition-colors ${
+                      selectedClass === cls.id
+                        ? 'bg-primary text-white'
+                        : 'bg-white text-gray-700 hover:bg-gray-50'
+                    }`}
+                  >
+                    {cls.name} ({students.filter(s => s.class_id === cls.id).length})
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Students List */}
         {loading ? (
           <div className="text-center py-12">
@@ -111,19 +154,19 @@ export function TeacherDashboard() {
           <div className="border-2 border-red-200 bg-red-50 p-6 text-center">
             <p className="text-red-800 font-medium">{error}</p>
             <button
-              onClick={fetchStudents}
+              onClick={fetchData}
               className="mt-4 px-4 py-2 border-2 border-red-300 text-red-700 hover:bg-red-100 min-h-[44px] min-w-[44px]"
             >
               Coba Lagi
             </button>
           </div>
-        ) : students.length === 0 ? (
+        ) : filteredStudents.length === 0 ? (
           <div className="border-2 border-border bg-white p-6 text-center">
             <GraduationCap size={48} className="mx-auto text-gray-400 mb-4" />
             <p className="text-gray-500">Belum ada murid</p>
           </div>
         ) : (
-          <StudentList students={students} />
+          <StudentList students={filteredStudents} />
         )}
       </main>
     </div>

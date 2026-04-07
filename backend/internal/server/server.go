@@ -121,6 +121,7 @@ func (s *Server) setupRoutes() {
 				teachers.Use(s.teacherRoleMiddleware())
 				{
 					teachers.GET("/students", s.getTeacherStudents)
+					teachers.GET("/classes", s.getTeacherClasses)
 				}
 
 			// Parent-specific routes (only accessible by parents)
