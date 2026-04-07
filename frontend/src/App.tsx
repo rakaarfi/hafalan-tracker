@@ -43,6 +43,24 @@ function ProtectedRoute({ children, allowedRoles }: { children: React.ReactNode;
   return <>{children}</>
 }
 
+// Public Route - redirect to dashboard if already authenticated
+function PublicRoute({ children }: { children: React.ReactNode }) {
+  const { isAuthenticated, user } = useAuthStore()
+
+  if (isAuthenticated && user) {
+    // Redirect to appropriate dashboard based on role
+    if (user.role === 'teacher') {
+      return <Navigate to="/teacher/dashboard" replace />
+    } else if (user.role === 'parent') {
+      return <Navigate to="/parent/dashboard" replace />
+    } else if (user.role === 'admin') {
+      return <Navigate to="/admin/dashboard" replace />
+    }
+  }
+
+  return <>{children}</>
+}
+
 function App() {
   const { isAuthenticated } = useAuthStore()
 
@@ -51,7 +69,14 @@ function App() {
       <div className="min-h-screen bg-gray-50 border-x border-border">
         <Routes>
           <Route path="/" element={<Navigate to="/login" replace />} />
-          <Route path="/login" element={<LoginPage />} />
+          <Route
+            path="/login"
+            element={
+              <PublicRoute>
+                <LoginPage />
+              </PublicRoute>
+            }
+          />
 
           {/* Teacher Routes */}
           <Route
