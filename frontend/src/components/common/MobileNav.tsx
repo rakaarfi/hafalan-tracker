@@ -13,12 +13,14 @@ export function MobileNav({ onLogout, userRole }: MobileNavProps) {
   const getNavItems = () => {
     if (userRole === 'teacher') {
       return [
-        { label: 'Dashboard', href: '/teacher' },
+        { label: 'Dashboard', href: '/teacher/dashboard' },
+        { label: 'Profile', href: '/profile' },
       ]
     }
     if (userRole === 'parent') {
       return [
-        { label: 'Progress Anak', href: '/parent' },
+        { label: 'Progress Anak', href: '/parent/dashboard' },
+        { label: 'Profile', href: '/profile' },
       ]
     }
     return []

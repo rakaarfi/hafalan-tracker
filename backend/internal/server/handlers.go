@@ -637,7 +637,8 @@ func (s *Server) getTeacherClasses(c *gin.Context) {
 func (s *Server) getStudent(c *gin.Context) {
 	studentID := c.Param("id")
 
-	student, err := s.studentRepo.GetByID(c.Request.Context(), studentID)
+	// Get student with full details including parents
+	student, err := s.studentRepo.GetByIDWithDetails(c.Request.Context(), studentID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"error": "Failed to retrieve student",
