@@ -32,6 +32,17 @@ type StudentWithClass struct {
 	ClassName string `db:"class_name" json:"class_name"`
 }
 
+// StudentWithDetails represents a student with class and parent information
+type StudentWithDetails struct {
+	Student
+	ClassName   string  `db:"class_name" json:"class_name"`
+	Parent1ID   string  `db:"parent_1_id" json:"parent_1_id,omitempty"`
+	Parent1Name string  `db:"parent_1_name" json:"parent_1_name,omitempty"`
+	Parent2ID   string  `db:"parent_2_id" json:"parent_2_id,omitempty"`
+	Parent2Name string  `db:"parent_2_name" json:"parent_2_name,omitempty"`
+	Phone       string  `db:"phone" json:"phone,omitempty"`
+}
+
 // GetByID retrieves a student by ID
 func (r *StudentRepository) GetByID(ctx context.Context, id string) (*StudentWithClass, error) {
 	query := `
@@ -110,6 +121,40 @@ func (r *StudentRepository) GetAll(ctx context.Context, search string) ([]Studen
 	query += " ORDER BY s.name"
 
 	var students []StudentWithClass
+	err := r.db.SelectContext(ctx, &students, query, args...)
+	if err != nil {
+		return nil, err
+	}
+
+	return students, nil
+}
+
+// GetAllWithDetails retrieves all students with class and parent information
+func (r *StudentRepository) GetAllWithDetails(ctx context.Context, search string) ([]StudentWithDetails, error) {
+	query := `
+		SELECT s.id, s.name, s.class_id, s.is_active, s.created_at,
+		       c.name as class_name,
+		       p1.user_id as parent_1_id, p1.full_name as parent_1_name,
+		       p2.user_id as parent_2_id, p2.full_name as parent_2_name,
+		       COALESCE(p1.phone, p2.phone) as phone
+		FROM students s
+		LEFT JOIN classes c ON s.class_id = c.id
+		LEFT JOIN student_parents sp1 ON s.id = sp1.student_id AND sp1.parent_type = 'parent_1'
+		LEFT JOIN parents p1 ON sp1.parent_id = p1.user_id
+		LEFT JOIN student_parents sp2 ON s.id = sp2.student_id AND sp2.parent_type = 'parent_2'
+		LEFT JOIN parents p2 ON sp.parent_id = sp2.parent_id
+		WHERE s.is_active = true
+	`
+
+	args := []interface{}{}
+	if search != "" {
+		query += " AND s.name ILIKE $1"
+		args = append(args, "%"+search+"%")
+	}
+
+	query += " ORDER BY s.name"
+
+	var students []StudentWithDetails
 	err := r.db.SelectContext(ctx, &students, query, args...)
 	if err != nil {
 		return nil, err

@@ -578,7 +578,7 @@ func (s *Server) getDashboardStats(c *gin.Context) {
 func (s *Server) getAllStudents(c *gin.Context) {
 	search := c.Query("search")
 
-	students, err := s.studentRepo.GetAll(c.Request.Context(), search)
+	students, err := s.studentRepo.GetAllWithDetails(c.Request.Context(), search)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"error": "Failed to retrieve students",
