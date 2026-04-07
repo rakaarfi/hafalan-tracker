@@ -4,6 +4,8 @@ import (
 	"context"
 	"errors"
 
+	"golang.org/x/crypto/bcrypt"
+
 	"github.com/rakaarfi/hafalan-tracker/backend/internal/auth"
 	"github.com/rakaarfi/hafalan-tracker/backend/internal/repository"
 )
@@ -52,12 +54,10 @@ func (s *AuthService) Login(ctx context.Context, req *LoginRequest) (*LoginRespo
 		return nil, errors.New("invalid credentials")
 	}
 
-	// TODO: Verify password hash
-	// For now, we'll skip password verification and just check if user exists
-	// In production, you should use bcrypt to compare the password hash
-	// if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(req.Password)); err != nil {
-	//     return nil, errors.New("invalid credentials")
-	// }
+	// Verify password hash
+	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(req.Password)); err != nil {
+		return nil, errors.New("invalid credentials")
+	}
 
 	// Generate JWT token
 	token, err := s.jwtManager.Generate(user.ID, user.RoleName, user.Email)
