@@ -57,7 +57,7 @@ export function TeacherDashboard() {
       </header>
 
       {/* Main content */}
-      <main className="container mx-auto py-6 px-4">
+      <main className="container mx-auto py-6 px-4 max-w-7xl">
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
           <div className="border-2 border-border bg-white p-4">
