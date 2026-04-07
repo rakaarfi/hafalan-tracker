@@ -131,17 +131,25 @@ export interface QuranTeacherAssignment {
 }
 
 export interface Memorization {
-  id: string
-  student_id: string
-  student_name?: string
-  teacher_id: string
-  teacher_name?: string
-  date: string
-  unit: string
+  id: number
+  student_id: number
+  teacher_id: number
+  surah_id?: number
+  juz_id?: number
   unit_type: 'juz' | 'surah' | 'page'
+  page_start?: number
+  page_end?: number
   status: 'fluent' | 'good' | 'needs_improvement'
-  notes?: string
+  notes: string
+  test_date: string
+  is_active: boolean
   created_at: string
+  updated_at: string
+  student_name: string
+  teacher_name: string
+  surah_number?: number
+  surah_name?: string
+  juz_number?: number
 }
 
 export interface DashboardStats {
