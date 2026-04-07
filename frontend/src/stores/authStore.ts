@@ -11,13 +11,13 @@ interface User {
 
 interface AuthState {
   user: User | null
-  token: string | null
+  token: string | null  // Kept for backward compatibility, always "cookie" when authenticated
   isAuthenticated: boolean
   isLoading: boolean
   error: string | null
   login: (email: string, password: string) => Promise<void>
   setAuth: (user: User, token: string) => void
-  logout: () => void
+  logout: () => Promise<void>
   clearError: () => void
 }
 
@@ -35,7 +35,7 @@ export const useAuthStore = create<AuthState>()(
           const response = await authApi.login({ email, password })
           set({
             user: response.user,
-            token: 'cookie', // Token stored in httpOnly cookie
+            token: null, // Token is in httpOnly cookie, not stored
             isAuthenticated: true,
             isLoading: false,
             error: null,
@@ -50,7 +50,7 @@ export const useAuthStore = create<AuthState>()(
       },
       setAuth: (user, token) => set({
         user,
-        token: token || 'cookie',
+        token: null, // Token is in httpOnly cookie
         isAuthenticated: true
       }),
       logout: async () => {
