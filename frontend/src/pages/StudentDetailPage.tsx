@@ -56,6 +56,19 @@ export function StudentDetailPage() {
     return t(`teacher.status.${status}`)
   }
 
+  const getUnitDisplay = (mem: Memorization) => {
+    if (mem.unit_type === 'surah' && mem.surah_name) {
+      return mem.surah_name
+    }
+    if (mem.unit_type === 'juz' && mem.juz_number) {
+      return `Juz ${mem.juz_number}`
+    }
+    if (mem.unit_type === 'page' && mem.page_start && mem.page_end) {
+      return `Halaman ${mem.page_start} - ${mem.page_end}`
+    }
+    return mem.unit_type
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -128,8 +141,8 @@ export function StudentDetailPage() {
                     <div key={mem.id} className="border-2 border-gray-100 p-3">
                       <div className="flex justify-between items-start">
                         <div className="flex-1">
-                          <p className="font-medium">{mem.unit}</p>
-                          <p className="text-sm text-gray-600">{new Date(mem.date).toLocaleDateString('id-ID')}</p>
+                          <p className="font-medium">{getUnitDisplay(mem)}</p>
+                          <p className="text-sm text-gray-600">{new Date(mem.test_date).toLocaleDateString('id-ID')}</p>
                           {mem.notes && (
                             <p className="text-sm text-gray-500 mt-1">{mem.notes}</p>
                           )}
