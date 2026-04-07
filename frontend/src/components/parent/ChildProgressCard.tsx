@@ -1,24 +1,18 @@
 import { Badge } from '@/components/ui/badge'
 import { useTranslation } from 'react-i18next'
+import { Memorization } from '@/lib/api'
 
 interface ChildProgressCardProps {
   child: {
     student: {
-      ID: string
-      Name: string
-      ClassName: string
+      id: string
+      name: string
+      class_name: string
     }
-    recent_tests: Array<{
-      ID: number
-      UnitType: string
-      SurahName?: string
-      Status: string
-      Notes: string
-      TestDate: string
-    }>
+    recent_tests: Memorization[]
     total_tests: number
     average_score: number
-    latest_test?: any
+    latest_test?: Memorization
   }
 }
 
@@ -40,7 +34,7 @@ export function ChildProgressCard({ child }: ChildProgressCardProps) {
 
   return (
     <button
-      onClick={() => window.location.href = `/parent/children/${child.student.ID}`}
+      onClick={() => window.location.href = `/parent/children/${child.student.id}`}
       className="w-full text-left p-6 border-2 border-border bg-white hover:border-primary transition-colors"
     >
       {/* Header */}
@@ -48,12 +42,12 @@ export function ChildProgressCard({ child }: ChildProgressCardProps) {
         <div className="w-16 h-16 bg-gray-200 flex items-center justify-center border-2 border-border">
           {/* Photo placeholder */}
           <span className="text-2xl font-semibold text-gray-600">
-            {child.student.Name.charAt(0)}
+            {child.student.name?.charAt(0) || '?'}
           </span>
         </div>
         <div>
-          <h3 className="font-semibold text-lg">{child.student.Name}</h3>
-          <p className="text-sm text-gray-600">{child.student.ClassName}</p>
+          <h3 className="font-semibold text-lg">{child.student.name}</h3>
+          <p className="text-sm text-gray-600">{child.student.class_name}</p>
         </div>
       </div>
 
@@ -65,7 +59,7 @@ export function ChildProgressCard({ child }: ChildProgressCardProps) {
         </div>
         {child.latest_test && (
           <div className="text-xs text-gray-600 mt-1">
-            Terbaru: {child.latest_test.SurahName || child.latest_test.UnitType} - {getStatusLabel(child.latest_test.Status)}
+            Terbaru: {child.latest_test.surah_name || child.latest_test.unit_type} - {getStatusLabel(child.latest_test.status)}
           </div>
         )}
       </div>
@@ -75,11 +69,11 @@ export function ChildProgressCard({ child }: ChildProgressCardProps) {
         <p className="text-sm font-medium mb-2">{t('parent.recentTests')}:</p>
         <div className="space-y-2">
           {child.recent_tests.slice(0, 3).map((test) => (
-            <div key={test.ID} className="flex items-center gap-2 text-sm">
-              <span className="text-gray-600">{new Date(test.TestDate).toLocaleDateString('id-ID')}:</span>
-              <span className="font-medium flex-1">{test.SurahName || test.UnitType}</span>
-              <Badge className={getStatusColor(test.Status)}>
-                {getStatusLabel(test.Status)}
+            <div key={test.id} className="flex items-center gap-2 text-sm">
+              <span className="text-gray-600">{new Date(test.test_date).toLocaleDateString('id-ID')}:</span>
+              <span className="font-medium flex-1">{test.surah_name || test.unit_type}</span>
+              <Badge className={getStatusColor(test.status)}>
+                {getStatusLabel(test.status)}
               </Badge>
             </div>
           ))}
