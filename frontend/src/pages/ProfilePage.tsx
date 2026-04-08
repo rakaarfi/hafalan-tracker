@@ -97,10 +97,10 @@ export function ProfilePage() {
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'profile' | 'password')} className="space-y-4">
         <TabsList className="grid w-full grid-cols-2 border-2 border-border bg-white p-1">
-          <TabsTrigger value="profile" className="min-h-[44px]">
+          <TabsTrigger value="profile" className="min-h-[44px] text-center">
             Profile
           </TabsTrigger>
-          <TabsTrigger value="password" className="min-h-[44px]">
+          <TabsTrigger value="password" className="min-h-[44px] text-center">
             Ganti Password
           </TabsTrigger>
         </TabsList>
