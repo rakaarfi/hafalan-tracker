@@ -87,93 +87,93 @@ export function ProfilePage() {
   }
 
   return (
-    <div className="max-w-2xl mx-auto">
+    <div className="container mx-auto py-6 px-4 max-w-2xl">
       {/* Header */}
       <div className="mb-6">
         <h1 className="text-2xl font-bold">Profile</h1>
-        <p className="text-gray-600">Kelola akun Anda</p>
+        <p className="text-sm text-gray-600">Kelola akun Anda</p>
       </div>
 
       {/* Tabs */}
-      <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'profile' | 'password')} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-2 border-2 border-border">
-          <TabsTrigger value="profile" className="min-h-[44px]">
+      <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'profile' | 'password')} className="space-y-4">
+        <TabsList className="grid w-full grid-cols-2 border-2 border-border bg-white">
+          <TabsTrigger value="profile" className="min-h-[44px] data-state={activeTab === 'profile' ? 'active' : 'inactive'}>
             Profile
           </TabsTrigger>
-          <TabsTrigger value="password" className="min-h-[44px]">
+          <TabsTrigger value="password" className="min-h-[44px] data-state={activeTab === 'password' ? 'active' : 'inactive'}>
             Ganti Password
           </TabsTrigger>
         </TabsList>
 
         {/* Profile Tab */}
         <TabsContent value="profile">
-          <div className="border-2 border-border bg-white p-6">
-            <form onSubmit={handleProfileSubmit(onProfileSubmit)} className="space-y-6">
-              {/* User Info */}
-              <div className="pb-6 border-b-2 border-border mb-6">
-                <div className="flex items-center gap-4 mb-4">
-                  <div className="w-16 h-16 bg-primary text-white flex items-center justify-center text-2xl font-bold">
-                    {user?.name?.charAt(0).toUpperCase()}
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-lg">{user?.name}</h3>
-                    <p className="text-sm text-gray-600">{user?.email}</p>
-                    <Badge className="mt-2">
-                      {user?.role === 'admin' && 'Administrator'}
-                      {user?.role === 'teacher' && 'Guru'}
-                      {user?.role === 'parent' && 'Orang Tua'}
-                    </Badge>
-                  </div>
+          <div className="border-2 border-border bg-white">
+            {/* User Info Header */}
+            <div className="border-b-2 border-border p-6">
+              <div className="flex items-center gap-4">
+                <div className="w-16 h-16 bg-primary text-white flex items-center justify-center text-2xl font-bold">
+                  {user?.name?.charAt(0).toUpperCase()}
+                </div>
+                <div>
+                  <h3 className="font-semibold text-lg">{user?.name}</h3>
+                  <p className="text-sm text-gray-600">{user?.email}</p>
+                  <Badge className="mt-1">
+                    {user?.role === 'admin' && 'Administrator'}
+                    {user?.role === 'teacher' && 'Guru'}
+                    {user?.role === 'parent' && 'Orang Tua'}
+                  </Badge>
                 </div>
               </div>
+            </div>
 
-              {/* Form Fields */}
-              <div className="space-y-4">
-                <div>
-                  <Label htmlFor="name">Nama Lengkap</Label>
-                  <Input
-                    id="name"
-                    className="border-2 min-h-[44px]"
-                    {...registerProfile('name')}
-                  />
-                  {profileFormState.errors.name && (
-                    <p className="text-sm text-red-600 mt-1">{profileFormState.errors.name.message}</p>
-                  )}
-                </div>
+            {/* Form Fields */}
+            <form onSubmit={handleProfileSubmit(onProfileSubmit)} className="p-6 space-y-4">
+              <div>
+                <Label htmlFor="name">Nama Lengkap</Label>
+                <Input
+                  id="name"
+                  className="border-2 min-h-[44px]"
+                  {...registerProfile('name')}
+                />
+                {profileFormState.errors.name && (
+                  <p className="text-sm text-red-600 mt-1">{profileFormState.errors.name.message}</p>
+                )}
+              </div>
 
-                <div>
-                  <Label htmlFor="email">Email</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    className="border-2 min-h-[44px]"
-                    {...registerProfile('email')}
-                  />
-                  {profileFormState.errors.email && (
-                    <p className="text-sm text-red-600 mt-1">{profileFormState.errors.email.message}</p>
-                  )}
-                </div>
+              <div>
+                <Label htmlFor="email">Email</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  className="border-2 min-h-[44px]"
+                  {...registerProfile('email')}
+                />
+                {profileFormState.errors.email && (
+                  <p className="text-sm text-red-600 mt-1">{profileFormState.errors.email.message}</p>
+                )}
+              </div>
 
-                <div>
-                  <Label htmlFor="phone">No HP</Label>
-                  <Input
-                    id="phone"
-                    type="tel"
-                    placeholder="08xxxxxxxxxx"
-                    className="border-2 min-h-[44px]"
-                    {...registerProfile('phone')}
-                  />
-                </div>
+              <div>
+                <Label htmlFor="phone">No HP</Label>
+                <Input
+                  id="phone"
+                  type="tel"
+                  placeholder="08xxxxxxxxxx"
+                  className="border-2 min-h-[44px]"
+                  {...registerProfile('phone')}
+                />
               </div>
 
               {/* Submit */}
-              <Button
-                type="submit"
-                disabled={profileFormState.isSubmitting}
-                className="w-full min-h-[44px]"
-              >
-                {profileFormState.isSubmitting ? 'Menyimpan...' : 'Simpan Profile'}
-              </Button>
+              <div className="pt-4">
+                <Button
+                  type="submit"
+                  disabled={profileFormState.isSubmitting}
+                  className="w-full min-h-[44px]"
+                >
+                  {profileFormState.isSubmitting ? 'Menyimpan...' : 'Simpan Profile'}
+                </Button>
+              </div>
             </form>
           </div>
         </TabsContent>
@@ -181,7 +181,7 @@ export function ProfilePage() {
         {/* Password Tab */}
         <TabsContent value="password">
           <div className="border-2 border-border bg-white p-6">
-            <form id="password-form" onSubmit={handlePasswordSubmit(onPasswordSubmit)} className="space-y-6">
+            <form id="password-form" onSubmit={handlePasswordSubmit(onPasswordSubmit)} className="space-y-4">
               <div>
                 <Label htmlFor="current_password">Password Saat Ini *</Label>
                 <Input
@@ -236,13 +236,15 @@ export function ProfilePage() {
               </div>
 
               {/* Submit */}
-              <Button
-                type="submit"
-                disabled={passwordFormState.isSubmitting}
-                className="w-full min-h-[44px]"
-              >
-                {passwordFormState.isSubmitting ? 'Mengubah...' : 'Ganti Password'}
-              </Button>
+              <div>
+                <Button
+                  type="submit"
+                  disabled={passwordFormState.isSubmitting}
+                  className="w-full min-h-[44px]"
+                >
+                  {passwordFormState.isSubmitting ? 'Mengubah...' : 'Ganti Password'}
+                </Button>
+              </div>
             </form>
           </div>
         </TabsContent>
