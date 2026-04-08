@@ -137,8 +137,21 @@ func (s *MemorizationService) Create(ctx context.Context, req *CreateMemorizatio
 		return nil, err
 	}
 
-	// TODO: Create history record
-	// History structure needs to be updated to match database schema
+	// Create history record for initial memorization
+	if s.historyRepo != nil {
+		history := &repository.MemorizationHistory{
+			MemorizationID: mem.ID,
+			StudentID:      mem.StudentID,
+			TeacherID:      mem.TeacherID,
+			OldStatus:      nil,
+			NewStatus:      mem.Status,
+			Notes:          "Initial memorization record",
+		}
+		if err := s.historyRepo.CreateHistory(ctx, history); err != nil {
+			// Log error but don't fail the operation
+			// History is secondary to the main operation
+		}
+	}
 
 	// Get the created record with details
 	return s.memorizationRepo.GetByID(ctx, mem.ID)
@@ -201,12 +214,28 @@ func (s *MemorizationService) Update(ctx context.Context, req *UpdateMemorizatio
 		TestDate:  req.TestDate,
 	}
 
+	// Store old status for history
+	oldStatus := existing.Status
+
 	if err := s.memorizationRepo.Update(ctx, mem); err != nil {
 		return nil, err
 	}
 
-	// TODO: Create history record
-	// History structure needs to be updated to match database schema
+	// Create history record for status change
+	if s.historyRepo != nil {
+		history := &repository.MemorizationHistory{
+			MemorizationID: mem.ID,
+			StudentID:      mem.StudentID,
+			TeacherID:      mem.TeacherID,
+			OldStatus:      &oldStatus,
+			NewStatus:      mem.Status,
+			Notes:          mem.Notes,
+		}
+		if err := s.historyRepo.CreateHistory(ctx, history); err != nil {
+			// Log error but don't fail the operation
+			// History is secondary to the main operation
+		}
+	}
 
 	// Get the updated record with details
 	return s.memorizationRepo.GetByID(ctx, mem.ID)

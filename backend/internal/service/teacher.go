@@ -62,11 +62,10 @@ func (s *TeacherService) Create(ctx context.Context, req *CreateTeacherRequest) 
 	user := &repository.User{
 		Email:    req.Email,
 		Password: string(hashedPassword),
-		RoleID:   "2", // Teacher role
 		IsActive: true,
 	}
 
-	err = s.userRepo.Create(ctx, user)
+	err = s.userRepo.Create(ctx, user, "teacher")
 	if err != nil {
 		return nil, fmt.Errorf("failed to create user: %w", err)
 	}

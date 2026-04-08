@@ -48,7 +48,8 @@ func New(cfg *config.Config, db *database.DB) *Server {
 	jwtManager := auth.NewJWTManager(cfg.JWT.Secret, 24*time.Hour)
 
 	// Initialize repositories
-	userRepo := repository.NewUserRepository(db.DB)
+	roleRepo := repository.NewRoleRepository(db.DB)
+	userRepo := repository.NewUserRepository(db.DB, roleRepo)
 	memorizationRepo := repository.NewMemorizationRepository(db.DB)
 	historyRepo := repository.NewHistoryRepository(db.DB)
 	parentRepo := repository.NewParentRepository(db.DB)

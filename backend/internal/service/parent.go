@@ -189,11 +189,10 @@ func (s *ParentService) Create(ctx context.Context, req *CreateParentRequest) (*
 	user := &repository.User{
 		Email:    req.Email,
 		Password: req.Password,
-		RoleID:   "3", // Parent role
 		IsActive: true,
 	}
 
-	err := s.userRepo.Create(ctx, user)
+	err := s.userRepo.Create(ctx, user, "parent")
 	if err != nil {
 		return nil, errors.New("failed to create user account")
 	}

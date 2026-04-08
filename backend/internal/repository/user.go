@@ -9,12 +9,16 @@ import (
 
 // UserRepository handles user data operations
 type UserRepository struct {
-	db *sqlx.DB
+	db        *sqlx.DB
+	roleRepo  *RoleRepository
 }
 
 // NewUserRepository creates a new user repository
-func NewUserRepository(db *sqlx.DB) *UserRepository {
-	return &UserRepository{db: db}
+func NewUserRepository(db *sqlx.DB, roleRepo *RoleRepository) *UserRepository {
+	return &UserRepository{
+		db:       db,
+		roleRepo: roleRepo,
+	}
 }
 
 // User represents a user in the system
@@ -75,24 +79,38 @@ func (r *UserRepository) GetByID(ctx context.Context, id string) (*UserWithRole,
 	return &user, nil
 }
 
-// Create creates a new user
-func (r *UserRepository) Create(ctx context.Context, user *User) error {
+// Create creates a new user with the specified role
+func (r *UserRepository) Create(ctx context.Context, user *User, roleName string) error {
+	// Look up role ID from role name
+	role, err := r.roleRepo.GetByName(ctx, roleName)
+	if err != nil {
+		return err
+	}
+	if role == nil {
+		return &RoleNotFoundError{RoleName: roleName}
+	}
+
 	query := `
 		INSERT INTO users (email, password_hash, role_id, is_active)
 		VALUES ($1, $2, $3, true)
 		RETURNING id, created_at
 	`
 
-	// For now, use default role_id (1 for teacher/parent)
-	// TODO: Get role_id from role name
-	defaultRoleID := "1"
-
-	err := r.db.QueryRowContext(ctx, query,
+	err = r.db.QueryRowContext(ctx, query,
 		user.Email,
 		user.Password,
-		defaultRoleID,
+		role.ID,
 	).Scan(&user.ID, &user.CreatedAt)
 	return err
+}
+
+// RoleNotFoundError is returned when a role is not found
+type RoleNotFoundError struct {
+	RoleName string
+}
+
+func (e *RoleNotFoundError) Error() string {
+	return "role not found: " + e.RoleName
 }
 
 // Delete deletes a user (soft delete)
