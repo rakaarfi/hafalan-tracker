@@ -112,11 +112,11 @@ export function ProfilePage() {
           {/* User Info Header */}
           <div className="border-b-2 border-border pb-6 mb-6">
             <div className="flex items-center gap-4">
-              <div className="w-16 h-16 bg-primary text-white flex items-center justify-center text-2xl font-bold">
-                {user?.name?.charAt(0).toUpperCase()}
+              <div className="w-16 h-16 bg-primary text-white flex items-center justify-center text-2xl font-bold rounded-full">
+                {user?.name?.charAt(0).toUpperCase() || user?.email?.charAt(0).toUpperCase() || 'U'}
               </div>
               <div>
-                <h3 className="font-semibold text-lg">{user?.name}</h3>
+                <h3 className="font-semibold text-lg">{user?.name || user?.email}</h3>
                 <p className="text-sm text-gray-600">{user?.email}</p>
                 <Badge className="mt-1">
                   {user?.role === 'admin' && 'Administrator'}
