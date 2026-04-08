@@ -98,7 +98,7 @@ export function ProfilePage() {
       <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'profile' | 'password')}>
         {/* Main Container with border */}
         <div className="border-2 border-border bg-white">
-          <TabsList className="grid w-full grid-cols-2 border-b-2 border-border p-1">
+          <TabsList className="grid w-full grid-cols-2 border-b-2 border-border p-4 min-h-[60px]">
             <TabsTrigger value="profile" className="min-h-[44px] text-center">
               Profile
             </TabsTrigger>
@@ -108,9 +108,9 @@ export function ProfilePage() {
           </TabsList>
 
         {/* Profile Tab */}
-        <TabsContent value="profile">
+        <TabsContent value="profile" className="p-6">
           {/* User Info Header */}
-          <div className="border-b-2 border-border p-6">
+          <div className="border-b-2 border-border pb-6 mb-6">
             <div className="flex items-center gap-4">
               <div className="w-16 h-16 bg-primary text-white flex items-center justify-center text-2xl font-bold">
                 {user?.name?.charAt(0).toUpperCase()}
@@ -128,7 +128,7 @@ export function ProfilePage() {
           </div>
 
           {/* Form Fields */}
-          <form onSubmit={handleProfileSubmit(onProfileSubmit)} className="p-6 space-y-4">
+          <form onSubmit={handleProfileSubmit(onProfileSubmit)} className="space-y-4">
             <div>
               <Label htmlFor="name">Nama Lengkap</Label>
               <Input
