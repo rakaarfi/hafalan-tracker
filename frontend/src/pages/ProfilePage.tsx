@@ -95,18 +95,20 @@ export function ProfilePage() {
       </div>
 
       {/* Tabs */}
-      <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'profile' | 'password')} className="space-y-4">
-        <TabsList className="grid w-full grid-cols-2 border-2 border-border bg-white p-1">
-          <TabsTrigger value="profile" className="min-h-[44px] text-center">
-            Profile
-          </TabsTrigger>
-          <TabsTrigger value="password" className="min-h-[44px] text-center">
-            Ganti Password
-          </TabsTrigger>
-        </TabsList>
+      <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'profile' | 'password')}>
+        {/* Main Container with border */}
+        <div className="border-2 border-border bg-white">
+          <TabsList className="grid w-full grid-cols-2 border-b-2 border-border p-1">
+            <TabsTrigger value="profile" className="min-h-[44px] text-center">
+              Profile
+            </TabsTrigger>
+            <TabsTrigger value="password" className="min-h-[44px] text-center">
+              Ganti Password
+            </TabsTrigger>
+          </TabsList>
 
         {/* Profile Tab */}
-        <TabsContent value="profile" className="border-2 border-border bg-white">
+        <TabsContent value="profile">
           {/* User Info Header */}
           <div className="border-b-2 border-border p-6">
             <div className="flex items-center gap-4">
@@ -177,7 +179,7 @@ export function ProfilePage() {
         </TabsContent>
 
         {/* Password Tab */}
-        <TabsContent value="password" className="border-2 border-border bg-white p-6">
+        <TabsContent value="password" className="p-6">
           <form id="password-form" onSubmit={handlePasswordSubmit(onPasswordSubmit)} className="space-y-4">
             <div>
               <Label htmlFor="current_password">Password Saat Ini *</Label>
@@ -244,6 +246,7 @@ export function ProfilePage() {
             </div>
           </form>
         </TabsContent>
+        </div>
       </Tabs>
     </div>
   )
