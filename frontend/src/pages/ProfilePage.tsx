@@ -98,7 +98,7 @@ export function ProfilePage() {
       <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'profile' | 'password')}>
         {/* Main Container with border */}
         <div className="border-2 border-border bg-white">
-          <TabsList className="grid w-full grid-cols-2 border-b-2 border-border p-4 min-h-[60px]">
+          <TabsList className="grid w-full grid-cols-2 border-b-2 border-border h-13 p-2 min-h-[60px]">
             <TabsTrigger value="profile" className="min-h-[44px] text-center">
               Profile
             </TabsTrigger>
