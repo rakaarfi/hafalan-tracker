@@ -96,7 +96,7 @@ export function ProfilePage() {
 
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'profile' | 'password')} className="space-y-4">
-        <TabsList className="grid w-full grid-cols-2 border-2 border-border bg-white">
+        <TabsList className="grid w-full grid-cols-2 border-2 border-border bg-white p-1">
           <TabsTrigger value="profile" className="min-h-[44px]">
             Profile
           </TabsTrigger>
@@ -106,147 +106,143 @@ export function ProfilePage() {
         </TabsList>
 
         {/* Profile Tab */}
-        <TabsContent value="profile">
-          <div className="border-2 border-border bg-white">
-            {/* User Info Header */}
-            <div className="border-b-2 border-border p-6">
-              <div className="flex items-center gap-4">
-                <div className="w-16 h-16 bg-primary text-white flex items-center justify-center text-2xl font-bold">
-                  {user?.name?.charAt(0).toUpperCase()}
-                </div>
-                <div>
-                  <h3 className="font-semibold text-lg">{user?.name}</h3>
-                  <p className="text-sm text-gray-600">{user?.email}</p>
-                  <Badge className="mt-1">
-                    {user?.role === 'admin' && 'Administrator'}
-                    {user?.role === 'teacher' && 'Guru'}
-                    {user?.role === 'parent' && 'Orang Tua'}
-                  </Badge>
-                </div>
+        <TabsContent value="profile" className="border-2 border-border bg-white">
+          {/* User Info Header */}
+          <div className="border-b-2 border-border p-6">
+            <div className="flex items-center gap-4">
+              <div className="w-16 h-16 bg-primary text-white flex items-center justify-center text-2xl font-bold">
+                {user?.name?.charAt(0).toUpperCase()}
+              </div>
+              <div>
+                <h3 className="font-semibold text-lg">{user?.name}</h3>
+                <p className="text-sm text-gray-600">{user?.email}</p>
+                <Badge className="mt-1">
+                  {user?.role === 'admin' && 'Administrator'}
+                  {user?.role === 'teacher' && 'Guru'}
+                  {user?.role === 'parent' && 'Orang Tua'}
+                </Badge>
               </div>
             </div>
-
-            {/* Form Fields */}
-            <form onSubmit={handleProfileSubmit(onProfileSubmit)} className="p-6 space-y-4">
-              <div>
-                <Label htmlFor="name">Nama Lengkap</Label>
-                <Input
-                  id="name"
-                  className="border-2 min-h-[44px]"
-                  {...registerProfile('name')}
-                />
-                {profileFormState.errors.name && (
-                  <p className="text-sm text-red-600 mt-1">{profileFormState.errors.name.message}</p>
-                )}
-              </div>
-
-              <div>
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  className="border-2 min-h-[44px]"
-                  {...registerProfile('email')}
-                />
-                {profileFormState.errors.email && (
-                  <p className="text-sm text-red-600 mt-1">{profileFormState.errors.email.message}</p>
-                )}
-              </div>
-
-              <div>
-                <Label htmlFor="phone">No HP</Label>
-                <Input
-                  id="phone"
-                  type="tel"
-                  placeholder="08xxxxxxxxxx"
-                  className="border-2 min-h-[44px]"
-                  {...registerProfile('phone')}
-                />
-              </div>
-
-              {/* Submit */}
-              <div className="pt-4">
-                <Button
-                  type="submit"
-                  disabled={profileFormState.isSubmitting}
-                  className="w-full min-h-[44px]"
-                >
-                  {profileFormState.isSubmitting ? 'Menyimpan...' : 'Simpan Profile'}
-                </Button>
-              </div>
-            </form>
           </div>
+
+          {/* Form Fields */}
+          <form onSubmit={handleProfileSubmit(onProfileSubmit)} className="p-6 space-y-4">
+            <div>
+              <Label htmlFor="name">Nama Lengkap</Label>
+              <Input
+                id="name"
+                className="border-2 min-h-[44px]"
+                {...registerProfile('name')}
+              />
+              {profileFormState.errors.name && (
+                <p className="text-sm text-red-600 mt-1">{profileFormState.errors.name.message}</p>
+              )}
+            </div>
+
+            <div>
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                type="email"
+                className="border-2 min-h-[44px]"
+                {...registerProfile('email')}
+              />
+              {profileFormState.errors.email && (
+                <p className="text-sm text-red-600 mt-1">{profileFormState.errors.email.message}</p>
+              )}
+            </div>
+
+            <div>
+              <Label htmlFor="phone">No HP</Label>
+              <Input
+                id="phone"
+                type="tel"
+                placeholder="08xxxxxxxxxx"
+                className="border-2 min-h-[44px]"
+                {...registerProfile('phone')}
+              />
+            </div>
+
+            {/* Submit */}
+            <div className="pt-4">
+              <Button
+                type="submit"
+                disabled={profileFormState.isSubmitting}
+                className="w-full min-h-[44px]"
+              >
+                {profileFormState.isSubmitting ? 'Menyimpan...' : 'Simpan Profile'}
+              </Button>
+            </div>
+          </form>
         </TabsContent>
 
         {/* Password Tab */}
-        <TabsContent value="password">
-          <div className="border-2 border-border bg-white p-6">
-            <form id="password-form" onSubmit={handlePasswordSubmit(onPasswordSubmit)} className="space-y-4">
-              <div>
-                <Label htmlFor="current_password">Password Saat Ini *</Label>
-                <Input
-                  id="current_password"
-                  type="password"
-                  className="border-2 min-h-[44px]"
-                  {...registerPassword('current_password')}
-                />
-                {passwordFormState.errors.current_password && (
-                  <p className="text-sm text-red-600 mt-1">{passwordFormState.errors.current_password.message}</p>
-                )}
-              </div>
+        <TabsContent value="password" className="border-2 border-border bg-white p-6">
+          <form id="password-form" onSubmit={handlePasswordSubmit(onPasswordSubmit)} className="space-y-4">
+            <div>
+              <Label htmlFor="current_password">Password Saat Ini *</Label>
+              <Input
+                id="current_password"
+                type="password"
+                className="border-2 min-h-[44px]"
+                {...registerPassword('current_password')}
+              />
+              {passwordFormState.errors.current_password && (
+                <p className="text-sm text-red-600 mt-1">{passwordFormState.errors.current_password.message}</p>
+              )}
+            </div>
 
-              <div>
-                <Label htmlFor="new_password">Password Baru *</Label>
-                <Input
-                  id="new_password"
-                  type="password"
-                  placeholder="Minimal 6 karakter"
-                  className="border-2 min-h-[44px]"
-                  {...registerPassword('new_password')}
-                />
-                {passwordFormState.errors.new_password && (
-                  <p className="text-sm text-red-600 mt-1">{passwordFormState.errors.new_password.message}</p>
-                )}
-              </div>
+            <div>
+              <Label htmlFor="new_password">Password Baru *</Label>
+              <Input
+                id="new_password"
+                type="password"
+                placeholder="Minimal 6 karakter"
+                className="border-2 min-h-[44px]"
+                {...registerPassword('new_password')}
+              />
+              {passwordFormState.errors.new_password && (
+                <p className="text-sm text-red-600 mt-1">{passwordFormState.errors.new_password.message}</p>
+              )}
+            </div>
 
-              <div>
-                <Label htmlFor="confirm_password">Konfirmasi Password Baru *</Label>
-                <Input
-                  id="confirm_password"
-                  type="password"
-                  placeholder="Ketik ulang password baru"
-                  className="border-2 min-h-[44px]"
-                  {...registerPassword('confirm_password')}
-                />
-                {passwordFormState.errors.confirm_password && (
-                  <p className="text-sm text-red-600 mt-1">{passwordFormState.errors.confirm_password.message}</p>
-                )}
-              </div>
+            <div>
+              <Label htmlFor="confirm_password">Konfirmasi Password Baru *</Label>
+              <Input
+                id="confirm_password"
+                type="password"
+                placeholder="Ketik ulang password baru"
+                className="border-2 min-h-[44px]"
+                {...registerPassword('confirm_password')}
+              />
+              {passwordFormState.errors.confirm_password && (
+                <p className="text-sm text-red-600 mt-1">{passwordFormState.errors.confirm_password.message}</p>
+              )}
+            </div>
 
-              {/* Info */}
-              <div className="border-2 border-yellow-100 bg-yellow-50 p-4">
-                <p className="text-sm text-yellow-800">
-                  <strong>Tips:</strong>
-                </p>
-                <ul className="text-sm text-yellow-700 list-disc list-inside mt-2 space-y-1">
-                  <li>Gunakan minimal 6 karakter</li>
-                  <li>Gabungkan huruf, angka, dan simbol</li>
-                  <li>Jangan gunakan password yang sama dengan akun lain</li>
-                </ul>
-              </div>
+            {/* Info */}
+            <div className="border-2 border-yellow-100 bg-yellow-50 p-4">
+              <p className="text-sm text-yellow-800">
+                <strong>Tips:</strong>
+              </p>
+              <ul className="text-sm text-yellow-700 list-disc list-inside mt-2 space-y-1">
+                <li>Gunakan minimal 6 karakter</li>
+                <li>Gabungkan huruf, angka, dan simbol</li>
+                <li>Jangan gunakan password yang sama dengan akun lain</li>
+              </ul>
+            </div>
 
-              {/* Submit */}
-              <div>
-                <Button
-                  type="submit"
-                  disabled={passwordFormState.isSubmitting}
-                  className="w-full min-h-[44px]"
-                >
-                  {passwordFormState.isSubmitting ? 'Mengubah...' : 'Ganti Password'}
-                </Button>
-              </div>
-            </form>
-          </div>
+            {/* Submit */}
+            <div>
+              <Button
+                type="submit"
+                disabled={passwordFormState.isSubmitting}
+                className="w-full min-h-[44px]"
+              >
+                {passwordFormState.isSubmitting ? 'Mengubah...' : 'Ganti Password'}
+              </Button>
+            </div>
+          </form>
         </TabsContent>
       </Tabs>
     </div>
