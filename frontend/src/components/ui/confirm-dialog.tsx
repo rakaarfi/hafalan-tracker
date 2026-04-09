@@ -32,41 +32,41 @@ export function ConfirmDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md border-2">
+      <DialogContent className="sm:max-w-md max-w-[90vw] mx-4 border-2 sm:p-6 p-4">
         <DialogHeader>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
             {variant === 'danger' && (
-              <div className="flex-shrink-0 w-12 h-12 rounded-full bg-red-100 flex items-center justify-center">
-                <AlertTriangle className="h-6 w-6 text-red-600" />
+              <div className="flex-shrink-0 w-8 h-8 sm:w-12 sm:h-12 rounded-full bg-red-100 flex items-center justify-center">
+                <AlertTriangle className="h-4 w-4 sm:h-6 text-red-600" />
               </div>
             )}
             {variant === 'warning' && (
-              <div className="flex-shrink-0 w-12 h-12 rounded-full bg-yellow-100 flex items-center justify-center">
-                <AlertTriangle className="h-6 w-6 text-yellow-600" />
+              <div className="flex-shrink-0 w-8 h-8 sm:w-12 sm:h-12 rounded-full bg-yellow-100 flex items-center justify-center">
+                <AlertTriangle className="h-4 w-4 sm:h-6 text-yellow-600" />
               </div>
             )}
             {variant === 'info' && (
-              <div className="flex-shrink-0 w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center">
-                <AlertTriangle className="h-6 w-6 text-blue-600" />
+              <div className="flex-shrink-0 w-8 h-8 sm:w-12 sm:h-12 rounded-full bg-blue-100 flex items-center justify-center">
+                <AlertTriangle className="h-4 w-4 sm:h-6 text-blue-600" />
               </div>
             )}
             <div className="flex-1">
-              <DialogTitle className="text-lg font-semibold">{title}</DialogTitle>
+              <DialogTitle className="text-base sm:text-lg font-semibold">{title}</DialogTitle>
             </div>
           </div>
         </DialogHeader>
 
-        <DialogDescription className="text-sm text-gray-600 mt-4 pl-15">
+        <DialogDescription className="text-xs sm:text-sm text-gray-600 mt-2 sm:mt-4 pl-10 sm:pl-15">
           {description}
         </DialogDescription>
 
-        <DialogFooter className="mt-6 gap-3 sm:gap-3">
+        <DialogFooter className="mt-4 sm:mt-6 gap-2 sm:gap-3">
           <Button
             type="button"
             variant="outline"
             onClick={() => onOpenChange(false)}
             disabled={isLoading}
-            className="min-h-[44px] flex-1"
+            className="min-h-[40px] sm:min-h-[44px] text-sm sm:text-base flex-1 px-2 sm:px-4"
           >
             {cancelLabel}
           </Button>
@@ -74,7 +74,7 @@ export function ConfirmDialog({
             type="button"
             onClick={handleConfirm}
             disabled={isLoading}
-            className={`min-h-[44px] flex-1 ${
+            className={`min-h-[40px] sm:min-h-[44px] text-sm sm:text-base flex-1 px-2 sm:px-4 ${
               variant === 'danger'
                 ? 'bg-red-600 hover:bg-red-700 text-white'
                 : variant === 'warning'
