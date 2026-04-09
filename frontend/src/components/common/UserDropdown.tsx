@@ -1,15 +1,11 @@
 import { useState, useRef, useEffect } from 'react'
-import { ChevronDown, LogOut, User } from 'lucide-react'
+import { ChevronDown, LogOut, User as UserIcon } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
-import { useAuthStore } from '@/stores/authStore'
+import { useAuthStore, User } from '@/stores/authStore'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 
 interface UserDropdownProps {
-  user?: {
-    name: string
-    email: string
-    role: string
-  } | null
+  user?: User | null
 }
 
 export function UserDropdown({ user }: UserDropdownProps) {
@@ -30,12 +26,12 @@ export function UserDropdown({ user }: UserDropdownProps) {
     navigate('/login')
   }
 
-  const getRoleDisplayName = (role: string) => {
+  const getRoleDisplayName = (role?: 'admin' | 'teacher' | 'parent') => {
     switch (role) {
       case 'teacher': return 'Guru'
       case 'parent': return 'Orang Tua'
       case 'admin': return 'Administrator'
-      default: return role
+      default: return role || 'User'
     }
   }
 
@@ -64,13 +60,13 @@ export function UserDropdown({ user }: UserDropdownProps) {
         >
           {/* User Info */}
           <div className="hidden md:block text-left">
-            <div className="font-semibold text-base">{user?.name || 'User'}</div>
-            <div className="text-sm text-gray-600">{getRoleDisplayName(user?.role || '')}</div>
+            <div className="font-semibold text-base">{user?.name || user?.email || 'User'}</div>
+            <div className="text-sm text-gray-600">{getRoleDisplayName(user?.role)}</div>
           </div>
 
           {/* Mobile: Show initials only */}
           <div className="md:hidden w-10 h-10 bg-primary text-white flex items-center justify-center font-semibold text-base">
-            {user?.name?.charAt(0).toUpperCase() || 'U'}
+            {user?.name?.charAt(0).toUpperCase() || user?.email?.charAt(0).toUpperCase() || 'U'}
           </div>
 
           {/* Dropdown Arrow */}
@@ -97,13 +93,13 @@ export function UserDropdown({ user }: UserDropdownProps) {
               <div className="p-4 border-b-2 border-border bg-gray-50">
                 <div className="flex items-center gap-3">
                   <div className="w-12 h-12 bg-primary text-white flex items-center justify-center font-semibold text-xl">
-                    {user?.name?.charAt(0).toUpperCase() || 'U'}
+                    {user?.name?.charAt(0).toUpperCase() || user?.email?.charAt(0).toUpperCase() || 'U'}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="font-semibold text-base truncate">{user?.name || 'User'}</div>
+                    <div className="font-semibold text-base truncate">{user?.name || user?.email || 'User'}</div>
                     <div className="text-sm text-gray-600 truncate">{user?.email}</div>
                     <div className="text-sm font-semibold text-gray-700 mt-1">
-                      {getRoleDisplayName(user?.role || '')}
+                      {getRoleDisplayName(user?.role)}
                     </div>
                   </div>
                 </div>
@@ -118,7 +114,7 @@ export function UserDropdown({ user }: UserDropdownProps) {
                   }}
                   className="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors text-left"
                 >
-                  <User size={18} className="text-gray-600" />
+                  <UserIcon size={18} className="text-gray-600" />
                   <div className="flex-1">
                     <div className="font-semibold">Profile</div>
                     <div className="text-xs text-gray-600">Pengaturan akun</div>

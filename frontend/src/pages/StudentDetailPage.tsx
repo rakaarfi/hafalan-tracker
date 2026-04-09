@@ -105,11 +105,7 @@ export function StudentDetailPage() {
             </>
           ) : null}
           </div>
-        </div>
-        <UserDropdown user={user} />
-      </header>
-            </>
-          ) : null}
+          <UserDropdown user={user} />
         </div>
       </header>
 
