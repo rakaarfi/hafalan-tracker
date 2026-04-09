@@ -10,11 +10,28 @@ import {
   LogOut,
   Menu,
   X,
-  User
+  User,
+  ChevronDown
 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { useAuthStore } from '@/stores/authStore'
 import { Button } from '@/components/ui/button'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
 
 interface MenuItem {
   id: string
@@ -38,9 +55,15 @@ export function AdminDashboard() {
   const { t } = useTranslation()
   const { user, logout } = useAuthStore()
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [showLogoutDialog, setShowLogoutDialog] = useState(false)
   const location = useLocation()
 
   const isActive = (href: string) => location.pathname === href
+
+  const handleLogout = () => {
+    logout()
+    setShowLogoutDialog(false)
+  }
 
   return (
     <div className="h-screen bg-gray-50 flex flex-col lg:flex-row overflow-hidden">
@@ -90,31 +113,62 @@ export function AdminDashboard() {
           ))}
         </nav>
 
-        {/* User Info & Logout */}
-        <div className="p-4 border-t-2 border-border space-y-2">
-          <div className="text-sm">
-            <div className="font-medium">{user?.name || 'Admin'}</div>
-            <div className="text-gray-600 text-xs">{user?.email}</div>
-          </div>
-
-          {/* Profile Button */}
-          <Link
-            to="/profile"
-            className="flex items-center gap-3 px-4 py-3 border-2 border-border hover:bg-gray-50 w-full min-h-[44px]"
-          >
-            <User size={20} />
-            <span>Profile</span>
-          </Link>
-
-          {/* Logout Button */}
-          <button
-            onClick={logout}
-            className="flex items-center gap-3 px-4 py-3 border-2 border-red-200 text-red-600 hover:bg-red-50 w-full min-h-[44px]"
-          >
-            <LogOut size={20} />
-            <span>Keluar</span>
-          </button>
+        {/* User Info & Actions */}
+        <div className="p-4 border-t-2 border-border">
+          {/* User Dropdown Menu */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button className="w-full flex items-center justify-between px-4 py-3 border-2 border-border hover:bg-gray-50 min-h-[44px] transition-colors">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 bg-primary text-white flex items-center justify-center rounded-full text-sm font-bold">
+                    {user?.name?.charAt(0).toUpperCase() || user?.email?.charAt(0).toUpperCase() || 'A'}
+                  </div>
+                  <div className="text-left flex-1">
+                    <div className="text-sm font-medium">{user?.name || 'Admin'}</div>
+                    <div className="text-xs text-gray-600">{user?.email}</div>
+                  </div>
+                </div>
+                <ChevronDown size={16} className="text-gray-600" />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-56">
+              <DropdownMenuItem asChild>
+                <Link to="/profile" className="flex items-center gap-3 cursor-pointer">
+                  <User size={18} />
+                  <span>Profile</span>
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => setShowLogoutDialog(true)}
+                className="flex items-center gap-3 cursor-pointer text-red-600 focus:text-red-600"
+              >
+                <LogOut size={18} />
+                <span>Keluar</span>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
+
+        {/* Logout Confirmation Dialog */}
+        <AlertDialog open={showLogoutDialog} onOpenChange={setShowLogoutDialog}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Keluar dari Akun?</AlertDialogTitle>
+              <AlertDialogDescription>
+                Apakah Anda yakin ingin keluar? Anda perlu login kembali untuk mengakses sistem.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Batal</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={handleLogout}
+                className="bg-red-600 hover:bg-red-700"
+              >
+                Ya, Keluar
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </aside>
 
       {/* Main Content */}
