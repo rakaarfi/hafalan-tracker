@@ -11,7 +11,6 @@ import { Badge } from '@/components/ui/badge'
 import { UserDropdown } from '@/components/common/UserDropdown'
 import { useToast } from '@/hooks/use-toast'
 import { useAuthStore } from '@/stores/authStore'
-import { MobileNav } from '@/components/common/MobileNav'
 import api from '@/lib/api'
 
 const profileSchema = z.object({
@@ -137,8 +136,6 @@ export function ProfilePage({ embedded = false }: ProfilePageProps) {
             <div className="flex items-center gap-2">
               {/* User dropdown */}
               <UserDropdown user={user} />
-              {/* Mobile Menu */}
-              <MobileNav userRole={user?.role} onLogout={() => {}} />
             </div>
           </div>
         </header>

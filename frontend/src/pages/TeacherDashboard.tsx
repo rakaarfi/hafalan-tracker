@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react'
 import { StudentList } from '@/components/teacher/StudentList'
-import { MobileNav } from '@/components/common/MobileNav'
 import { UserDropdown } from '@/components/common/UserDropdown'
 import { useAuthStore } from '@/stores/authStore'
 import { useTranslation } from 'react-i18next'
@@ -64,8 +63,6 @@ export function TeacherDashboard() {
           <div className="flex items-center gap-2">
             {/* User dropdown */}
             <UserDropdown user={user} />
-            {/* Mobile menu button */}
-            <MobileNav userRole={user?.role} onLogout={() => {}} />
           </div>
         </div>
       </header>
