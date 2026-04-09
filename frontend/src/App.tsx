@@ -43,6 +43,19 @@ function ProtectedRoute({ children, allowedRoles }: { children: React.ReactNode;
   return <>{children}</>
 }
 
+// Profile Redirect Component - Redirects to role-appropriate profile page
+function ProfileRedirect() {
+  const { user } = useAuthStore()
+
+  // Admin goes to admin profile (with sidebar)
+  if (user?.role === 'admin') {
+    return <Navigate to="/admin/profile" replace />
+  }
+
+  // Teacher and Parent stay on /profile (standalone page)
+  return <ProfilePage />
+}
+
 // Public Route - redirect to dashboard if already authenticated
 function PublicRoute({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, user } = useAuthStore()
@@ -155,14 +168,15 @@ function App() {
             <Route path="classes/:classId/edit" element={<ClassFormPage />} />
             <Route path="reports" element={<ReportsPage />} />
             <Route path="settings" element={<SettingsPage />} />
+            <Route path="profile" element={<ProfilePage />} />
           </Route>
 
-          {/* Profile Routes (All Roles) */}
+          {/* Profile Routes - Role-based redirect */}
           <Route
             path="/profile"
             element={
               <ProtectedRoute>
-                <ProfilePage />
+                <ProfileRedirect />
               </ProtectedRoute>
             }
           />
