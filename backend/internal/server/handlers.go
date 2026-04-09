@@ -654,12 +654,91 @@ func (s *Server) getStudent(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, student)
-// getStudentMemorizations retrieves all memorizations for a specific student
 }
+
+// getStudentMemorizations retrieves all memorizations for a specific student
 func (s *Server) getStudentMemorizations(c *gin.Context) {
 	studentID := c.Param("id")
+	userRole := c.GetString("user_role")
+	userID := c.GetString("user_id")
 
-	memorizations, err := s.memorizationService.GetByStudentID(c.Request.Context(), studentID)
+	ctx := c.Request.Context()
+
+	// If user is a teacher, verify they have permission to view this student's memorizations
+	if userRole == "teacher" {
+		teacherID := 0
+		if _, err := fmt.Sscanf(userID, "%d", &teacherID); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error": "Invalid teacher ID",
+			})
+			return
+		}
+
+		// Get teacher's assigned classes
+		academicYear := "2025/2026"
+		assignments, err := s.classQuranTeacherRepo.GetActiveByTeacher(ctx, teacherID, academicYear)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"error": "Failed to verify teacher permissions",
+			})
+			return
+		}
+
+		// If teacher has no assignments, deny access
+		if len(assignments) == 0 {
+			c.JSON(http.StatusForbidden, gin.H{
+				"error": "You don't have permission to view this student's memorizations",
+			})
+			return
+		}
+
+		// Get class IDs from assignments
+		classIDs := make([]int, len(assignments))
+		for i, assignment := range assignments {
+			classIDs[i] = assignment.ClassID
+		}
+
+		// Check if student belongs to any of teacher's assigned classes
+		student, err := s.studentRepo.GetByID(ctx, studentID)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"error": "Failed to retrieve student information",
+			})
+			return
+		}
+
+		// Convert student's class_id to int for comparison
+		studentClassID := 0
+		if student.ClassID != "" {
+			if _, err := fmt.Sscanf(student.ClassID, "%d", &studentClassID); err != nil {
+				c.JSON(http.StatusInternalServerError, gin.H{
+					"error": "Invalid student class ID",
+				})
+				return
+			}
+		}
+
+		// Check if student's class is in teacher's assigned classes
+		hasAccess := false
+		for _, classID := range classIDs {
+			if classID == studentClassID {
+				hasAccess = true
+				break
+			}
+		}
+
+		if !hasAccess {
+			c.JSON(http.StatusForbidden, gin.H{
+				"error": "You don't have permission to view this student's memorizations",
+			})
+			return
+		}
+	}
+
+	// For admin and parent roles, allow access (they have broader permissions)
+	// For parents, the parent-specific endpoints should be used instead for their children
+
+	memorizations, err := s.memorizationService.GetByStudentID(ctx, studentID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"error": "Failed to retrieve memorizations",
