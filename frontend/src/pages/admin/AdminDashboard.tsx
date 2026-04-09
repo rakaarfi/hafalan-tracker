@@ -16,22 +16,7 @@ import {
 import { useTranslation } from 'react-i18next'
 import { useAuthStore } from '@/stores/authStore'
 import { Button } from '@/components/ui/button'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog'
+import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 
 interface MenuItem {
   id: string
@@ -55,14 +40,16 @@ export function AdminDashboard() {
   const { t } = useTranslation()
   const { user, logout } = useAuthStore()
   const [sidebarOpen, setSidebarOpen] = useState(false)
-  const [showLogoutDialog, setShowLogoutDialog] = useState(false)
+  const [userMenuOpen, setUserMenuOpen] = useState(false)
+  const [logoutDialogOpen, setLogoutDialogOpen] = useState(false)
   const location = useLocation()
 
   const isActive = (href: string) => location.pathname === href
 
   const handleLogout = () => {
     logout()
-    setShowLogoutDialog(false)
+    setLogoutDialogOpen(false)
+    setUserMenuOpen(false)
   }
 
   return (
@@ -115,60 +102,74 @@ export function AdminDashboard() {
 
         {/* User Info & Actions */}
         <div className="p-4 border-t-2 border-border">
-          {/* User Dropdown Menu */}
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <button className="w-full flex items-center justify-between px-4 py-3 border-2 border-border hover:bg-gray-50 min-h-[44px] transition-colors">
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 bg-primary text-white flex items-center justify-center rounded-full text-sm font-bold">
-                    {user?.name?.charAt(0).toUpperCase() || user?.email?.charAt(0).toUpperCase() || 'A'}
-                  </div>
-                  <div className="text-left flex-1">
-                    <div className="text-sm font-medium">{user?.name || 'Admin'}</div>
-                    <div className="text-xs text-gray-600">{user?.email}</div>
-                  </div>
+          {/* Custom User Dropdown */}
+          <div className="relative">
+            {/* Dropdown Trigger */}
+            <button
+              onClick={() => setUserMenuOpen(!userMenuOpen)}
+              className="w-full flex items-center justify-between px-4 py-3 border-2 border-border hover:bg-gray-50 min-h-[44px] transition-colors"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 bg-primary text-white flex items-center justify-center rounded-full text-sm font-bold">
+                  {user?.name?.charAt(0).toUpperCase() || user?.email?.charAt(0).toUpperCase() || 'A'}
                 </div>
-                <ChevronDown size={16} className="text-gray-600" />
-              </button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56">
-              <DropdownMenuItem asChild>
-                <Link to="/profile" className="flex items-center gap-3 cursor-pointer">
-                  <User size={18} />
-                  <span>Profile</span>
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() => setShowLogoutDialog(true)}
-                className="flex items-center gap-3 cursor-pointer text-red-600 focus:text-red-600"
-              >
-                <LogOut size={18} />
-                <span>Keluar</span>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+                <div className="text-left flex-1">
+                  <div className="text-sm font-medium">{user?.name || 'Admin'}</div>
+                  <div className="text-xs text-gray-600">{user?.email}</div>
+                </div>
+              </div>
+              <ChevronDown
+                size={16}
+                className={`text-gray-600 transition-transform ${userMenuOpen ? 'rotate-180' : ''}`}
+              />
+            </button>
+
+            {/* Dropdown Content */}
+            {userMenuOpen && (
+              <>
+                {/* Backdrop */}
+                <div
+                  className="fixed inset-0 z-40"
+                  onClick={() => setUserMenuOpen(false)}
+                />
+
+                {/* Dropdown Menu */}
+                <div className="absolute z-50 w-full mt-1 bg-white border-2 border-border shadow-lg">
+                  <Link
+                    to="/profile"
+                    onClick={() => setUserMenuOpen(false)}
+                    className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 border-b border-border min-h-[48px] transition-colors"
+                  >
+                    <User size={18} />
+                    <span className="text-sm">Profile</span>
+                  </Link>
+                  <button
+                    onClick={() => {
+                      setUserMenuOpen(false)
+                      setLogoutDialogOpen(true)
+                    }}
+                    className="w-full flex items-center gap-3 px-4 py-3 hover:bg-red-50 text-red-600 min-h-[48px] transition-colors"
+                  >
+                    <LogOut size={18} />
+                    <span className="text-sm">Keluar</span>
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
         </div>
 
         {/* Logout Confirmation Dialog */}
-        <AlertDialog open={showLogoutDialog} onOpenChange={setShowLogoutDialog}>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Keluar dari Akun?</AlertDialogTitle>
-              <AlertDialogDescription>
-                Apakah Anda yakin ingin keluar? Anda perlu login kembali untuk mengakses sistem.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>Batal</AlertDialogCancel>
-              <AlertDialogAction
-                onClick={handleLogout}
-                className="bg-red-600 hover:bg-red-700"
-              >
-                Ya, Keluar
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
+        <ConfirmDialog
+          open={logoutDialogOpen}
+          onOpenChange={setLogoutDialogOpen}
+          title="Keluar dari Akun?"
+          description="Apakah Anda yakin ingin keluar? Anda perlu login kembali untuk mengakses sistem."
+          confirmLabel="Ya, Keluar"
+          cancelLabel="Batal"
+          variant="danger"
+          onConfirm={handleLogout}
+        />
       </aside>
 
       {/* Main Content */}
