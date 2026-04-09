@@ -90,7 +90,7 @@ export function AdminDashboard() {
         w-64 flex flex-col flex-shrink-0
       `}>
         {/* Logo */}
-        <div className="p-4 border-b-2 border-border flex items-center justify-between">
+        <div className="p-4 border-b-2 border-border flex items-center justify-between min-h-[72px]">
           <h1 className="font-bold text-lg">Admin Panel</h1>
           <button
             onClick={() => setSidebarOpen(false)}
@@ -197,7 +197,7 @@ export function AdminDashboard() {
       {/* Main Content */}
       <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
         {/* Header */}
-        <header className="border-b-2 border-border bg-white p-4 flex-shrink-0">
+        <header className="border-b-2 border-border bg-white p-4 flex-shrink-0 min-h-[72px]">
           <div className="flex items-center gap-4">
             <button
               onClick={() => setSidebarOpen(!sidebarOpen)}
