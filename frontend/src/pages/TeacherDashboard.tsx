@@ -8,7 +8,7 @@ import { GraduationCap, Users } from 'lucide-react'
 
 export function TeacherDashboard() {
   const { t } = useTranslation()
-  const { user, logout } = useAuthStore()
+  const { user, logout, isAuthenticated } = useAuthStore()
   const [students, setStudents] = useState<Student[]>([])
   const [classes, setClasses] = useState<Class[]>([])
   const [selectedClass, setSelectedClass] = useState<string>('all')
@@ -16,8 +16,13 @@ export function TeacherDashboard() {
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    fetchData()
-  }, [])
+    // Only fetch data if user is authenticated
+    if (isAuthenticated) {
+      fetchData()
+    } else {
+      setLoading(false)
+    }
+  }, [isAuthenticated])
 
   const fetchData = async () => {
     try {

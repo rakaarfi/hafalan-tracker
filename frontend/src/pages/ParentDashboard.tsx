@@ -27,14 +27,19 @@ interface Child {
 
 export function ParentDashboard() {
   const { t } = useTranslation()
-  const { user, logout } = useAuthStore()
+  const { user, logout, isAuthenticated } = useAuthStore()
   const [children, setChildren] = useState<Child[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    fetchChildren()
-  }, [])
+    // Only fetch data if user is authenticated
+    if (isAuthenticated) {
+      fetchChildren()
+    } else {
+      setLoading(false)
+    }
+  }, [isAuthenticated])
 
   const fetchChildren = async () => {
     try {
