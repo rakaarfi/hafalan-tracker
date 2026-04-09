@@ -20,10 +20,14 @@ export function UserDropdown({ user }: UserDropdownProps) {
     setIsOpen(false)
   }
 
-  const handleLogoutConfirmed = () => {
-    authLogout()
-    setShowLogoutDialog(false)
-    navigate('/login')
+  const handleLogoutConfirmed = async () => {
+    try {
+      await authLogout()
+      setShowLogoutDialog(false)
+      navigate('/login')
+    } catch (error) {
+      console.error('Logout failed:', error)
+    }
   }
 
   const getRoleDisplayName = (role?: 'admin' | 'teacher' | 'parent') => {
@@ -84,7 +88,11 @@ export function UserDropdown({ user }: UserDropdownProps) {
             {/* Backdrop - closes dropdown when clicking outside */}
             <div
               className="fixed inset-0 z-40"
-              onClick={() => setIsOpen(false)}
+              onClick={(e) => {
+                e.preventDefault()
+                e.stopPropagation()
+                setIsOpen(false)
+              }}
             />
 
             {/* Dropdown Content */}
@@ -108,11 +116,14 @@ export function UserDropdown({ user }: UserDropdownProps) {
               {/* Menu Items */}
               <div className="py-2">
                 <button
-                  onClick={() => {
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault()
+                    e.stopPropagation()
                     navigate('/profile')
                     setIsOpen(false)
                   }}
-                  className="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors text-left"
+                  className="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors text-left cursor-pointer"
                 >
                   <UserIcon size={18} className="text-gray-600" />
                   <div className="flex-1">
@@ -124,8 +135,13 @@ export function UserDropdown({ user }: UserDropdownProps) {
                 <div className="mx-4 my-2 border-t border-border" />
 
                 <button
-                  onClick={handleLogout}
-                  className="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors text-left"
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault()
+                    e.stopPropagation()
+                    handleLogout()
+                  }}
+                  className="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors text-left cursor-pointer"
                 >
                   <LogOut size={18} className="text-gray-600" />
                   <div className="flex-1">
