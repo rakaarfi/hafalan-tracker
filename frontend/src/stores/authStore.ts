@@ -2,7 +2,7 @@ import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { authApi } from '@/lib/api'
 
-interface User {
+export interface User {
   id: string
   email: string
   role: 'admin' | 'teacher' | 'parent'
