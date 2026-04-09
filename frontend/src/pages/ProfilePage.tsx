@@ -135,10 +135,6 @@ export function ProfilePage({ embedded = false }: ProfilePageProps) {
               </a>
             </div>
             <div className="flex items-center gap-2">
-              {/* Profile (active) */}
-              <span className="hidden lg:block px-4 py-2 bg-primary text-white min-h-[44px] min-w-[44px]">
-                Profile
-              </span>
               {/* User dropdown */}
               <UserDropdown user={user} />
               {/* Mobile Menu */}

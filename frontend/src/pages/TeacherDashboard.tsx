@@ -62,13 +62,6 @@ export function TeacherDashboard() {
             </p>
           </div>
           <div className="flex items-center gap-2">
-            {/* Desktop profile button */}
-            <a
-              href="/profile"
-              className="hidden lg:block px-4 py-2 border-2 border-border hover:bg-gray-50 min-h-[44px] min-w-[44px]"
-            >
-              Profile
-            </a>
             {/* User dropdown */}
             <UserDropdown user={user} />
             {/* Mobile menu button */}
