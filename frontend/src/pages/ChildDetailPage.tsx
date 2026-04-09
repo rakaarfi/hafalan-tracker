@@ -79,6 +79,28 @@ export function ChildDetailPage() {
     }
   }
 
+  const formatDate = (dateString: string | undefined | null) => {
+    if (!dateString) return 'Tanggal tidak tersedia'
+    try {
+      const date = new Date(dateString)
+      if (isNaN(date.getTime())) return 'Format tanggal invalid'
+      return date.toLocaleDateString('id-ID', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      })
+    } catch {
+      return 'Format tanggal invalid'
+    }
+  }
+
+  const getUnitDisplay = (test: any) => {
+    if (test.surah_name) return test.surah_name
+    if (test.juz_number) return `Juz ${test.juz_number}`
+    if (test.page_start && test.page_end) return `Halaman ${test.page_start} - ${test.page_end}`
+    return test.unit_type || 'Unknown'
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -137,7 +159,7 @@ export function ChildDetailPage() {
                 <div className="border-2 border-border bg-white p-6">
                   <h2 className="text-lg font-semibold mb-2">Latest Test</h2>
                   <div className="text-lg">
-                    {child.latest_test.surah_name || child.latest_test.unit_type}
+                    {getUnitDisplay(child.latest_test)}
                   </div>
                   <Badge className={getStatusColor(child.latest_test.status)}>
                     {getStatusLabel(child.latest_test.status)}
@@ -156,11 +178,11 @@ export function ChildDetailPage() {
                       <div className="flex justify-between items-start mb-2">
                         <div className="flex-1">
                           <div className="font-semibold text-lg">
-                            {test.surah_name || test.unit_type}
+                            {getUnitDisplay(test)}
                           </div>
                           <div className="text-sm text-gray-600 flex items-center gap-1">
                             <Calendar size={14} />
-                            {test.test_date ? new Date(test.test_date).toLocaleDateString('id-ID') : 'Invalid Date'}
+                            {formatDate(test.test_date)}
                           </div>
                           {test.teacher_name && (
                             <div className="text-xs text-gray-500 mt-1">
