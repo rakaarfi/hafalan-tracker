@@ -5,6 +5,7 @@ import { useAuthStore } from '@/stores/authStore'
 import { useTranslation } from 'react-i18next'
 import { teacherApi, Student, Class } from '@/lib/api'
 import { GraduationCap, Users } from 'lucide-react'
+import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 
 export function TeacherDashboard() {
   const { t } = useTranslation()
@@ -14,6 +15,12 @@ export function TeacherDashboard() {
   const [selectedClass, setSelectedClass] = useState<string>('all')
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [logoutDialogOpen, setLogoutDialogOpen] = useState(false)
+
+  const handleLogout = () => {
+    logout()
+    setLogoutDialogOpen(false)
+  }
 
   useEffect(() => {
     // Only fetch data if user is authenticated
@@ -70,7 +77,7 @@ export function TeacherDashboard() {
             </a>
             {/* Desktop logout button */}
             <button
-              onClick={logout}
+              onClick={() => setLogoutDialogOpen(true)}
               className="hidden lg:block px-4 py-2 border-2 border-border hover:bg-gray-50 min-h-[44px] min-w-[44px]"
             >
               Keluar
@@ -184,6 +191,18 @@ export function TeacherDashboard() {
           <StudentList students={filteredStudents} />
         )}
       </main>
+
+      {/* Logout Confirmation Dialog */}
+      <ConfirmDialog
+        open={logoutDialogOpen}
+        onOpenChange={setLogoutDialogOpen}
+        title="Keluar dari Akun?"
+        description="Apakah Anda yakin ingin keluar? Anda perlu login kembali untuk mengakses sistem."
+        confirmLabel="Ya, Keluar"
+        cancelLabel="Batal"
+        variant="danger"
+        onConfirm={handleLogout}
+      />
     </div>
   )
 }
