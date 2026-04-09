@@ -25,19 +25,16 @@ export function UserDropdown({ user }: UserDropdownProps) {
   }
 
   const handleProfileClick = () => {
-    console.log('Profile clicked - navigating to /profile')
     setIsOpen(false)
     window.location.href = '/profile'
   }
 
   const handleLogoutClick = () => {
-    console.log('Logout clicked - showing dialog')
     setIsOpen(false)
     setShowLogoutDialog(true)
   }
 
   const handleLogoutConfirmed = async () => {
-    console.log('Logout confirmed - logging out')
     try {
       await authLogout()
       setShowLogoutDialog(false)
@@ -68,10 +65,7 @@ export function UserDropdown({ user }: UserDropdownProps) {
       <div className="relative" ref={dropdownRef}>
         {/* User Dropdown Trigger */}
         <button
-          onClick={() => {
-            console.log('Dropdown toggle clicked, current:', isOpen)
-            setIsOpen(!isOpen)
-          }}
+          onClick={() => setIsOpen(!isOpen)}
           className="flex items-center gap-2 px-4 py-2 border-2 border-border hover:bg-gray-50 min-h-[44px] min-w-[44px] transition-colors"
         >
           {/* User Info */}
