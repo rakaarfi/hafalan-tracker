@@ -10,6 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Badge } from '@/components/ui/badge'
 import { useToast } from '@/hooks/use-toast'
 import { useAuthStore } from '@/stores/authStore'
+import { MobileNav } from '@/components/common/MobileNav'
 import api from '@/lib/api'
 
 const profileSchema = z.object({
@@ -33,8 +34,35 @@ type PasswordFormData = z.infer<typeof passwordSchema>
 export function ProfilePage() {
   const { t } = useTranslation()
   const { toast } = useToast()
-  const { user } = useAuthStore()
+  const { user, logout } = useAuthStore()
   const [activeTab, setActiveTab] = useState<'profile' | 'password'>('profile')
+
+  // Determine dashboard URL based on user role
+  const getDashboardUrl = () => {
+    switch (user?.role) {
+      case 'teacher':
+        return '/teacher/dashboard'
+      case 'parent':
+        return '/parent/dashboard'
+      case 'admin':
+        return '/admin/dashboard'
+      default:
+        return '/'
+    }
+  }
+
+  const getDashboardTitle = () => {
+    switch (user?.role) {
+      case 'teacher':
+        return 'Dashboard Guru'
+      case 'parent':
+        return 'Dashboard Orang Tua'
+      case 'admin':
+        return 'Dashboard Admin'
+      default:
+        return 'Dashboard'
+    }
+  }
 
   const { register: registerProfile, handleSubmit: handleProfileSubmit, formState: profileFormState } = useForm<ProfileFormData>({
     resolver: zodResolver(profileSchema),
@@ -87,12 +115,44 @@ export function ProfilePage() {
   }
 
   return (
-    <div className="container mx-auto py-6 px-4 max-w-2xl">
+    <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold">Profile</h1>
-        <p className="text-sm text-gray-600">Kelola akun Anda</p>
-      </div>
+      <header className="border-b-2 border-border bg-white p-4">
+        <div className="container mx-auto flex justify-between items-center max-w-7xl">
+          <div className="flex items-center gap-4">
+            {/* Back to Dashboard Button */}
+            <a
+              href={getDashboardUrl()}
+              className="px-4 py-2 border-2 border-border hover:bg-gray-50 min-h-[44px] min-w-[44px]"
+            >
+              ← {getDashboardTitle()}
+            </a>
+          </div>
+          <div className="flex items-center gap-2">
+            {/* Profile (active) */}
+            <span className="hidden lg:block px-4 py-2 bg-primary text-white min-h-[44px] min-w-[44px]">
+              Profile
+            </span>
+            {/* Logout Button */}
+            <button
+              onClick={logout}
+              className="hidden lg:block px-4 py-2 border-2 border-border hover:bg-gray-50 min-h-[44px] min-w-[44px]"
+            >
+              Keluar
+            </button>
+            {/* Mobile Menu */}
+            <MobileNav userRole={user?.role} onLogout={logout} />
+          </div>
+        </div>
+      </header>
+
+      {/* Main Content */}
+      <main className="container mx-auto py-6 px-4 max-w-2xl">
+        {/* Page Title */}
+        <div className="mb-6">
+          <h1 className="text-2xl font-bold">Profile</h1>
+          <p className="text-sm text-gray-600">Kelola akun Anda</p>
+        </div>
 
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'profile' | 'password')}>
@@ -248,6 +308,7 @@ export function ProfilePage() {
         </TabsContent>
         </div>
       </Tabs>
+      </main>
     </div>
   )
 }
