@@ -31,7 +31,10 @@ export function TeacherDashboard() {
       setClasses(classesData)
     } catch (err: any) {
       console.error('Failed to fetch data:', err)
-      setError('Gagal memuat data')
+      // Don't show error if it's a 401 (user will be redirected to login)
+      if (err.response?.status !== 401) {
+        setError('Gagal memuat data')
+      }
     } finally {
       setLoading(false)
     }
