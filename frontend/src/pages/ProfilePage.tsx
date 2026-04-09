@@ -31,7 +31,11 @@ const passwordSchema = z.object({
 type ProfileFormData = z.infer<typeof profileSchema>
 type PasswordFormData = z.infer<typeof passwordSchema>
 
-export function ProfilePage() {
+interface ProfilePageProps {
+  embedded?: boolean
+}
+
+export function ProfilePage({ embedded = false }: ProfilePageProps) {
   const { t } = useTranslation()
   const { toast } = useToast()
   const { user, logout } = useAuthStore()
@@ -115,44 +119,48 @@ export function ProfilePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="border-b-2 border-border bg-white p-4">
-        <div className="container mx-auto flex justify-between items-center max-w-7xl">
-          <div className="flex items-center gap-4">
-            {/* Back to Dashboard Button */}
-            <a
-              href={getDashboardUrl()}
-              className="px-4 py-2 border-2 border-border hover:bg-gray-50 min-h-[44px] min-w-[44px]"
-            >
-              ← {getDashboardTitle()}
-            </a>
+    <div className={embedded ? "bg-gray-50" : "min-h-screen bg-gray-50"}>
+      {/* Header - hanya muncul kalau NOT embedded */}
+      {!embedded && (
+        <header className="border-b-2 border-border bg-white p-4">
+          <div className="container mx-auto flex justify-between items-center max-w-7xl">
+            <div className="flex items-center gap-4">
+              {/* Back to Dashboard Button */}
+              <a
+                href={getDashboardUrl()}
+                className="px-4 py-2 border-2 border-border hover:bg-gray-50 min-h-[44px] min-w-[44px]"
+              >
+                ← {getDashboardTitle()}
+              </a>
+            </div>
+            <div className="flex items-center gap-2">
+              {/* Profile (active) */}
+              <span className="hidden lg:block px-4 py-2 bg-primary text-white min-h-[44px] min-w-[44px]">
+                Profile
+              </span>
+              {/* Logout Button */}
+              <button
+                onClick={logout}
+                className="hidden lg:block px-4 py-2 border-2 border-border hover:bg-gray-50 min-h-[44px] min-w-[44px]"
+              >
+                Keluar
+              </button>
+              {/* Mobile Menu */}
+              <MobileNav userRole={user?.role} onLogout={logout} />
+            </div>
           </div>
-          <div className="flex items-center gap-2">
-            {/* Profile (active) */}
-            <span className="hidden lg:block px-4 py-2 bg-primary text-white min-h-[44px] min-w-[44px]">
-              Profile
-            </span>
-            {/* Logout Button */}
-            <button
-              onClick={logout}
-              className="hidden lg:block px-4 py-2 border-2 border-border hover:bg-gray-50 min-h-[44px] min-w-[44px]"
-            >
-              Keluar
-            </button>
-            {/* Mobile Menu */}
-            <MobileNav userRole={user?.role} onLogout={logout} />
-          </div>
-        </div>
-      </header>
+        </header>
+      )}
 
       {/* Main Content */}
-      <main className="container mx-auto py-6 px-4 max-w-2xl">
-        {/* Page Title */}
-        <div className="mb-6">
-          <h1 className="text-2xl font-bold">Profile</h1>
-          <p className="text-sm text-gray-600">Kelola akun Anda</p>
-        </div>
+      <main className={embedded ? "py-6 px-4" : "container mx-auto py-6 px-4 max-w-2xl"}>
+        {/* Page Title - hanya muncul kalau NOT embedded */}
+        {!embedded && (
+          <div className="mb-6">
+            <h1 className="text-2xl font-bold">Profile</h1>
+            <p className="text-sm text-gray-600">Kelola akun Anda</p>
+          </div>
+        )}
 
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'profile' | 'password')}>

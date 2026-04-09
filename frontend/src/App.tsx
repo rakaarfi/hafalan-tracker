@@ -168,7 +168,7 @@ function App() {
             <Route path="classes/:classId/edit" element={<ClassFormPage />} />
             <Route path="reports" element={<ReportsPage />} />
             <Route path="settings" element={<SettingsPage />} />
-            <Route path="profile" element={<ProfilePage />} />
+            <Route path="profile" element={<ProfilePage embedded={true} />} />
           </Route>
 
           {/* Profile Routes - Role-based redirect */}
