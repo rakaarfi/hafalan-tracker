@@ -15,9 +15,20 @@ export function UserDropdown({ user }: UserDropdownProps) {
   const [showLogoutDialog, setShowLogoutDialog] = useState(false)
   const triggerRef = useRef<HTMLButtonElement>(null)
 
-  const handleLogout = () => {
-    setShowLogoutDialog(true)
+  const handleProfileClick = () => {
+    console.log('Profile clicked')
     setIsOpen(false)
+    setTimeout(() => {
+      navigate('/profile')
+    }, 100)
+  }
+
+  const handleLogout = () => {
+    console.log('Logout clicked')
+    setIsOpen(false)
+    setTimeout(() => {
+      setShowLogoutDialog(true)
+    }, 100)
   }
 
   const handleLogoutConfirmed = async () => {
@@ -88,11 +99,7 @@ export function UserDropdown({ user }: UserDropdownProps) {
             {/* Backdrop - closes dropdown when clicking outside */}
             <div
               className="fixed inset-0 z-40"
-              onClick={(e) => {
-                e.preventDefault()
-                e.stopPropagation()
-                setIsOpen(false)
-              }}
+              onClick={() => setIsOpen(false)}
             />
 
             {/* Dropdown Content */}
@@ -114,16 +121,11 @@ export function UserDropdown({ user }: UserDropdownProps) {
               </div>
 
               {/* Menu Items */}
-              <div className="py-2">
+              <div className="py-2 relative z-50">
                 <button
                   type="button"
-                  onClick={(e) => {
-                    e.preventDefault()
-                    e.stopPropagation()
-                    navigate('/profile')
-                    setIsOpen(false)
-                  }}
-                  className="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors text-left cursor-pointer"
+                  onClick={handleProfileClick}
+                  className="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors text-left"
                 >
                   <UserIcon size={18} className="text-gray-600" />
                   <div className="flex-1">
@@ -136,12 +138,8 @@ export function UserDropdown({ user }: UserDropdownProps) {
 
                 <button
                   type="button"
-                  onClick={(e) => {
-                    e.preventDefault()
-                    e.stopPropagation()
-                    handleLogout()
-                  }}
-                  className="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors text-left cursor-pointer"
+                  onClick={handleLogout}
+                  className="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors text-left"
                 >
                   <LogOut size={18} className="text-gray-600" />
                   <div className="flex-1">
