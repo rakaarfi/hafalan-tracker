@@ -9,7 +9,8 @@ import {
   Settings,
   LogOut,
   Menu,
-  X
+  X,
+  User
 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { useAuthStore } from '@/stores/authStore'
@@ -95,6 +96,17 @@ export function AdminDashboard() {
             <div className="font-medium">{user?.name || 'Admin'}</div>
             <div className="text-gray-600 text-xs">{user?.email}</div>
           </div>
+
+          {/* Profile Button */}
+          <Link
+            to="/profile"
+            className="flex items-center gap-3 px-4 py-3 border-2 border-border hover:bg-gray-50 w-full min-h-[44px]"
+          >
+            <User size={20} />
+            <span>Profile</span>
+          </Link>
+
+          {/* Logout Button */}
           <button
             onClick={logout}
             className="flex items-center gap-3 px-4 py-3 border-2 border-red-200 text-red-600 hover:bg-red-50 w-full min-h-[44px]"
