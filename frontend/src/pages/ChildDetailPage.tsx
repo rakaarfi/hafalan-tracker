@@ -7,19 +7,19 @@ import { parentsApi } from '@/lib/api'
 
 interface Child {
   student: {
-    ID: string
-    Name: string
-    ClassName: string
+    id: string
+    name: string
+    class_name: string
   }
   recent_tests: Array<{
-    ID: number
-    UnitType: string
-    SurahName?: string
-    Status: string
-    Notes: string
-    TestDate: string
-    TeacherName: string
-  }>
+    id: number
+    unit_type: string
+    surah_name?: string
+    status: string
+    notes: string
+    test_date: string
+    teacher_name: string
+  }> | null
   total_tests: number
   average_score: number
   latest_test?: any
@@ -101,7 +101,7 @@ export function ChildDetailPage() {
             <>
               <h1 className="text-2xl font-bold">Detail Progress</h1>
               <p className="text-sm text-gray-600">
-                {child.student.Name} - {child.student.ClassName}
+                {child.student.name} - {child.student.class_name}
               </p>
             </>
           ) : null}
@@ -137,10 +137,10 @@ export function ChildDetailPage() {
                 <div className="border-2 border-border bg-white p-6">
                   <h2 className="text-lg font-semibold mb-2">Latest Test</h2>
                   <div className="text-lg">
-                    {child.latest_test.SurahName || child.latest_test.UnitType}
+                    {child.latest_test.surah_name || child.latest_test.unit_type}
                   </div>
-                  <Badge className={getStatusColor(child.latest_test.Status)}>
-                    {getStatusLabel(child.latest_test.Status)}
+                  <Badge className={getStatusColor(child.latest_test.status)}>
+                    {getStatusLabel(child.latest_test.status)}
                   </Badge>
                 </div>
               )}
@@ -152,29 +152,29 @@ export function ChildDetailPage() {
                 <h2 className="text-lg font-semibold mb-4">Riwayat Hafalan</h2>
                 <div className="space-y-4">
                   {child.recent_tests.map((test) => (
-                    <div key={test.ID} className="border-2 border-border p-4">
+                    <div key={test.id} className="border-2 border-border p-4">
                       <div className="flex justify-between items-start mb-2">
                         <div className="flex-1">
                           <div className="font-semibold text-lg">
-                            {test.SurahName || test.UnitType}
+                            {test.surah_name || test.unit_type}
                           </div>
                           <div className="text-sm text-gray-600 flex items-center gap-1">
                             <Calendar size={14} />
-                            {new Date(test.TestDate).toLocaleDateString('id-ID')}
+                            {test.test_date ? new Date(test.test_date).toLocaleDateString('id-ID') : 'Invalid Date'}
                           </div>
-                          {test.TeacherName && (
+                          {test.teacher_name && (
                             <div className="text-xs text-gray-500 mt-1">
-                              Guru: {test.TeacherName}
+                              Guru: {test.teacher_name}
                             </div>
                           )}
                         </div>
-                        <Badge className={getStatusColor(test.Status)}>
-                          {getStatusLabel(test.Status)}
+                        <Badge className={getStatusColor(test.status)}>
+                          {getStatusLabel(test.status)}
                         </Badge>
                       </div>
-                      {test.Notes && (
+                      {test.notes && (
                         <div className="mt-2 text-sm text-gray-700 bg-gray-50 p-2 border-2 border-gray-200">
-                          <span className="font-medium">Catatan:</span> {test.Notes}
+                          <span className="font-medium">Catatan:</span> {test.notes}
                         </div>
                       )}
                     </div>
@@ -188,19 +188,19 @@ export function ChildDetailPage() {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="border-2 border-border bg-white p-4 text-center">
                   <div className="text-2xl font-bold text-green-600">
-                    {child.recent_tests.filter(t => t.Status === 'fluent').length}
+                    {child.recent_tests.filter(t => t.status === 'fluent').length}
                   </div>
                   <div className="text-sm text-gray-600">Lancar</div>
                 </div>
                 <div className="border-2 border-border bg-white p-4 text-center">
                   <div className="text-2xl font-bold text-yellow-600">
-                    {child.recent_tests.filter(t => t.Status === 'good').length}
+                    {child.recent_tests.filter(t => t.status === 'good').length}
                   </div>
                   <div className="text-sm text-gray-600">Cukup</div>
                 </div>
                 <div className="border-2 border-border bg-white p-4 text-center">
                   <div className="text-2xl font-bold text-red-600">
-                    {child.recent_tests.filter(t => t.Status === 'needs_improvement').length}
+                    {child.recent_tests.filter(t => t.status === 'needs_improvement').length}
                   </div>
                   <div className="text-sm text-gray-600">Perlu Perbaikan</div>
                 </div>
