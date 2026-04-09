@@ -9,7 +9,7 @@ interface ChildProgressCardProps {
       name: string
       class_name: string
     }
-    recent_tests: Memorization[]
+    recent_tests: Memorization[] | null
     total_tests: number
     average_score: number
     latest_test?: Memorization
@@ -68,7 +68,7 @@ export function ChildProgressCard({ child }: ChildProgressCardProps) {
       <div className="mb-4">
         <p className="text-sm font-medium mb-2">{t('parent.recentTests')}:</p>
         <div className="space-y-2">
-          {child.recent_tests.slice(0, 3).map((test) => (
+          {(child.recent_tests || []).slice(0, 3).map((test) => (
             <div key={test.id} className="flex items-center gap-2 text-sm">
               <span className="text-gray-600">{new Date(test.test_date).toLocaleDateString('id-ID')}:</span>
               <span className="font-medium flex-1">{test.surah_name || test.unit_type}</span>
@@ -77,9 +77,9 @@ export function ChildProgressCard({ child }: ChildProgressCardProps) {
               </Badge>
             </div>
           ))}
-          {child.recent_tests.length === 0 && (
+          {!child.recent_tests || child.recent_tests.length === 0 ? (
             <div className="text-sm text-gray-500">Belum ada data hafalan</div>
-          )}
+          ) : null}
         </div>
       </div>
 

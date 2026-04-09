@@ -8,18 +8,18 @@ import { Users, Baby, AlertCircle } from 'lucide-react'
 
 interface Child {
   student: {
-    ID: string
-    Name: string
-    ClassName: string
+    id: string
+    name: string
+    class_name: string
   }
   recent_tests: Array<{
-    ID: number
-    UnitType: string
-    SurahName?: string
-    Status: string
-    Notes: string
-    TestDate: string
-  }>
+    id: number
+    unit_type: string
+    surah_name?: string
+    status: string
+    notes: string
+    test_date: string
+  }> | null
   total_tests: number
   average_score: number
   latest_test?: any
