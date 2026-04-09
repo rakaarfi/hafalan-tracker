@@ -90,7 +90,7 @@ export function AdminDashboard() {
         w-64 flex flex-col flex-shrink-0
       `}>
         {/* Logo */}
-        <div className="p-4 border-b-2 border-border flex items-center justify-between min-h-[72px]">
+        <div className="p-4 border-b-2 border-border flex items-center justify-between h-[72px]">
           <h1 className="font-bold text-lg">Admin Panel</h1>
           <button
             onClick={() => setSidebarOpen(false)}
@@ -197,13 +197,13 @@ export function AdminDashboard() {
       {/* Main Content */}
       <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
         {/* Header */}
-        <header className="border-b-2 border-border bg-white p-4 flex-shrink-0 min-h-[72px]">
+        <header className="border-b-2 border-border bg-white p-4 flex-shrink-0 h-[72px]">
           <div className="flex items-center gap-4">
             <button
               onClick={() => setSidebarOpen(!sidebarOpen)}
               className="lg:hidden p-2 border-2 border-border hover:bg-gray-50 min-h-[44px] min-w-[44px]"
             >
-              {sidebarOpen ? <X size={24} /> : <Menu size={24} />}
+              {sidebarOpen ? <X size={20} /> : <Menu size={20} />}
             </button>
             <div className="flex-1">
               <h2 className="text-lg font-semibold">{t('admin.dashboard')}</h2>
