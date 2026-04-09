@@ -13,33 +13,7 @@ export function UserDropdown({ user }: UserDropdownProps) {
   const { logout: authLogout } = useAuthStore()
   const [isOpen, setIsOpen] = useState(false)
   const [showLogoutDialog, setShowLogoutDialog] = useState(false)
-  const triggerRef = useRef<HTMLButtonElement>(null)
-
-  const handleProfileClick = () => {
-    console.log('Profile clicked')
-    setIsOpen(false)
-    setTimeout(() => {
-      navigate('/profile')
-    }, 100)
-  }
-
-  const handleLogout = () => {
-    console.log('Logout clicked')
-    setIsOpen(false)
-    setTimeout(() => {
-      setShowLogoutDialog(true)
-    }, 100)
-  }
-
-  const handleLogoutConfirmed = async () => {
-    try {
-      await authLogout()
-      setShowLogoutDialog(false)
-      navigate('/login')
-    } catch (error) {
-      console.error('Logout failed:', error)
-    }
-  }
+  const dropdownRef = useRef<HTMLDivElement>(null)
 
   const getRoleDisplayName = (role?: 'admin' | 'teacher' | 'parent') => {
     switch (role) {
@@ -50,27 +24,54 @@ export function UserDropdown({ user }: UserDropdownProps) {
     }
   }
 
+  const handleProfileClick = () => {
+    console.log('Profile clicked - navigating to /profile')
+    setIsOpen(false)
+    window.location.href = '/profile'
+  }
+
+  const handleLogoutClick = () => {
+    console.log('Logout clicked - showing dialog')
+    setIsOpen(false)
+    setShowLogoutDialog(true)
+  }
+
+  const handleLogoutConfirmed = async () => {
+    console.log('Logout confirmed - logging out')
+    try {
+      await authLogout()
+      setShowLogoutDialog(false)
+      window.location.href = '/login'
+    } catch (error) {
+      console.error('Logout failed:', error)
+    }
+  }
+
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (isOpen && triggerRef.current && !triggerRef.current.contains(event.target as Node)) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setIsOpen(false)
       }
     }
 
-    document.addEventListener('mousedown', handleClickOutside)
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside)
+    if (isOpen) {
+      document.addEventListener('mousedown', handleClickOutside)
+      return () => {
+        document.removeEventListener('mousedown', handleClickOutside)
+      }
     }
   }, [isOpen])
 
   return (
     <>
-      <div className="relative">
+      <div className="relative" ref={dropdownRef}>
         {/* User Dropdown Trigger */}
         <button
-          ref={triggerRef}
-          onClick={() => setIsOpen(!isOpen)}
+          onClick={() => {
+            console.log('Dropdown toggle clicked, current:', isOpen)
+            setIsOpen(!isOpen)
+          }}
           className="flex items-center gap-2 px-4 py-2 border-2 border-border hover:bg-gray-50 min-h-[44px] min-w-[44px] transition-colors"
         >
           {/* User Info */}
@@ -95,61 +96,52 @@ export function UserDropdown({ user }: UserDropdownProps) {
 
         {/* Dropdown Menu */}
         {isOpen && (
-          <>
-            {/* Backdrop - closes dropdown when clicking outside */}
-            <div
-              className="fixed inset-0 z-40"
-              onClick={() => setIsOpen(false)}
-            />
-
-            {/* Dropdown Content */}
-            <div className="absolute right-0 top-full mt-2 z-50 w-64 bg-white border-2 border-border">
-              {/* User Info Header */}
-              <div className="p-4 border-b-2 border-border bg-gray-50">
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 bg-primary text-white flex items-center justify-center font-semibold text-xl">
-                    {user?.name?.charAt(0).toUpperCase() || user?.email?.charAt(0).toUpperCase() || 'U'}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="font-semibold text-base truncate">{user?.name || user?.email || 'User'}</div>
-                    <div className="text-sm text-gray-600 truncate">{user?.email}</div>
-                    <div className="text-sm font-semibold text-gray-700 mt-1">
-                      {getRoleDisplayName(user?.role)}
-                    </div>
+          <div className="absolute right-0 top-full mt-2 z-50 w-64 bg-white border-2 border-border">
+            {/* User Info Header */}
+            <div className="p-4 border-b-2 border-border bg-gray-50">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 bg-primary text-white flex items-center justify-center font-semibold text-xl">
+                  {user?.name?.charAt(0).toUpperCase() || user?.email?.charAt(0).toUpperCase() || 'U'}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="font-semibold text-base truncate">{user?.name || user?.email || 'User'}</div>
+                  <div className="text-sm text-gray-600 truncate">{user?.email}</div>
+                  <div className="text-sm font-semibold text-gray-700 mt-1">
+                    {getRoleDisplayName(user?.role)}
                   </div>
                 </div>
               </div>
-
-              {/* Menu Items */}
-              <div className="py-2 relative z-50">
-                <button
-                  type="button"
-                  onClick={handleProfileClick}
-                  className="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors text-left"
-                >
-                  <UserIcon size={18} className="text-gray-600" />
-                  <div className="flex-1">
-                    <div className="font-semibold">Profile</div>
-                    <div className="text-xs text-gray-600">Pengaturan akun</div>
-                  </div>
-                </button>
-
-                <div className="mx-4 my-2 border-t border-border" />
-
-                <button
-                  type="button"
-                  onClick={handleLogout}
-                  className="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors text-left"
-                >
-                  <LogOut size={18} className="text-gray-600" />
-                  <div className="flex-1">
-                    <div className="font-semibold">Keluar</div>
-                    <div className="text-xs text-gray-600">Keluar dari akun</div>
-                  </div>
-                </button>
-              </div>
             </div>
-          </>
+
+            {/* Menu Items */}
+            <div className="py-2">
+              <button
+                type="button"
+                onClick={handleProfileClick}
+                className="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors text-left"
+              >
+                <UserIcon size={18} className="text-gray-600" />
+                <div className="flex-1">
+                  <div className="font-semibold">Profile</div>
+                  <div className="text-xs text-gray-600">Pengaturan akun</div>
+                </div>
+              </button>
+
+              <div className="mx-4 my-2 border-t border-border" />
+
+              <button
+                type="button"
+                onClick={handleLogoutClick}
+                className="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors text-left"
+              >
+                <LogOut size={18} className="text-gray-600" />
+                <div className="flex-1">
+                  <div className="font-semibold">Keluar</div>
+                  <div className="text-xs text-gray-600">Keluar dari akun</div>
+                </div>
+              </button>
+            </div>
+          </div>
         )}
       </div>
 
