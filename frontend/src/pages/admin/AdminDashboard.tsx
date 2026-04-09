@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { Link, Outlet, useLocation } from 'react-router-dom'
 import {
   LayoutDashboard,
@@ -11,7 +11,8 @@ import {
   Menu,
   X,
   User,
-  ChevronDown
+  ChevronDown,
+  ChevronUp
 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { useAuthStore } from '@/stores/authStore'
@@ -42,9 +43,27 @@ export function AdminDashboard() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [userMenuOpen, setUserMenuOpen] = useState(false)
   const [logoutDialogOpen, setLogoutDialogOpen] = useState(false)
+  const [dropdownPosition, setDropdownPosition] = useState<'bottom' | 'top'>('bottom')
+  const triggerRef = useRef<HTMLButtonElement>(null)
   const location = useLocation()
 
   const isActive = (href: string) => location.pathname === href
+
+  // Calculate dropdown position when opened
+  useEffect(() => {
+    if (userMenuOpen && triggerRef.current) {
+      const rect = triggerRef.current.getBoundingClientRect()
+      const spaceBelow = window.innerHeight - rect.bottom
+      const dropdownHeight = 96 // approximate height: 48px * 2 items
+
+      // If not enough space below, show above
+      if (spaceBelow < dropdownHeight) {
+        setDropdownPosition('top')
+      } else {
+        setDropdownPosition('bottom')
+      }
+    }
+  }, [userMenuOpen])
 
   const handleLogout = () => {
     logout()
@@ -106,6 +125,7 @@ export function AdminDashboard() {
           <div className="relative">
             {/* Dropdown Trigger */}
             <button
+              ref={triggerRef}
               onClick={() => setUserMenuOpen(!userMenuOpen)}
               className="w-full flex items-center justify-between px-4 py-3 border-2 border-border hover:bg-gray-50 min-h-[44px] transition-colors"
             >
@@ -120,21 +140,23 @@ export function AdminDashboard() {
               </div>
               <ChevronDown
                 size={16}
-                className={`text-gray-600 transition-transform ${userMenuOpen ? 'rotate-180' : ''}`}
+                className={`text-gray-600 transition-transform flex-shrink-0 ${userMenuOpen ? 'rotate-180' : ''}`}
               />
             </button>
 
             {/* Dropdown Content */}
             {userMenuOpen && (
               <>
-                {/* Backdrop */}
+                {/* Backdrop - closes dropdown when clicking outside (mobile only) */}
                 <div
-                  className="fixed inset-0 z-40"
+                  className="fixed inset-0 z-40 lg:hidden"
                   onClick={() => setUserMenuOpen(false)}
                 />
 
-                {/* Dropdown Menu */}
-                <div className="absolute z-50 w-full mt-1 bg-white border-2 border-border shadow-lg">
+                {/* Dropdown Menu - Smart positioning */}
+                <div className={`absolute z-50 w-full bg-white border-2 border-border shadow-lg ${
+                  dropdownPosition === 'bottom' ? 'mt-1' : 'mb-1 bottom-full'
+                }`}>
                   <Link
                     to="/profile"
                     onClick={() => setUserMenuOpen(false)}
