@@ -158,7 +158,7 @@ export function AdminDashboard() {
                   dropdownPosition === 'bottom' ? 'mt-1' : 'mb-1 bottom-full'
                 }`}>
                   <Link
-                    to="/profile"
+                    to="/admin/profile"
                     onClick={() => setUserMenuOpen(false)}
                     className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 border-b border-border min-h-[48px] transition-colors"
                   >
