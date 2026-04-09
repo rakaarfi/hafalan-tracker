@@ -16,8 +16,11 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      // Redirect to login (cookie will be cleared by backend)
-      window.location.href = '/login'
+      // Only redirect if not already on login page to prevent infinite loop
+      if (!window.location.pathname.includes('/login')) {
+        // Redirect to login (cookie will be cleared by backend)
+        window.location.href = '/login'
+      }
     }
     return Promise.reject(error)
   }
