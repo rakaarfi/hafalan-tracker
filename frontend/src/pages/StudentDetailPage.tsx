@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { HafalanInputForm } from '@/components/teacher/HafalanInputForm'
+import { UserDropdown } from '@/components/common/UserDropdown'
+import { useAuthStore } from '@/stores/authStore'
 import { useTranslation } from 'react-i18next'
 import { ArrowLeft } from 'lucide-react'
 import { studentsApi, memorizationsApi, Student, Memorization } from '@/lib/api'
@@ -9,6 +11,7 @@ export function StudentDetailPage() {
   const { t } = useTranslation()
   const { studentId } = useParams<{ studentId: string }>()
   const navigate = useNavigate()
+  const { user } = useAuthStore()
 
   const [student, setStudent] = useState<Student | null>(null)
   const [memorizations, setMemorizations] = useState<Memorization[] | null>(null)
@@ -78,14 +81,15 @@ export function StudentDetailPage() {
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <header className="border-b-2 border-border bg-white p-4">
-        <div className="container mx-auto">
-          <button
-            onClick={() => navigate(-1)}
-            className="text-sm text-gray-600 hover:text-gray-900 mb-2 flex items-center gap-2"
-          >
-            <ArrowLeft size={16} />
-            Kembali ke Dashboard
-          </button>
+        <div className="container mx-auto flex justify-between items-start">
+          <div className="flex-1">
+            <button
+              onClick={() => navigate(-1)}
+              className="text-sm text-gray-600 hover:text-gray-900 mb-2 flex items-center gap-2"
+            >
+              <ArrowLeft size={16} />
+              Kembali ke Dashboard
+            </button>
           {loading ? (
             <div className="h-8 bg-gray-200 animate-pulse rounded"></div>
           ) : error ? (
@@ -98,6 +102,12 @@ export function StudentDetailPage() {
               <p className="text-sm text-gray-600">
                 {student.name} - {student.class_name || '-'}
               </p>
+            </>
+          ) : null}
+          </div>
+        </div>
+        <UserDropdown user={user} />
+      </header>
             </>
           ) : null}
         </div>

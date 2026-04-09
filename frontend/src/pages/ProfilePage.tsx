@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Badge } from '@/components/ui/badge'
-import { ConfirmDialog } from '@/components/ui/confirm-dialog'
+import { UserDropdown } from '@/components/common/UserDropdown'
 import { useToast } from '@/hooks/use-toast'
 import { useAuthStore } from '@/stores/authStore'
 import { MobileNav } from '@/components/common/MobileNav'
@@ -39,14 +39,8 @@ interface ProfilePageProps {
 export function ProfilePage({ embedded = false }: ProfilePageProps) {
   const { t } = useTranslation()
   const { toast } = useToast()
-  const { user, logout } = useAuthStore()
+  const { user } = useAuthStore()
   const [activeTab, setActiveTab] = useState<'profile' | 'password'>('profile')
-  const [logoutDialogOpen, setLogoutDialogOpen] = useState(false)
-
-  const handleLogout = () => {
-    logout()
-    setLogoutDialogOpen(false)
-  }
 
   // Determine dashboard URL based on user role
   const getDashboardUrl = () => {
@@ -145,15 +139,10 @@ export function ProfilePage({ embedded = false }: ProfilePageProps) {
               <span className="hidden lg:block px-4 py-2 bg-primary text-white min-h-[44px] min-w-[44px]">
                 Profile
               </span>
-              {/* Logout Button */}
-              <button
-                onClick={() => setLogoutDialogOpen(true)}
-                className="hidden lg:block px-4 py-2 border-2 border-border hover:bg-gray-50 min-h-[44px] min-w-[44px]"
-              >
-                Keluar
-              </button>
+              {/* User dropdown */}
+              <UserDropdown user={user} />
               {/* Mobile Menu */}
-              <MobileNav userRole={user?.role} onLogout={logout} />
+              <MobileNav userRole={user?.role} onLogout={() => {}} />
             </div>
           </div>
         </header>
@@ -324,20 +313,6 @@ export function ProfilePage({ embedded = false }: ProfilePageProps) {
         </div>
       </Tabs>
       </main>
-
-      {/* Logout Confirmation Dialog - Only show when not embedded */}
-      {!embedded && (
-        <ConfirmDialog
-          open={logoutDialogOpen}
-          onOpenChange={setLogoutDialogOpen}
-          title="Keluar dari Akun?"
-          description="Apakah Anda yakin ingin keluar? Anda perlu login kembali untuk mengakses sistem."
-          confirmLabel="Ya, Keluar"
-          cancelLabel="Batal"
-          variant="danger"
-          onConfirm={handleLogout}
-        />
-      )}
     </div>
   )
 }
