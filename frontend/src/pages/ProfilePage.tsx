@@ -75,7 +75,7 @@ export function ProfilePage({ embedded = false }: ProfilePageProps) {
     defaultValues: {
       name: user?.name || '',
       email: user?.email || '',
-      phone: '',
+      phone: user?.phone || '',
     }
   })
 
@@ -88,7 +88,7 @@ export function ProfilePage({ embedded = false }: ProfilePageProps) {
       await api.put('/profile', data)
 
       // Update user data in authStore
-      updateUser({ name: data.name, email: data.email })
+      updateUser({ name: data.name, email: data.email, phone: data.phone })
 
       toast({
         title: "Berhasil",
