@@ -3,6 +3,7 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { useTranslation } from 'react-i18next'
+import { ArrowLeft } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { PasswordInput } from '@/components/ui/password-input'
@@ -133,15 +134,17 @@ export function ProfilePage({ embedded = false }: ProfilePageProps) {
       {/* Header - hanya muncul kalau NOT embedded */}
       {!embedded && (
         <header className="border-b-2 border-border bg-white p-4">
-          <div className="container mx-auto flex justify-between items-center max-w-7xl">
-            <div className="flex items-center gap-4">
-              {/* Back to Dashboard Button */}
-              <a
-                href={getDashboardUrl()}
-                className="px-4 py-2 border-2 border-border hover:bg-gray-50 min-h-[44px] min-w-[44px]"
+          <div className="container mx-auto flex justify-between items-start max-w-7xl">
+            <div className="flex-1">
+              <button
+                onClick={() => window.location.href = getDashboardUrl()}
+                className="text-sm text-gray-600 hover:text-gray-900 mb-2 flex items-center gap-2"
               >
-                ← {getDashboardTitle()}
-              </a>
+                <ArrowLeft size={16} />
+                Kembali ke Dashboard
+              </button>
+              <h1 className="text-2xl font-bold">Profile</h1>
+              <p className="text-sm text-gray-600">Kelola akun Anda</p>
             </div>
             <div className="flex items-center gap-2">
               {/* User dropdown */}
@@ -153,13 +156,6 @@ export function ProfilePage({ embedded = false }: ProfilePageProps) {
 
       {/* Main Content */}
       <main className={embedded ? "py-6 px-4" : "container mx-auto py-6 px-4 max-w-2xl"}>
-        {/* Page Title - hanya muncul kalau NOT embedded */}
-        {!embedded && (
-          <div className="mb-6">
-            <h1 className="text-2xl font-bold">Profile</h1>
-            <p className="text-sm text-gray-600">Kelola akun Anda</p>
-          </div>
-        )}
 
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'profile' | 'password')}>
