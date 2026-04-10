@@ -5,6 +5,7 @@ import { z } from 'zod'
 import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { PasswordInput } from '@/components/ui/password-input'
 import { Label } from '@/components/ui/label'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Badge } from '@/components/ui/badge'
@@ -249,9 +250,8 @@ export function ProfilePage({ embedded = false }: ProfilePageProps) {
           <form id="password-form" onSubmit={handlePasswordSubmit(onPasswordSubmit)} className="space-y-4">
             <div>
               <Label htmlFor="current_password">Password Saat Ini *</Label>
-              <Input
+              <PasswordInput
                 id="current_password"
-                type="password"
                 className="border-2 min-h-[44px]"
                 {...registerPassword('current_password')}
               />
@@ -262,9 +262,8 @@ export function ProfilePage({ embedded = false }: ProfilePageProps) {
 
             <div>
               <Label htmlFor="new_password">Password Baru *</Label>
-              <Input
+              <PasswordInput
                 id="new_password"
-                type="password"
                 placeholder="Minimal 6 karakter"
                 className="border-2 min-h-[44px]"
                 {...registerPassword('new_password')}
@@ -276,9 +275,8 @@ export function ProfilePage({ embedded = false }: ProfilePageProps) {
 
             <div>
               <Label htmlFor="confirm_password">Konfirmasi Password Baru *</Label>
-              <Input
+              <PasswordInput
                 id="confirm_password"
-                type="password"
                 placeholder="Ketik ulang password baru"
                 className="border-2 min-h-[44px]"
                 {...registerPassword('confirm_password')}
