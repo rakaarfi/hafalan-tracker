@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
-import { Link } from 'react-router-dom'
+import { DismissableLayer } from '@radix-ui/react-dismissable-layer'
 import { LogOut, User as UserIcon, ChevronDown } from 'lucide-react'
 import { useAuthStore, User } from '@/stores/authStore'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
@@ -14,7 +14,6 @@ export function UserDropdown({ user }: UserDropdownProps) {
   const [logoutDialogOpen, setLogoutDialogOpen] = useState(false)
   const [dropdownPosition, setDropdownPosition] = useState<'bottom' | 'top'>('bottom')
   const triggerRef = useRef<HTMLButtonElement>(null)
-  const dropdownContainerRef = useRef<HTMLDivElement>(null)
 
   // Calculate dropdown position when opened
   useEffect(() => {
@@ -28,30 +27,6 @@ export function UserDropdown({ user }: UserDropdownProps) {
         setDropdownPosition('top')
       } else {
         setDropdownPosition('bottom')
-      }
-    }
-  }, [userMenuOpen])
-
-  // Close dropdown when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      const target = event.target as Node
-      // Check if click is outside both trigger and dropdown menu
-      const isOutsideTrigger = triggerRef.current && !triggerRef.current.contains(target)
-      const isOutsideDropdown = dropdownContainerRef.current && !dropdownContainerRef.current.contains(target)
-
-      if (isOutsideTrigger && isOutsideDropdown) {
-        console.log('[UserDropdown] Click outside detected, closing dropdown')
-        setUserMenuOpen(false)
-      }
-    }
-
-    if (userMenuOpen) {
-      // Use mousedown instead of click - more reliable, fires before click event
-      // Bubble phase (default) is safer than capture phase
-      document.addEventListener('mousedown', handleClickOutside)
-      return () => {
-        document.removeEventListener('mousedown', handleClickOutside)
       }
     }
   }, [userMenuOpen])
@@ -88,7 +63,7 @@ export function UserDropdown({ user }: UserDropdownProps) {
 
   return (
     <>
-      <div className="relative" ref={dropdownContainerRef}>
+      <div className="relative">
         {/* Dropdown Trigger */}
         <button
           ref={triggerRef}
@@ -112,10 +87,14 @@ export function UserDropdown({ user }: UserDropdownProps) {
           />
         </button>
 
-        {/* Dropdown Content */}
+        {/* Dropdown Content with Radix UI DismissableLayer */}
         {userMenuOpen && (
-          <>
-            {/* Dropdown Menu - Smart positioning */}
+          <DismissableLayer
+            onDismiss={() => {
+              console.log('[UserDropdown] Dismissed by Radix UI')
+              setUserMenuOpen(false)
+            }}
+          >
             <div className={`absolute z-50 w-48 bg-white border-2 border-border shadow-lg ${
               dropdownPosition === 'bottom' ? 'mt-1 right-0' : 'mb-1 bottom-full right-0'
             }`}>
@@ -136,7 +115,7 @@ export function UserDropdown({ user }: UserDropdownProps) {
                 <span className="text-sm">Keluar</span>
               </button>
             </div>
-          </>
+          </DismissableLayer>
         )}
       </div>
 
