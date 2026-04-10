@@ -35,7 +35,7 @@ type ParentWithUser struct {
 // GetByUserID retrieves a parent by user ID
 func (r *ParentRepository) GetByUserID(ctx context.Context, userID string) (*ParentWithUser, error) {
 	query := `
-		SELECT p.user_id, p.full_name, p.phone, p.created_at, u.email
+		SELECT p.user_id, p.full_name, p.phone, p.gender, p.created_at, u.email
 		FROM parents p
 		JOIN users u ON p.user_id = u.id
 		WHERE p.user_id = $1
@@ -56,7 +56,7 @@ func (r *ParentRepository) GetByUserID(ctx context.Context, userID string) (*Par
 // GetByID retrieves a parent by ID (user_id)
 func (r *ParentRepository) GetByID(ctx context.Context, id string) (*ParentWithUser, error) {
 	query := `
-		SELECT p.user_id, p.full_name, p.phone, p.created_at, u.email
+		SELECT p.user_id, p.full_name, p.phone, p.gender, p.created_at, u.email
 		FROM parents p
 		JOIN users u ON p.user_id = u.id
 		WHERE p.user_id = $1
@@ -77,7 +77,7 @@ func (r *ParentRepository) GetByID(ctx context.Context, id string) (*ParentWithU
 // GetAll retrieves all parents with optional search
 func (r *ParentRepository) GetAll(ctx context.Context, search string) ([]ParentWithUser, error) {
 	query := `
-		SELECT p.user_id, p.full_name, p.phone, p.created_at, u.email
+		SELECT p.user_id, p.full_name, p.phone, p.gender, p.created_at, u.email
 		FROM parents p
 		JOIN users u ON p.user_id = u.id
 	`
