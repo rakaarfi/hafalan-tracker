@@ -67,7 +67,7 @@ export function SettingsPage() {
           setLogoPreview(data.school_logo)
         }
       } catch (error) {
-        console.error('Failed to load settings:', error)
+        // Error handled by toast
       } finally {
         setLoading(false)
       }
@@ -84,7 +84,7 @@ export function SettingsPage() {
         const data = await usersApi.getAll()
         setUsers(data)
       } catch (error) {
-        console.error('Failed to load users:', error)
+        // Error handled by toast
       } finally {
         setLoadingUsers(false)
       }
