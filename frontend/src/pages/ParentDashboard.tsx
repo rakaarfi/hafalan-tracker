@@ -62,7 +62,7 @@ export function ParentDashboard() {
     <div className="min-h-screen bg-gray-50">
       {/* Header - SOLID BORDER, NO SHADOW */}
       <header className="border-b-2 border-border bg-white p-4">
-        <div className="container mx-auto flex justify-between items-center">
+        <div className="container mx-auto flex justify-between items-center max-w-7xl">
           <div className="flex-1">
             <h1 className="text-xl md:text-2xl font-bold">{t('parent.dashboard')}</h1>
             <p className="text-sm text-gray-600">
