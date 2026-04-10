@@ -7,6 +7,7 @@ import { QuranCombobox } from '@/components/quran/QuranCombobox'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { useToast } from '@/hooks/use-toast'
+import { useAuthStore } from '@/stores/authStore'
 import api from '@/lib/api'
 
 const hafalanSchema = z.object({
@@ -30,11 +31,13 @@ interface HafalanInputFormProps {
 export function HafalanInputForm({ studentId, onSuccess }: HafalanInputFormProps) {
   const { t } = useTranslation()
   const { toast } = useToast()
+  const { user } = useAuthStore()
 
   const { register, handleSubmit, formState: { errors, isSubmitting }, watch, setValue, reset } = useForm<HafalanFormData>({
     resolver: zodResolver(hafalanSchema),
     defaultValues: {
       unit_type: 'surah',
+      status: 'fluent',
       test_date: new Date().toISOString().split('T')[0]
     }
   })
@@ -42,12 +45,41 @@ export function HafalanInputForm({ studentId, onSuccess }: HafalanInputFormProps
   const watchedUnitType = watch('unit_type')
   const watchedStatus = watch('status', 'fluent')
 
+  // Debug: log form state
+  console.log('[HafalanInputForm] Form errors:', errors)
+  console.log('[HafalanInputForm] isSubmitting:', isSubmitting)
+
   const onSubmit = async (data: HafalanFormData) => {
+    console.log('[HafalanInputForm] Form submitted:', data)
+
     try {
-      await api.post('/memorizations', {
-        ...data,
-        student_id: parseInt(studentId)
-      })
+      console.log('[HafalanInputForm] Sending API request...')
+
+      // Build payload according to backend requirements
+      const payload: any = {
+        student_id: studentId, // Send as string, backend expects string
+        teacher_id: user?.id, // Add teacher_id from authStore
+        unit_type: data.unit_type,
+        status: data.status,
+        notes: data.notes || '',
+        test_date: data.test_date
+      }
+
+      // Add unit-specific fields
+      if (data.unit_type === 'surah' && data.surah_id) {
+        payload.surah_id = data.surah_id
+      } else if (data.unit_type === 'juz' && data.juz_id) {
+        payload.juz_id = data.juz_id
+      } else if (data.unit_type === 'page') {
+        if (data.page_start) payload.page_start = data.page_start
+        if (data.page_end) payload.page_end = data.page_end
+      }
+
+      console.log('[HafalanInputForm] Payload:', payload)
+
+      await api.post('/memorizations', payload)
+
+      console.log('[HafalanInputForm] API request successful')
 
       toast({
         title: "Berhasil",
@@ -59,10 +91,12 @@ export function HafalanInputForm({ studentId, onSuccess }: HafalanInputFormProps
 
       // Call onSuccess callback to refresh data
       if (onSuccess) {
+        console.log('[HafalanInputForm] Calling onSuccess callback')
         onSuccess()
       }
 
     } catch (error: any) {
+      console.error('[HafalanInputForm] API request failed:', error)
       toast({
         variant: "destructive",
         title: "Gagal",
@@ -73,6 +107,18 @@ export function HafalanInputForm({ studentId, onSuccess }: HafalanInputFormProps
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+      {/* Debug validation errors */}
+      {Object.keys(errors).length > 0 && (
+        <div className="p-4 border-2 border-red-200 bg-red-50 text-red-800">
+          <p className="font-semibold mb-2">Validation Errors:</p>
+          <ul className="list-disc list-inside text-sm">
+            {Object.entries(errors).map(([field, error]) => (
+              <li key={field}>{field}: {error.message}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+
       {/* Unit Type Selector */}
       <div>
         <Label>{t('teacher.unitType')}</Label>
