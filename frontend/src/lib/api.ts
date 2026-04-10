@@ -83,6 +83,7 @@ export interface Parent {
   FullName: string
   Phone: string
   Email: string
+  Gender: string
   CreatedAt: string
 }
 

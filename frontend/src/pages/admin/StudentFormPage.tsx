@@ -178,7 +178,7 @@ export function StudentFormPage() {
               {...register('parent_id_1')}
             >
               <option value="">Pilih Ayah</option>
-              {parents.filter(p => p.FullName.includes('Bapak')).map((parent) => (
+              {parents.filter(p => p.Gender === 'male').map((parent) => (
                 <option key={parent.UserID} value={parent.UserID}>{parent.FullName} ({parent.Email})</option>
               ))}
             </select>
@@ -194,7 +194,7 @@ export function StudentFormPage() {
               {...register('parent_id_2')}
             >
               <option value="">Pilih Ibu</option>
-              {parents.filter(p => p.FullName.includes('Ibu')).map((parent) => (
+              {parents.filter(p => p.Gender === 'female').map((parent) => (
                 <option key={parent.UserID} value={parent.UserID}>{parent.FullName} ({parent.Email})</option>
               ))}
             </select>

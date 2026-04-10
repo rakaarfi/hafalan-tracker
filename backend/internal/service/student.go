@@ -74,18 +74,18 @@ func (s *StudentService) Create(ctx context.Context, req *CreateStudentRequest) 
 		return nil, fmt.Errorf("failed to create student: %w", err)
 	}
 
-	// Link parents
+	// Link parents with proper relationship types
 	if req.ParentID1 != "" {
-		err = s.studentRepo.AddParent(ctx, student.ID, req.ParentID1)
+		err = s.studentRepo.AddParent(ctx, student.ID, req.ParentID1, "father")
 		if err != nil {
-			return nil, fmt.Errorf("failed to link parent 1: %w", err)
+			return nil, fmt.Errorf("failed to link parent 1 (father): %w", err)
 		}
 	}
 
 	if req.ParentID2 != "" {
-		err = s.studentRepo.AddParent(ctx, student.ID, req.ParentID2)
+		err = s.studentRepo.AddParent(ctx, student.ID, req.ParentID2, "mother")
 		if err != nil {
-			return nil, fmt.Errorf("failed to link parent 2: %w", err)
+			return nil, fmt.Errorf("failed to link parent 2 (mother): %w", err)
 		}
 	}
 
@@ -142,23 +142,23 @@ func (s *StudentService) Update(ctx context.Context, req *UpdateStudentRequest) 
 		return nil, fmt.Errorf("failed to update student: %w", err)
 	}
 
-	// Update parent relationships (remove all and re-add)
+	// Update parent relationships (remove all and re-add with proper types)
 	err = s.studentRepo.RemoveParents(ctx, req.ID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to update parent relationships: %w", err)
 	}
 
 	if req.ParentID1 != "" {
-		err = s.studentRepo.AddParent(ctx, req.ID, req.ParentID1)
+		err = s.studentRepo.AddParent(ctx, req.ID, req.ParentID1, "father")
 		if err != nil {
-			return nil, fmt.Errorf("failed to link parent 1: %w", err)
+			return nil, fmt.Errorf("failed to link parent 1 (father): %w", err)
 		}
 	}
 
 	if req.ParentID2 != "" {
-		err = s.studentRepo.AddParent(ctx, req.ID, req.ParentID2)
+		err = s.studentRepo.AddParent(ctx, req.ID, req.ParentID2, "mother")
 		if err != nil {
-			return nil, fmt.Errorf("failed to link parent 2: %w", err)
+			return nil, fmt.Errorf("failed to link parent 2 (mother): %w", err)
 		}
 	}
 

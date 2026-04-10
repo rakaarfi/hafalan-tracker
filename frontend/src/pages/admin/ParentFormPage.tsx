@@ -15,6 +15,7 @@ const parentSchema = z.object({
   name: z.string().min(1, 'Nama wajib diisi'),
   email: z.string().email('Format email tidak valid'),
   phone: z.string().optional(),
+  gender: z.enum(['male', 'female'], { required_error: 'Gender wajib dipilih' }),
   password: z.string().min(6, 'Password minimal 6 karakter').optional(),
 })
 
@@ -44,6 +45,7 @@ export function ParentFormPage() {
           name: parent.FullName,
           email: parent.Email,
           phone: parent.Phone || '',
+          gender: parent.Gender || 'male',
         })
       } catch (error) {
         toast({
@@ -67,6 +69,7 @@ export function ParentFormPage() {
           user_id: parentId,
           name: data.name,
           phone: data.phone || '',
+          gender: data.gender,
         })
       } else {
         await parentsApi.create({
@@ -74,6 +77,7 @@ export function ParentFormPage() {
           email: data.email,
           phone: data.phone || '',
           password: data.password || '',
+          gender: data.gender,
         })
       }
 
@@ -154,6 +158,21 @@ export function ParentFormPage() {
               className="border-2 min-h-[44px]"
               {...register('phone')}
             />
+          </div>
+
+          {/* Gender */}
+          <div>
+            <Label htmlFor="gender">Jenis Kelamin *</Label>
+            <select
+              id="gender"
+              className="flex h-9 w-full rounded-none border-2 border-input bg-transparent px-3 py-1 text-base min-h-[44px]"
+              {...register('gender')}
+            >
+              <option value="">Pilih Jenis Kelamin</option>
+              <option value="male">Laki-laki (Ayah)</option>
+              <option value="female">Perempuan (Ibu)</option>
+            </select>
+            {errors.gender && <p className="text-sm text-red-600 mt-1">{errors.gender.message}</p>}
           </div>
 
           {/* Password (hanya untuk create) */}

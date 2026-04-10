@@ -22,6 +22,7 @@ type Parent struct {
 	UserID    string `db:"user_id"`
 	FullName  string `db:"full_name"`
 	Phone     string `db:"phone"`
+	Gender    string `db:"gender"`
 	CreatedAt string `db:"created_at"`
 }
 

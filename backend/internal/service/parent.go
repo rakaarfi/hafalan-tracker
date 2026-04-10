@@ -174,6 +174,7 @@ type CreateParentRequest struct {
 	Email    string `json:"email" binding:"required,email"`
 	Phone    string `json:"phone"`
 	Password string `json:"password"`
+	Gender   string `json:"gender" binding:"required,oneof=male female"`
 }
 
 // UpdateParentRequest represents the request to update a parent
@@ -181,6 +182,7 @@ type UpdateParentRequest struct {
 	UserID string `json:"user_id" binding:"required"`
 	Name    string `json:"name" binding:"required"`
 	Phone   string `json:"phone"`
+	Gender  string `json:"gender" binding:"required,oneof=male female"`
 }
 
 // Create creates a new parent with user account
@@ -202,6 +204,7 @@ func (s *ParentService) Create(ctx context.Context, req *CreateParentRequest) (*
 		UserID:   user.ID,
 		FullName: req.Name,
 		Phone:    req.Phone,
+		Gender:   req.Gender,
 	}
 
 	err = s.parentRepo.Create(ctx, parent)
@@ -233,6 +236,7 @@ func (s *ParentService) Update(ctx context.Context, req *UpdateParentRequest) (*
 	updateReq := &repository.Parent{
 		FullName: req.Name,
 		Phone:    req.Phone,
+		Gender:   req.Gender,
 	}
 
 	err = s.parentRepo.Update(ctx, req.UserID, updateReq)
