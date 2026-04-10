@@ -26,13 +26,13 @@ func NewMemorizationService(memorizationRepo *repository.MemorizationRepository,
 type CreateMemorizationRequest struct {
 	StudentID  string  `json:"student_id" binding:"required"`
 	TeacherID  string  `json:"teacher_id" binding:"required"`
-	UnitType   string  `json:"unit_type" binding:"required,oneof=surah juz page"`
-	SurahID    *string `json:"surah_id,omitempty" binding:"omitempty_if=UnitType surah"`
-	JuzID      *string `json:"juz_id,omitempty" binding:"omitempty_if=UnitType juz"`
-	PageStart  *int    `json:"page_start,omitempty" binding:"omitempty_if=UnitType page,min=1,max=604"`
-	PageEnd    *int    `json:"page_end,omitempty" binding:"omitempty_if=UnitType page,min=1,max=604"`
-	Status     string  `json:"status" binding:"required,oneof=fluent good needs_improvement"`
-	Notes      string  `json:"notes"`
+	UnitType   string `json:"unit_type" binding:"required,oneof=surah juz page"`
+	SurahID    *string `json:"surah_id,omitempty"`
+	JuzID      *string `json:"juz_id,omitempty"`
+	PageStart  *int    `json:"page_start,omitempty"`
+	PageEnd    *int    `json:"page_end,omitempty"`
+	Status     string `json:"status" binding:"required,oneof=fluent good needs_improvement"`
+	Notes      string `json:"notes"`
 	TestDate   string  `json:"test_date" binding:"required"`
 }
 
@@ -40,10 +40,10 @@ type CreateMemorizationRequest struct {
 type UpdateMemorizationRequest struct {
 	ID        string  `json:"id" binding:"required"`
 	UnitType  string  `json:"unit_type" binding:"required,oneof=surah juz page"`
-	SurahID   *string `json:"surah_id,omitempty" binding:"omitempty_if=UnitType surah"`
-	JuzID     *string `json:"juz_id,omitempty" binding:"omitempty_if=UnitType juz"`
-	PageStart *int    `json:"page_start,omitempty" binding:"omitempty_if=UnitType page,min=1,max=604"`
-	PageEnd   *int    `json:"page_end,omitempty" binding:"omitempty_if=UnitType page,min=1,max=604"`
+	SurahID   *string `json:"surah_id,omitempty"`
+	JuzID     *string `json:"juz_id,omitempty"`
+	PageStart *int    `json:"page_start,omitempty"`
+	PageEnd   *int    `json:"page_end,omitempty"`
 	Status    string  `json:"status" binding:"required,oneof=fluent good needs_improvement"`
 	Notes     string  `json:"notes"`
 	TestDate  string  `json:"test_date" binding:"required"`
