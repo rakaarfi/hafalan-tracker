@@ -17,6 +17,7 @@ interface AuthState {
   error: string | null
   login: (email: string, password: string) => Promise<void>
   setAuth: (user: User, token: string) => void
+  updateUser: (userData: Partial<User>) => void
   logout: () => Promise<void>
   clearError: () => void
 }
@@ -53,6 +54,9 @@ export const useAuthStore = create<AuthState>()(
         token: null, // Token is in httpOnly cookie
         isAuthenticated: true
       }),
+      updateUser: (userData) => set((state) => ({
+        user: state.user ? { ...state.user, ...userData } : null
+      })),
       logout: async () => {
         await authApi.logout()
         set({

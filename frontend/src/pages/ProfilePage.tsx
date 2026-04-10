@@ -40,7 +40,7 @@ interface ProfilePageProps {
 export function ProfilePage({ embedded = false }: ProfilePageProps) {
   const { t } = useTranslation()
   const { toast } = useToast()
-  const { user } = useAuthStore()
+  const { user, updateUser } = useAuthStore()
   const [activeTab, setActiveTab] = useState<'profile' | 'password'>('profile')
 
   // Determine dashboard URL based on user role
@@ -86,6 +86,10 @@ export function ProfilePage({ embedded = false }: ProfilePageProps) {
   const onProfileSubmit = async (data: ProfileFormData) => {
     try {
       await api.put('/profile', data)
+
+      // Update user data in authStore
+      updateUser({ name: data.name, email: data.email })
+
       toast({
         title: "Berhasil",
         description: "Profile berhasil diupdate",
