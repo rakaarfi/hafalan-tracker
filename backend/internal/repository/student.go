@@ -228,15 +228,15 @@ func (r *StudentRepository) Delete(ctx context.Context, id string) error {
 	return err
 }
 
-// AddParent links a parent to a student
-func (r *StudentRepository) AddParent(ctx context.Context, studentID, parentID string) error {
+// AddParent links a parent to a student with specified relationship type
+func (r *StudentRepository) AddParent(ctx context.Context, studentID, parentID string, relationshipType string) error {
 	query := `
 		INSERT INTO student_parents (student_id, parent_id, relationship_type, is_active)
-		VALUES ($1, $2, 'guardian', true)
+		VALUES ($1, $2, $3, true)
 		ON CONFLICT (student_id, parent_id)
-		DO UPDATE SET is_active = true
+		DO UPDATE SET is_active = true, relationship_type = EXCLUDED.relationship_type
 	`
-	_, err := r.db.ExecContext(ctx, query, studentID, parentID)
+	_, err := r.db.ExecContext(ctx, query, studentID, parentID, relationshipType)
 	return err
 }
 
