@@ -32,35 +32,33 @@ export function ConfirmDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md max-w-[90vw] mx-4 border-2 sm:p-6 p-4">
+      <DialogContent className="sm:max-w-md max-w-[90vw] border-2 sm:p-6 p-4">
         <DialogHeader>
-          <div className="flex items-center gap-2 sm:gap-3">
+          <div className="flex flex-col items-center gap-3 sm:gap-4">
             {variant === 'danger' && (
-              <div className="flex-shrink-0 w-8 h-8 sm:w-12 sm:h-12 rounded-full bg-red-100 flex items-center justify-center">
-                <AlertTriangle className="h-4 w-4 sm:h-6 text-red-600" />
+              <div className="flex-shrink-0 w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-red-100 flex items-center justify-center">
+                <AlertTriangle className="h-6 w-6 sm:h-8 text-red-600" />
               </div>
             )}
             {variant === 'warning' && (
-              <div className="flex-shrink-0 w-8 h-8 sm:w-12 sm:h-12 rounded-full bg-yellow-100 flex items-center justify-center">
-                <AlertTriangle className="h-4 w-4 sm:h-6 text-yellow-600" />
+              <div className="flex-shrink-0 w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-yellow-100 flex items-center justify-center">
+                <AlertTriangle className="h-6 w-6 sm:h-8 text-yellow-600" />
               </div>
             )}
             {variant === 'info' && (
-              <div className="flex-shrink-0 w-8 h-8 sm:w-12 sm:h-12 rounded-full bg-blue-100 flex items-center justify-center">
-                <AlertTriangle className="h-4 w-4 sm:h-6 text-blue-600" />
+              <div className="flex-shrink-0 w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-blue-100 flex items-center justify-center">
+                <AlertTriangle className="h-6 w-6 sm:h-8 text-blue-600" />
               </div>
             )}
-            <div className="flex-1">
-              <DialogTitle className="text-base sm:text-lg font-semibold">{title}</DialogTitle>
-            </div>
+            <DialogTitle className="text-base sm:text-lg font-semibold text-center">{title}</DialogTitle>
           </div>
         </DialogHeader>
 
-        <DialogDescription className="text-xs sm:text-sm text-gray-600 mt-2 sm:mt-4 pl-10 sm:pl-15">
+        <DialogDescription className="text-xs sm:text-sm text-gray-600 mt-3 sm:mt-4 text-center">
           {description}
         </DialogDescription>
 
-        <DialogFooter className="mt-4 sm:mt-6 gap-2 sm:gap-3">
+        <DialogFooter className="mt-4 sm:mt-6 gap-2 sm:gap-3 justify-center">
           <Button
             type="button"
             variant="outline"

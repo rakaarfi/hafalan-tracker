@@ -77,7 +77,7 @@ export function ProfilePage({ embedded = false }: ProfilePageProps) {
     }
   })
 
-  const { register: registerPassword, handleSubmit: handlePasswordSubmit, formState: passwordFormState } = useForm<PasswordFormData>({
+  const { register: registerPassword, handleSubmit: handlePasswordSubmit, formState: passwordFormState, reset: resetPasswordForm } = useForm<PasswordFormData>({
     resolver: zodResolver(passwordSchema),
   })
 
@@ -98,18 +98,27 @@ export function ProfilePage({ embedded = false }: ProfilePageProps) {
   }
 
   const onPasswordSubmit = async (data: PasswordFormData) => {
+    console.log('[Password Change] Starting request:', { current_password: '***', new_password: '***' })
+
     try {
-      await api.post('/profile/change-password', {
+      const response = await api.post('/profile/change-password', {
         current_password: data.current_password,
         new_password: data.new_password,
       })
+
+      console.log('[Password Change] Success response:', response.status, response.data)
+
       toast({
         title: "Berhasil",
         description: "Password berhasil diubah",
       })
-      // Reset form
-      (document.getElementById('password-form') as HTMLFormElement)?.reset()
+
+      // Reset form using react-hook-form's reset
+      resetPasswordForm()
+      console.log('[Password Change] Form reset completed')
     } catch (error: any) {
+      console.error('[Password Change] API Error:', error.response?.status, error.response?.data)
+
       toast({
         variant: "destructive",
         title: "Gagal",
