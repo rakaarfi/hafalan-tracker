@@ -317,6 +317,9 @@ func (s *Server) createMemorization(c *gin.Context) {
 	// Create memorization
 	mem, err := s.memorizationService.Create(c.Request.Context(), &req, userID)
 	if err != nil {
+		// Log error for debugging
+		fmt.Printf("[createMemorization] Error: %v\n", err)
+		fmt.Printf("[createMemorization] Request: %+v\n", req)
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": err.Error(),
 		})

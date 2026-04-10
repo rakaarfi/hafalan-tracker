@@ -104,15 +104,11 @@ export function ProfilePage({ embedded = false }: ProfilePageProps) {
   }
 
   const onPasswordSubmit = async (data: PasswordFormData) => {
-    console.log('[Password Change] Starting request:', { current_password: '***', new_password: '***' })
-
     try {
       const response = await api.post('/profile/change-password', {
         current_password: data.current_password,
         new_password: data.new_password,
       })
-
-      console.log('[Password Change] Success response:', response.status, response.data)
 
       toast({
         title: "Berhasil",
@@ -121,10 +117,7 @@ export function ProfilePage({ embedded = false }: ProfilePageProps) {
 
       // Reset form using react-hook-form's reset
       resetPasswordForm()
-      console.log('[Password Change] Form reset completed')
     } catch (error: any) {
-      console.error('[Password Change] API Error:', error.response?.status, error.response?.data)
-
       toast({
         variant: "destructive",
         title: "Gagal",

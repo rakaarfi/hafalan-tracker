@@ -99,24 +99,38 @@ func (s *MemorizationService) Create(ctx context.Context, req *CreateMemorizatio
 		return nil, errors.New("invalid teacher_id")
 	}
 
-	// Convert optional SurahID
+	// Convert optional SurahID (frontend sends surah_number, need to convert to surah_id)
 	var surahID *int
 	if req.SurahID != nil {
-		id, err := strconv.Atoi(*req.SurahID)
+		surahNumber, err := strconv.Atoi(*req.SurahID)
 		if err != nil {
 			return nil, errors.New("invalid surah_id")
 		}
-		surahID = &id
+		// Look up actual surah database ID by surah number
+		surahID, err = s.memorizationRepo.GetSurahIDByNumber(ctx, surahNumber)
+		if err != nil {
+			return nil, errors.New("failed to look up surah")
+		}
+		if surahID == nil {
+			return nil, errors.New("surah not found")
+		}
 	}
 
-	// Convert optional JuzID
+	// Convert optional JuzID (frontend sends juz_number, need to convert to juz_id)
 	var juzID *int
 	if req.JuzID != nil {
-		id, err := strconv.Atoi(*req.JuzID)
+		juzNumber, err := strconv.Atoi(*req.JuzID)
 		if err != nil {
 			return nil, errors.New("invalid juz_id")
 		}
-		juzID = &id
+		// Look up actual juz database ID by juz number
+		juzID, err = s.memorizationRepo.GetJuzIDByNumber(ctx, juzNumber)
+		if err != nil {
+			return nil, errors.New("failed to look up juz")
+		}
+		if juzID == nil {
+			return nil, errors.New("juz not found")
+		}
 	}
 
 	// Create memorization record
@@ -179,24 +193,38 @@ func (s *MemorizationService) Update(ctx context.Context, req *UpdateMemorizatio
 		return nil, errors.New("memorization not found")
 	}
 
-	// Convert optional SurahID
+	// Convert optional SurahID (frontend sends surah_number, need to convert to surah_id)
 	var surahID *int
 	if req.SurahID != nil {
-		id, err := strconv.Atoi(*req.SurahID)
+		surahNumber, err := strconv.Atoi(*req.SurahID)
 		if err != nil {
 			return nil, errors.New("invalid surah_id")
 		}
-		surahID = &id
+		// Look up actual surah database ID by surah number
+		surahID, err = s.memorizationRepo.GetSurahIDByNumber(ctx, surahNumber)
+		if err != nil {
+			return nil, errors.New("failed to look up surah")
+		}
+		if surahID == nil {
+			return nil, errors.New("surah not found")
+		}
 	}
 
-	// Convert optional JuzID
+	// Convert optional JuzID (frontend sends juz_number, need to convert to juz_id)
 	var juzID *int
 	if req.JuzID != nil {
-		id, err := strconv.Atoi(*req.JuzID)
+		juzNumber, err := strconv.Atoi(*req.JuzID)
 		if err != nil {
 			return nil, errors.New("invalid juz_id")
 		}
-		juzID = &id
+		// Look up actual juz database ID by juz number
+		juzID, err = s.memorizationRepo.GetJuzIDByNumber(ctx, juzNumber)
+		if err != nil {
+			return nil, errors.New("failed to look up juz")
+		}
+		if juzID == nil {
+			return nil, errors.New("juz not found")
+		}
 	}
 
 	// Create updated record (soft delete old, create new)
