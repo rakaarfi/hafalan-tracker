@@ -16,7 +16,7 @@ const studentSchema = z.object({
   class_id: z.string().optional(),
   parent_id_1: z.string().min(1, 'Ayah wajib dipilih'),
   parent_id_2: z.string().optional(),
-  birth_date: z.string().optional(),
+  birth_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Format tanggal harus YYYY-MM-DD').optional().or(z.literal('')),
   phone: z.string().optional(),
 })
 
@@ -68,7 +68,6 @@ export function StudentFormPage() {
       setClasses(classesData)
       setParents(parentsData)
     } catch (err: any) {
-      console.error('Failed to fetch form data:', err)
       toast({
         variant: "destructive",
         title: "Gagal",
@@ -90,7 +89,7 @@ export function StudentFormPage() {
         parent_id_2: student.parent_2_id || '',
       })
     } catch (err: any) {
-      console.error('Failed to fetch student:', err)
+      // Error already handled by toast in parent catch block
     }
   }
 

@@ -54,7 +54,7 @@ export function ClassFormPage() {
         const data = await teachersApi.getAll()
         setTeachers(data)
       } catch (error) {
-        console.error('Failed to fetch teachers:', error)
+        // Error handled by toast
       }
     }
 
@@ -100,7 +100,7 @@ export function ClassFormPage() {
       const assignments = await classesApi.getQuranTeachers(classId)
       setQuranAssignments(assignments)
     } catch (error) {
-      console.error('Failed to fetch Quran teacher assignments:', error)
+      // Error handled by toast
     } finally {
       setIsLoadingAssignments(false)
     }
@@ -147,7 +147,6 @@ export function ClassFormPage() {
       setSelectedTeacherId('')
       setSelectedTeacherName('')
     } catch (error: any) {
-      console.error('Change teacher error:', error)
       toast({
         variant: "destructive",
         title: "Gagal",
@@ -194,7 +193,6 @@ export function ClassFormPage() {
       if (form) form.reset()
       await fetchQuranAssignments()
     } catch (error: any) {
-      console.error('Assignment error:', error)
       toast({
         variant: "destructive",
         title: "Gagal",
@@ -215,15 +213,12 @@ export function ClassFormPage() {
 
     try {
       setIsDeleting(true)
-      console.log('Deleting assignment:', pendingDeleteAssignment.id)
 
       await classesApi.endQuranTeacherAssignment(
         classId,
         pendingDeleteAssignment.id.toString(),
         "Removed by admin"
       )
-
-      console.log('Delete successful, fetching assignments...')
 
       toast({
         title: "Berhasil",
@@ -232,7 +227,6 @@ export function ClassFormPage() {
 
       await fetchQuranAssignments()
     } catch (error: any) {
-      console.error('Delete error:', error)
       toast({
         variant: "destructive",
         title: "Gagal",
