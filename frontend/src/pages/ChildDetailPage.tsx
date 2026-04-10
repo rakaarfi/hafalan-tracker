@@ -108,7 +108,7 @@ export function ChildDetailPage() {
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <header className="border-b-2 border-border bg-white p-4">
-        <div className="container mx-auto flex justify-between items-start">
+        <div className="container mx-auto flex justify-between items-start max-w-7xl">
           <div className="flex-1">
             <button
               onClick={() => navigate(-1)}
@@ -137,7 +137,7 @@ export function ChildDetailPage() {
       </header>
 
       {/* Main content */}
-      <main className="container mx-auto py-6 px-4">
+      <main className="container mx-auto py-6 px-4 max-w-7xl">
         {loading ? (
           <div className="text-center py-12">
             <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-gray-300 border-t-primary"></div>
