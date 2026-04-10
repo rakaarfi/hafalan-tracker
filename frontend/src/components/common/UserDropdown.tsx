@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { LogOut, User, ChevronDown } from 'lucide-react'
+import { LogOut, User as UserIcon, ChevronDown } from 'lucide-react'
 import { useAuthStore, User } from '@/stores/authStore'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 
@@ -98,7 +98,7 @@ export function UserDropdown({ user }: UserDropdownProps) {
                 onClick={() => setUserMenuOpen(false)}
                 className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 border-b border-border min-h-[48px] transition-colors"
               >
-                <User size={18} />
+                <UserIcon size={18} />
                 <span className="text-sm">Profile</span>
               </Link>
               <button
