@@ -22,11 +22,16 @@ const hafalanSchema = z.object({
 
 type HafalanFormData = z.infer<typeof hafalanSchema>
 
-export function HafalanInputForm({ studentId }: { studentId: string }) {
+interface HafalanInputFormProps {
+  studentId: string
+  onSuccess?: () => void
+}
+
+export function HafalanInputForm({ studentId, onSuccess }: HafalanInputFormProps) {
   const { t } = useTranslation()
   const { toast } = useToast()
 
-  const { register, handleSubmit, formState: { errors, isSubmitting }, watch, setValue } = useForm<HafalanFormData>({
+  const { register, handleSubmit, formState: { errors, isSubmitting }, watch, setValue, reset } = useForm<HafalanFormData>({
     resolver: zodResolver(hafalanSchema),
     defaultValues: {
       unit_type: 'surah',
@@ -41,7 +46,7 @@ export function HafalanInputForm({ studentId }: { studentId: string }) {
     try {
       await api.post('/memorizations', {
         ...data,
-        student_id: studentId
+        student_id: parseInt(studentId)
       })
 
       toast({
@@ -49,10 +54,13 @@ export function HafalanInputForm({ studentId }: { studentId: string }) {
         description: "Data hafalan berhasil disimpan",
       })
 
-      // Navigate back to dashboard
-      setTimeout(() => {
-        window.location.href = '/teacher/dashboard'
-      }, 1000)
+      // Reset form
+      reset()
+
+      // Call onSuccess callback to refresh data
+      if (onSuccess) {
+        onSuccess()
+      }
 
     } catch (error: any) {
       toast({
