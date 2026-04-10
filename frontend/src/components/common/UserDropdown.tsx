@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
-import { ChevronDown, LogOut, User as UserIcon } from 'lucide-react'
-import { useNavigate } from 'react-router-dom'
+import { Link } from 'react-router-dom'
+import { LogOut, User, ChevronDown } from 'lucide-react'
 import { useAuthStore, User } from '@/stores/authStore'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 
@@ -9,146 +9,123 @@ interface UserDropdownProps {
 }
 
 export function UserDropdown({ user }: UserDropdownProps) {
-  const navigate = useNavigate()
-  const { logout: authLogout } = useAuthStore()
-  const [isOpen, setIsOpen] = useState(false)
-  const [showLogoutDialog, setShowLogoutDialog] = useState(false)
-  const dropdownRef = useRef<HTMLDivElement>(null)
+  const { logout } = useAuthStore()
+  const [userMenuOpen, setUserMenuOpen] = useState(false)
+  const [logoutDialogOpen, setLogoutDialogOpen] = useState(false)
+  const [dropdownPosition, setDropdownPosition] = useState<'bottom' | 'top'>('bottom')
+  const triggerRef = useRef<HTMLButtonElement>(null)
 
-  const getRoleDisplayName = (role?: 'admin' | 'teacher' | 'parent') => {
-    switch (role) {
-      case 'teacher': return 'Guru'
-      case 'parent': return 'Orang Tua'
-      case 'admin': return 'Administrator'
-      default: return role || 'User'
+  // Calculate dropdown position when opened
+  useEffect(() => {
+    if (userMenuOpen && triggerRef.current) {
+      const rect = triggerRef.current.getBoundingClientRect()
+      const spaceBelow = window.innerHeight - rect.bottom
+      const dropdownHeight = 96 // approximate height: 48px * 2 items
+
+      // If not enough space below, show above
+      if (spaceBelow < dropdownHeight) {
+        setDropdownPosition('top')
+      } else {
+        setDropdownPosition('bottom')
+      }
     }
-  }
-
-  const handleProfileClick = () => {
-    setIsOpen(false)
-    window.location.href = '/profile'
-  }
-
-  const handleLogoutClick = () => {
-    setIsOpen(false)
-    setShowLogoutDialog(true)
-  }
-
-  const handleLogoutConfirmed = async () => {
-    try {
-      await authLogout()
-      setShowLogoutDialog(false)
-      window.location.href = '/login'
-    } catch (error) {
-      console.error('Logout failed:', error)
-    }
-  }
+  }, [userMenuOpen])
 
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setIsOpen(false)
+      if (triggerRef.current && !triggerRef.current.contains(event.target as Node)) {
+        setUserMenuOpen(false)
       }
     }
 
-    if (isOpen) {
+    if (userMenuOpen) {
       document.addEventListener('mousedown', handleClickOutside)
       return () => {
         document.removeEventListener('mousedown', handleClickOutside)
       }
     }
-  }, [isOpen])
+  }, [userMenuOpen])
+
+  const handleLogout = () => {
+    logout()
+    setLogoutDialogOpen(false)
+    setUserMenuOpen(false)
+    window.location.href = '/login'
+  }
 
   return (
     <>
-      <div className="relative" ref={dropdownRef}>
-        {/* User Dropdown Trigger */}
+      <div className="relative">
+        {/* Dropdown Trigger */}
         <button
-          onClick={() => setIsOpen(!isOpen)}
-          className="flex items-center gap-2 px-4 py-2 border-2 border-border hover:bg-gray-50 min-h-[44px] min-w-[44px] transition-colors"
+          ref={triggerRef}
+          onClick={() => setUserMenuOpen(!userMenuOpen)}
+          className="flex items-center justify-between px-4 py-3 border-2 border-border hover:bg-gray-50 min-h-[44px] transition-colors gap-3"
         >
-          {/* User Info */}
-          <div className="hidden md:block text-left">
-            <div className="font-semibold text-base">{user?.name || user?.email || 'User'}</div>
-            <div className="text-sm text-gray-600">{getRoleDisplayName(user?.role)}</div>
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 bg-primary text-white flex items-center justify-center rounded-full text-sm font-bold">
+              {user?.name?.charAt(0).toUpperCase() || user?.email?.charAt(0).toUpperCase() || 'U'}
+            </div>
+            <div className="text-left hidden sm:block">
+              <div className="text-sm font-medium">{user?.name || 'User'}</div>
+              <div className="text-xs text-gray-600">{user?.email}</div>
+            </div>
           </div>
-
-          {/* Mobile: Show initials only */}
-          <div className="md:hidden w-10 h-10 bg-primary text-white flex items-center justify-center font-semibold text-base">
-            {user?.name?.charAt(0).toUpperCase() || user?.email?.charAt(0).toUpperCase() || 'U'}
-          </div>
-
-          {/* Dropdown Arrow */}
           <ChevronDown
-            size={18}
+            size={16}
             className={`text-gray-600 transition-transform flex-shrink-0 ${
-              isOpen ? 'rotate-180' : ''
+              userMenuOpen ? 'rotate-180' : ''
             }`}
           />
         </button>
 
-        {/* Dropdown Menu */}
-        {isOpen && (
-          <div className="absolute right-0 top-full mt-2 z-50 w-64 bg-white border-2 border-border">
-            {/* User Info Header */}
-            <div className="p-4 border-b-2 border-border bg-gray-50">
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 bg-primary text-white flex items-center justify-center font-semibold text-xl">
-                  {user?.name?.charAt(0).toUpperCase() || user?.email?.charAt(0).toUpperCase() || 'U'}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="font-semibold text-base truncate">{user?.name || user?.email || 'User'}</div>
-                  <div className="text-sm text-gray-600 truncate">{user?.email}</div>
-                  <div className="text-sm font-semibold text-gray-700 mt-1">
-                    {getRoleDisplayName(user?.role)}
-                  </div>
-                </div>
-              </div>
-            </div>
+        {/* Dropdown Content */}
+        {userMenuOpen && (
+          <>
+            {/* Backdrop - closes dropdown when clicking outside (mobile only) */}
+            <div
+              className="fixed inset-0 z-40 sm:hidden"
+              onClick={() => setUserMenuOpen(false)}
+            />
 
-            {/* Menu Items */}
-            <div className="py-2">
-              <button
-                type="button"
-                onClick={handleProfileClick}
-                className="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors text-left"
+            {/* Dropdown Menu - Smart positioning */}
+            <div className={`absolute z-50 w-48 bg-white border-2 border-border shadow-lg ${
+              dropdownPosition === 'bottom' ? 'mt-1 right-0' : 'mb-1 bottom-full right-0'
+            }`}>
+              <Link
+                to="/profile"
+                onClick={() => setUserMenuOpen(false)}
+                className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 border-b border-border min-h-[48px] transition-colors"
               >
-                <UserIcon size={18} className="text-gray-600" />
-                <div className="flex-1">
-                  <div className="font-semibold">Profile</div>
-                  <div className="text-xs text-gray-600">Pengaturan akun</div>
-                </div>
-              </button>
-
-              <div className="mx-4 my-2 border-t border-border" />
-
+                <User size={18} />
+                <span className="text-sm">Profile</span>
+              </Link>
               <button
-                type="button"
-                onClick={handleLogoutClick}
-                className="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors text-left"
+                onClick={() => {
+                  setUserMenuOpen(false)
+                  setLogoutDialogOpen(true)
+                }}
+                className="w-full flex items-center gap-3 px-4 py-3 hover:bg-red-50 text-red-600 min-h-[48px] transition-colors"
               >
-                <LogOut size={18} className="text-gray-600" />
-                <div className="flex-1">
-                  <div className="font-semibold">Keluar</div>
-                  <div className="text-xs text-gray-600">Keluar dari akun</div>
-                </div>
+                <LogOut size={18} />
+                <span className="text-sm">Keluar</span>
               </button>
             </div>
-          </div>
+          </>
         )}
       </div>
 
       {/* Logout Confirmation Dialog */}
       <ConfirmDialog
-        open={showLogoutDialog}
-        onOpenChange={setShowLogoutDialog}
+        open={logoutDialogOpen}
+        onOpenChange={setLogoutDialogOpen}
         title="Keluar dari Akun?"
         description="Apakah Anda yakin ingin keluar? Anda perlu login kembali untuk mengakses sistem."
         confirmLabel="Ya, Keluar"
         cancelLabel="Batal"
         variant="danger"
-        onConfirm={handleLogoutConfirmed}
+        onConfirm={handleLogout}
       />
     </>
   )
