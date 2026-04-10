@@ -14,11 +14,17 @@ const hafalanSchema = z.object({
   unit_type: z.enum(['surah', 'page', 'juz']),
   surah_id: z.string().optional(),
   juz_id: z.string().optional(),
-  page_start: z.number().min(1).max(604).optional(),
-  page_end: z.number().min(1).max(604).optional(),
+  page_start: z.number({
+    required_error: "validation.pageStart",
+    invalid_type_error: "validation.pageStart"
+  }).min(1, "validation.pageMin").max(604, "validation.pageMax").optional(),
+  page_end: z.number({
+    required_error: "validation.pageEnd",
+    invalid_type_error: "validation.pageEnd"
+  }).min(1, "validation.pageMin").max(604, "validation.pageMax").optional(),
   status: z.enum(['fluent', 'good', 'needs_improvement']),
   notes: z.string().max(500).optional(),
-  test_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/)
+  test_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "validation.invalidDate")
 })
 
 type HafalanFormData = z.infer<typeof hafalanSchema>
@@ -33,8 +39,9 @@ export function HafalanInputForm({ studentId, onSuccess }: HafalanInputFormProps
   const { toast } = useToast()
   const { user } = useAuthStore()
 
-  const { register, handleSubmit, formState: { errors, isSubmitting }, watch, setValue, reset } = useForm<HafalanFormData>({
+  const { register, handleSubmit, formState: { errors, isSubmitting }, watch, setValue, reset, trigger } = useForm<HafalanFormData>({
     resolver: zodResolver(hafalanSchema),
+    mode: "onTouched", // Validate on blur (when user leaves the field)
     defaultValues: {
       unit_type: 'surah',
       status: 'fluent',
@@ -45,16 +52,8 @@ export function HafalanInputForm({ studentId, onSuccess }: HafalanInputFormProps
   const watchedUnitType = watch('unit_type')
   const watchedStatus = watch('status', 'fluent')
 
-  // Debug: log form state
-  console.log('[HafalanInputForm] Form errors:', errors)
-  console.log('[HafalanInputForm] isSubmitting:', isSubmitting)
-
   const onSubmit = async (data: HafalanFormData) => {
-    console.log('[HafalanInputForm] Form submitted:', data)
-
     try {
-      console.log('[HafalanInputForm] Sending API request...')
-
       // Build payload according to backend requirements
       const payload: any = {
         student_id: studentId, // Send as string, backend expects string
@@ -75,11 +74,7 @@ export function HafalanInputForm({ studentId, onSuccess }: HafalanInputFormProps
         if (data.page_end) payload.page_end = data.page_end
       }
 
-      console.log('[HafalanInputForm] Payload:', payload)
-
       await api.post('/memorizations', payload)
-
-      console.log('[HafalanInputForm] API request successful')
 
       toast({
         title: "Berhasil",
@@ -91,12 +86,10 @@ export function HafalanInputForm({ studentId, onSuccess }: HafalanInputFormProps
 
       // Call onSuccess callback to refresh data
       if (onSuccess) {
-        console.log('[HafalanInputForm] Calling onSuccess callback')
         onSuccess()
       }
 
     } catch (error: any) {
-      console.error('[HafalanInputForm] API request failed:', error)
       toast({
         variant: "destructive",
         title: "Gagal",
@@ -107,14 +100,34 @@ export function HafalanInputForm({ studentId, onSuccess }: HafalanInputFormProps
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-      {/* Debug validation errors */}
+      {/* Validation errors */}
       {Object.keys(errors).length > 0 && (
         <div className="p-4 border-2 border-red-200 bg-red-50 text-red-800">
-          <p className="font-semibold mb-2">Validation Errors:</p>
+          <p className="font-semibold mb-2">Mohon perbaiki kesalahan berikut:</p>
           <ul className="list-disc list-inside text-sm">
-            {Object.entries(errors).map(([field, error]) => (
-              <li key={field}>{field}: {error.message}</li>
-            ))}
+            {Object.entries(errors).map(([field, error]) => {
+              // Map field names to user-friendly labels
+              const fieldLabels: Record<string, string> = {
+                page_start: 'Halaman awal',
+                page_end: 'Halaman akhir',
+                unit_type: 'Tipe unit',
+                surah_id: 'Surah',
+                juz_id: 'Juz',
+                status: 'Status',
+                test_date: 'Tanggal tes',
+                notes: 'Catatan'
+              }
+              const fieldName = fieldLabels[field] || field
+              const errorMessage = error.message.startsWith('validation.')
+                ? t(error.message)
+                : error.message
+
+              return (
+                <li key={field}>
+                  <span className="font-medium">{fieldName}:</span> {errorMessage}
+                </li>
+              )
+            })}
           </ul>
         </div>
       )}
@@ -178,11 +191,18 @@ export function HafalanInputForm({ studentId, onSuccess }: HafalanInputFormProps
               type="number"
               min={1}
               max={604}
-              {...register('page_start', { valueAsNumber: true })}
+              {...register('page_start', {
+                valueAsNumber: true,
+                onBlur: () => trigger('page_start')
+              })}
               className="flex h-9 w-full rounded-none border-2 border-input bg-transparent px-3 py-1 text-base transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring min-h-[44px]"
             />
             {errors.page_start && (
-              <p className="text-sm text-red-600">{errors.page_start.message}</p>
+              <p className="text-sm text-red-600">
+                {errors.page_start.message?.startsWith('validation.')
+                  ? t(errors.page_start.message)
+                  : errors.page_start.message}
+              </p>
             )}
           </div>
           <div>
@@ -192,11 +212,18 @@ export function HafalanInputForm({ studentId, onSuccess }: HafalanInputFormProps
               type="number"
               min={1}
               max={604}
-              {...register('page_end', { valueAsNumber: true })}
+              {...register('page_end', {
+                valueAsNumber: true,
+                onBlur: () => trigger('page_end')
+              })}
               className="flex h-9 w-full rounded-none border-2 border-input bg-transparent px-3 py-1 text-base transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring min-h-[44px]"
             />
             {errors.page_end && (
-              <p className="text-sm text-red-600">{errors.page_end.message}</p>
+              <p className="text-sm text-red-600">
+                {errors.page_end.message?.startsWith('validation.')
+                  ? t(errors.page_end.message)
+                  : errors.page_end.message}
+              </p>
             )}
           </div>
         </div>
@@ -256,7 +283,11 @@ export function HafalanInputForm({ studentId, onSuccess }: HafalanInputFormProps
           className="flex h-9 w-full rounded-none border-2 border-input bg-transparent px-3 py-1 text-base transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring min-h-[44px] mt-2"
         />
         {errors.test_date && (
-          <p className="text-sm text-red-600">{errors.test_date.message}</p>
+          <p className="text-sm text-red-600">
+            {errors.test_date.message?.startsWith('validation.')
+              ? t(errors.test_date.message)
+              : errors.test_date.message}
+          </p>
         )}
       </div>
 

@@ -41,5 +41,13 @@
     "recentTests": "Recent Tests",
     "children": "Children",
     "tapForDetail": "Tap for detail →"
+  },
+  "validation": {
+    "pageStart": "Page start",
+    "pageEnd": "Page end",
+    "pageMin": "Page must be at least 1",
+    "pageMax": "Page maximum is 604",
+    "required": "This field is required",
+    "invalidDate": "Invalid date format"
   }
 }

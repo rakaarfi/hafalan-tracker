@@ -106,7 +106,7 @@ func (r *MemorizationRepository) GetByStudentID(ctx context.Context, studentID i
 		LEFT JOIN surah sur ON m.surah_id = sur.id
 		LEFT JOIN juz j ON m.juz_id = j.id
 		WHERE m.student_id = $1 AND m.is_active = true
-		ORDER BY m.test_date DESC
+		ORDER BY m.test_date DESC, m.created_at DESC
 	`
 
 	var mems []MemorizationWithDetails
@@ -133,7 +133,7 @@ func (r *MemorizationRepository) GetByTeacherID(ctx context.Context, teacherID i
 		LEFT JOIN surah sur ON m.surah_id = sur.id
 		LEFT JOIN juz j ON m.juz_id = j.id
 		WHERE m.teacher_id = $1 AND m.is_active = true
-		ORDER BY m.test_date DESC
+		ORDER BY m.test_date DESC, m.created_at DESC
 	`
 
 	var mems []MemorizationWithDetails
@@ -161,4 +161,36 @@ func (r *MemorizationRepository) Update(ctx context.Context, mem *Memorization) 
 
 	// Create a new record with the updated data
 	return r.Create(ctx, mem)
+}
+
+// GetJuzIDByNumber retrieves juz database ID by juz number
+func (r *MemorizationRepository) GetJuzIDByNumber(ctx context.Context, juzNumber int) (*int, error) {
+	query := `SELECT id FROM juz WHERE juz_number = $1`
+
+	var juzID int
+	err := r.db.GetContext(ctx, &juzID, query, juzNumber)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, nil // Juz not found
+		}
+		return nil, err
+	}
+
+	return &juzID, nil
+}
+
+// GetSurahIDByNumber retrieves surah database ID by surah number
+func (r *MemorizationRepository) GetSurahIDByNumber(ctx context.Context, surahNumber int) (*int, error) {
+	query := `SELECT id FROM surah WHERE surah_number = $1`
+
+	var surahID int
+	err := r.db.GetContext(ctx, &surahID, query, surahNumber)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, nil // Surah not found
+		}
+		return nil, err
+	}
+
+	return &surahID, nil
 }

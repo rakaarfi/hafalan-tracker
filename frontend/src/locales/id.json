@@ -41,5 +41,13 @@
     "recentTests": "Tes Terakhir",
     "children": "Anak-Anak",
     "tapForDetail": "Ketuk untuk detail →"
+  },
+  "validation": {
+    "pageStart": "Halaman awal",
+    "pageEnd": "Halaman akhir",
+    "pageMin": "Halaman harus minimal 1",
+    "pageMax": "Halaman maksimal adalah 604",
+    "required": "Field ini wajib diisi",
+    "invalidDate": "Format tanggal tidak valid"
   }
 }
