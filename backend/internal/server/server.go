@@ -161,6 +161,9 @@ func (s *Server) setupRoutes() {
 			protected.POST("/parents", s.createParent)
 			protected.PUT("/parents/:id", s.updateParent)
 			protected.DELETE("/parents/:id", s.deleteParent)
+			protected.GET("/parents/:id/children", s.getParentChildrenAdmin)
+			protected.POST("/parents/:id/children", s.addChildToParent)
+			protected.DELETE("/parents/:id/children/:studentId", s.removeChildFromParent)
 
 			// Class routes
 			protected.GET("/classes", s.getAllClasses)
