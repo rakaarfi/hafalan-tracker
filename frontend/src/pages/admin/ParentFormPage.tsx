@@ -319,6 +319,7 @@ export function ParentFormPage() {
             </Button>
           </div>
         </form>
+      </div>
       )}
 
       {/* Children Section (only when editing) */}
@@ -452,28 +453,6 @@ export function ParentFormPage() {
         variant="danger"
         onConfirm={handleRemoveChild}
       />
-
-          {/* Submit */}
-          <div className="flex gap-4">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => navigate(-1)}
-              className="min-h-[44px] flex-1"
-            >
-              Batal
-            </Button>
-            <Button
-              type="submit"
-              disabled={isSubmitting}
-              className="min-h-[44px] flex-1"
-            >
-              {isSubmitting ? 'Menyimpan...' : 'Simpan'}
-            </Button>
-          </div>
-        </form>
-      </div>
-      )}
     </div>
   )
 }
