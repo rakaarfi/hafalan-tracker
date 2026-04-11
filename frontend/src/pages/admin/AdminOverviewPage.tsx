@@ -106,6 +106,41 @@ export function AdminOverviewPage() {
         <p className="text-gray-600">Selamat datang di panel admin</p>
       </div>
 
+      {/* Quick Guide - Panduan Singkat */}
+      <div className="border-2 border-blue-200 bg-blue-50 p-6 mb-8">
+        <h2 className="text-lg font-semibold mb-4 text-blue-900">Panduan Singkat: Urutan Input Data</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="flex items-start gap-3">
+            <div className="flex-shrink-0 w-8 h-8 bg-blue-200 text-blue-800 rounded-full flex items-center justify-center font-bold">1</div>
+            <div>
+              <p className="font-semibold text-blue-900">Guru</p>
+              <p className="text-sm text-blue-700">Data guru independent, bisa dibuat kapan saja</p>
+            </div>
+          </div>
+          <div className="flex items-start gap-3">
+            <div className="flex-shrink-0 w-8 h-8 bg-blue-200 text-blue-800 rounded-full flex items-center justify-center font-bold">2</div>
+            <div>
+              <p className="font-semibold text-blue-900">Kelas</p>
+              <p className="text-sm text-blue-700">Assign wali kelas & guru quran dari data guru</p>
+            </div>
+          </div>
+          <div className="flex items-start gap-3">
+            <div className="flex-shrink-0 w-8 h-8 bg-blue-200 text-blue-800 rounded-full flex items-center justify-center font-bold">3</div>
+            <div>
+              <p className="font-semibold text-blue-900">Orang Tua</p>
+              <p className="text-sm text-blue-700">Data orang tua independent, bisa dibuat kapan saja</p>
+            </div>
+          </div>
+          <div className="flex items-start gap-3">
+            <div className="flex-shrink-0 w-8 h-8 bg-blue-200 text-blue-800 rounded-full flex items-center justify-center font-bold">4</div>
+            <div>
+              <p className="font-semibold text-blue-900">Murid</p>
+              <p className="text-sm text-blue-700">Assign ke orang tua dan kelas yang sudah dibuat</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* Stats Cards */}
       {loading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
@@ -151,14 +186,23 @@ export function AdminOverviewPage() {
       {/* Quick Actions */}
       <div className="mb-8">
         <h2 className="text-lg font-semibold mb-4">Aksi Cepat</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <Link
-            to="/admin/students/new"
+            to="/admin/teachers/new"
             className="border-2 border-border bg-white p-4 hover:border-primary transition-colors text-center min-h-[80px] flex items-center justify-center"
           >
             <div>
               <div className="text-2xl font-bold text-primary mb-2">+</div>
-              <div className="font-medium">Tambah Murid</div>
+              <div className="font-medium">Tambah Guru</div>
+            </div>
+          </Link>
+          <Link
+            to="/admin/classes/new"
+            className="border-2 border-border bg-white p-4 hover:border-primary transition-colors text-center min-h-[80px] flex items-center justify-center"
+          >
+            <div>
+              <div className="text-2xl font-bold text-primary mb-2">+</div>
+              <div className="font-medium">Tambah Kelas</div>
             </div>
           </Link>
           <Link
@@ -171,12 +215,12 @@ export function AdminOverviewPage() {
             </div>
           </Link>
           <Link
-            to="/admin/teachers/new"
+            to="/admin/students/new"
             className="border-2 border-border bg-white p-4 hover:border-primary transition-colors text-center min-h-[80px] flex items-center justify-center"
           >
             <div>
               <div className="text-2xl font-bold text-primary mb-2">+</div>
-              <div className="font-medium">Tambah Guru</div>
+              <div className="font-medium">Tambah Murid</div>
             </div>
           </Link>
         </div>
