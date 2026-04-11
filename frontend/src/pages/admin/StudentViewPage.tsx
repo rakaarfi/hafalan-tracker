@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
-import { ArrowLeft, Edit, Trash2, Phone, Mail, Calendar, User, Users } from 'lucide-react'
+import { ArrowLeft, Edit, Trash2, Phone, Mail, Calendar, User, Users, BookOpen } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
@@ -15,6 +15,7 @@ export function StudentViewPage() {
   const [student, setStudent] = useState<Student | null>(null)
   const [parents, setParents] = useState<{father?: Parent, mother?: Parent}>({})
   const [memorizations, setMemorizations] = useState<Memorization[]>([])
+  const [teachers, setTeachers] = useState<string[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
@@ -54,6 +55,14 @@ export function StudentViewPage() {
       // Fetch memorization history
       const memData = await memorizationsApi.getByStudent(studentId)
       setMemorizations(memData || [])
+
+      // Extract unique teachers from memorizations
+      const uniqueTeachers = Array.from(new Set(
+        memData
+          .filter(m => m.teacher_name)
+          .map(m => m.teacher_name)
+      )) as string[]
+      setTeachers(uniqueTeachers)
     } catch (err: any) {
       console.error('Failed to fetch data:', err)
       setError('Gagal memuat data murid')
@@ -68,6 +77,15 @@ export function StudentViewPage() {
       case 'good': return 'text-yellow-700'
       case 'needs_improvement': return 'text-red-700'
       default: return 'text-gray-700'
+    }
+  }
+
+  const getBadgeClass = (status: string) => {
+    switch (status) {
+      case 'fluent': return 'bg-green-100 text-green-800 border-2 border-green-300'
+      case 'good': return 'bg-yellow-100 text-yellow-800 border-2 border-yellow-300'
+      case 'needs_improvement': return 'bg-red-100 text-red-800 border-2 border-red-300'
+      default: return 'bg-gray-100 text-gray-800 border-2 border-gray-300'
     }
   }
 
@@ -186,8 +204,8 @@ export function StudentViewPage() {
         </div>
       </div>
 
-      {/* Student Info & Parents */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+      {/* Student Info, Parents & Teachers */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
         {/* Student Information */}
         <div className="border-2 border-border bg-white p-4 md:p-6">
           <div className="flex items-center gap-2 mb-4">
@@ -273,6 +291,25 @@ export function StudentViewPage() {
             )}
           </div>
         </div>
+
+        {/* Teachers Information */}
+        <div className="border-2 border-border bg-white p-4 md:p-6">
+          <div className="flex items-center gap-2 mb-4">
+            <BookOpen size={20} className="text-gray-600" />
+            <h2 className="text-lg font-semibold">Guru</h2>
+          </div>
+          <div className="space-y-3">
+            {teachers.length > 0 ? (
+              teachers.map((teacher, index) => (
+                <div key={index} className="border-2 border-purple-100 bg-purple-50 p-3">
+                  <p className="font-medium">{teacher}</p>
+                </div>
+              ))
+            ) : (
+              <div className="text-sm text-gray-500 italic">Belum ada data guru</div>
+            )}
+          </div>
+        </div>
       </div>
 
       {/* Memorization History */}
@@ -306,7 +343,7 @@ export function StudentViewPage() {
                       {memo.teacher_name || '-'}
                     </td>
                     <td className="p-3 text-center">
-                      <Badge className={`text-xs ${getStatusColor(memo.status)}`}>
+                      <Badge className={`text-xs ${getBadgeClass(memo.status)}`}>
                         {getStatusText(memo.status)}
                       </Badge>
                     </td>
