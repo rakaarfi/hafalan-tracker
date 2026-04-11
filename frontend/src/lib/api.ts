@@ -261,6 +261,19 @@ export const parentsApi = {
     await api.delete(`/parents/${id}`)
   },
 
+  getChildren: async (id: string): Promise<Student[]> => {
+    const response = await api.get<Student[]>(`/parents/${id}/children`)
+    return response.data
+  },
+
+  addChild: async (id: string, studentId: string): Promise<void> => {
+    await api.post(`/parents/${id}/children`, { student_id: studentId })
+  },
+
+  removeChild: async (id: string, studentId: string): Promise<void> => {
+    await api.delete(`/parents/${id}/children/${studentId}`)
+  },
+
   getMyChildren: async (): Promise<Student[]> => {
     const response = await api.get<Student[]>('/parents/me/children')
     return response.data

@@ -1102,6 +1102,191 @@ func (s *Server) deleteParent(c *gin.Context) {
 	})
 }
 
+// getParentChildren retrieves all children for a specific parent (admin endpoint)
+func (s *Server) getParentChildrenAdmin(c *gin.Context) {
+	parentID := c.Param("id")
+
+	children, err := s.studentRepo.GetByParentID(c.Request.Context(), parentID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Failed to retrieve children",
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, children)
+}
+
+// addChildToParent assigns a child to a parent
+func (s *Server) addChildToParent(c *gin.Context) {
+	parentID := c.Param("id")
+
+	var req struct {
+		StudentID string `json:"student_id" binding:"required"`
+	}
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Student ID is required",
+		})
+		return
+	}
+
+	// Get parent to determine relationship type
+	parent, err := s.parentRepo.GetByID(c.Request.Context(), parentID)
+	if err != nil || parent == nil {
+		c.JSON(http.StatusNotFound, gin.H{
+			"error": "Parent not found",
+		})
+		return
+	}
+
+	// Determine relationship type based on parent gender
+	relationshipType := "father"
+	if parent.Gender == "female" {
+		relationshipType = "mother"
+	}
+
+	// Check if student already has a parent of this type
+	student, err := s.studentRepo.GetByIDWithDetails(c.Request.Context(), req.StudentID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Failed to retrieve student",
+		})
+		return
+	}
+
+	if student == nil {
+		c.JSON(http.StatusNotFound, gin.H{
+			"error": "Student not found",
+		})
+		return
+	}
+
+	// Validate: max 1 father and 1 mother
+	if relationshipType == "father" && student.Parent1ID != "" {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Student already has a father. Please remove the existing father first.",
+		})
+		return
+	}
+
+	if relationshipType == "mother" && student.Parent2ID != "" {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Student already has a mother. Please remove the existing mother first.",
+		})
+		return
+	}
+
+	// Add parent to student
+	err = s.studentRepo.AddParent(c.Request.Context(), req.StudentID, parentID, relationshipType)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Failed to assign child to parent",
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Child assigned successfully",
+	})
+}
+
+// removeChildFromParent removes a child from a parent
+func (s *Server) removeChildFromParent(c *gin.Context) {
+	parentID := c.Param("id")
+	studentID := c.Param("studentId")
+
+	// Get parent to determine relationship type
+	parent, err := s.parentRepo.GetByID(c.Request.Context(), parentID)
+	if err != nil || parent == nil {
+		c.JSON(http.StatusNotFound, gin.H{
+			"error": "Parent not found",
+		})
+		return
+	}
+
+	// Get student to check current parents
+	student, err := s.studentRepo.GetByIDWithDetails(c.Request.Context(), studentID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Failed to retrieve student",
+		})
+		return
+	}
+
+	if student == nil {
+		c.JSON(http.StatusNotFound, gin.H{
+			"error": "Student not found",
+		})
+		return
+	}
+
+	// Verify this parent is actually linked to this student
+	relationshipType := "father"
+	if parent.Gender == "female" {
+		relationshipType = "mother"
+	}
+
+	isLinked := false
+	if relationshipType == "father" && student.Parent1ID == parentID {
+		isLinked = true
+	} else if relationshipType == "mother" && student.Parent2ID == parentID {
+		isLinked = true
+	}
+
+	if !isLinked {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "This parent is not linked to this student",
+		})
+		return
+	}
+
+	// Remove all parents and re-add the ones that should remain
+	var parentsToAdd []struct {
+		id        string
+		relType   string
+	}
+
+	if student.Parent1ID != "" && student.Parent1ID != parentID {
+		parentsToAdd = append(parentsToAdd, struct {
+			id        string
+			relType   string
+		}{student.Parent1ID, "father"})
+	}
+
+	if student.Parent2ID != "" && student.Parent2ID != parentID {
+		parentsToAdd = append(parentsToAdd, struct {
+			id        string
+			relType   string
+		}{student.Parent2ID, "mother"})
+	}
+
+	// Remove all parents
+	err = s.studentRepo.RemoveParents(c.Request.Context(), studentID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Failed to remove parent",
+		})
+		return
+	}
+
+	// Re-add remaining parents
+	for _, p := range parentsToAdd {
+		err = s.studentRepo.AddParent(c.Request.Context(), studentID, p.id, p.relType)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"error": "Failed to restore parent relationships",
+			})
+			return
+		}
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Child removed successfully",
+	})
+}
+
 // createClass creates a new class
 func (s *Server) createClass(c *gin.Context) {
 	var req service.CreateClassRequest
