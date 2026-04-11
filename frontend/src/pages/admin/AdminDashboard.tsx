@@ -29,10 +29,10 @@ interface MenuItem {
 
 const menuItems: MenuItem[] = [
   { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, href: '/admin/dashboard' },
-  { id: 'students', label: 'Data Murid', icon: Users, href: '/admin/students' },
-  { id: 'parents', label: 'Data Orang Tua', icon: UserPlus, href: '/admin/parents' },
   { id: 'teachers', label: 'Data Guru', icon: GraduationCap, href: '/admin/teachers' },
   { id: 'classes', label: 'Data Kelas', icon: GraduationCap, href: '/admin/classes' },
+  { id: 'parents', label: 'Data Orang Tua', icon: UserPlus, href: '/admin/parents' },
+  { id: 'students', label: 'Data Murid', icon: Users, href: '/admin/students' },
   { id: 'reports', label: 'Laporan', icon: FileText, href: '/admin/reports' },
   { id: 'settings', label: 'Pengaturan', icon: Settings, href: '/admin/settings' },
 ]
