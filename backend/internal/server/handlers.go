@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"strconv"
 	"time"
@@ -1106,14 +1107,19 @@ func (s *Server) deleteParent(c *gin.Context) {
 func (s *Server) getParentChildrenAdmin(c *gin.Context) {
 	parentID := c.Param("id")
 
+	// Log for debugging
+	log.Printf("[DEBUG] getParentChildrenAdmin called with parentID: %s", parentID)
+
 	children, err := s.studentRepo.GetByParentID(c.Request.Context(), parentID)
 	if err != nil {
+		log.Printf("[ERROR] Failed to retrieve children for parent %s: %v", parentID, err)
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"error": "Failed to retrieve children",
 		})
 		return
 	}
 
+	log.Printf("[DEBUG] Found %d children for parent %s", len(children), parentID)
 	c.JSON(http.StatusOK, children)
 }
 
