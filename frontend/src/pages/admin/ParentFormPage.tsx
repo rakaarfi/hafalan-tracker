@@ -83,10 +83,17 @@ export function ParentFormPage() {
   const fetchChildren = async (id: string) => {
     try {
       setLoadingChildren(true)
+      console.log('Fetching children for parent:', id)
       const childrenData = await parentsApi.getChildren(id)
+      console.log('Children data:', childrenData)
       setChildren(childrenData)
     } catch (error) {
       console.error('Failed to fetch children:', error)
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Gagal memuat data anak",
+      })
     } finally {
       setLoadingChildren(false)
     }
