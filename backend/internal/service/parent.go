@@ -3,7 +3,10 @@ package service
 import (
 	"context"
 	"errors"
+	"fmt"
 	"strconv"
+
+	"golang.org/x/crypto/bcrypt"
 
 	"github.com/rakaarfi/hafalan-tracker/backend/internal/repository"
 )
@@ -180,23 +183,39 @@ type CreateParentRequest struct {
 // UpdateParentRequest represents the request to update a parent
 type UpdateParentRequest struct {
 	UserID string `json:"user_id" binding:"required"`
-	Name    string `json:"name" binding:"required"`
-	Phone   string `json:"phone"`
-	Gender  string `json:"gender" binding:"required,oneof=male female"`
+	Name   string `json:"name" binding:"required"`
+	Email  string `json:"email" binding:"required,email"`
+	Phone  string `json:"phone"`
+	Gender string `json:"gender" binding:"required,oneof=male female"`
 }
 
 // Create creates a new parent with user account
 func (s *ParentService) Create(ctx context.Context, req *CreateParentRequest) (*repository.ParentWithUser, error) {
+	// Check if email already exists
+	existingUser, err := s.userRepo.GetByEmail(ctx, req.Email)
+	if err != nil {
+		return nil, fmt.Errorf("failed to check existing user: %w", err)
+	}
+	if existingUser != nil {
+		return nil, errors.New("email already exists")
+	}
+
+	// Hash password
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
+	if err != nil {
+		return nil, fmt.Errorf("failed to hash password: %w", err)
+	}
+
 	// Create user account first
 	user := &repository.User{
 		Email:    req.Email,
-		Password: req.Password,
+		Password: string(hashedPassword),
 		IsActive: true,
 	}
 
-	err := s.userRepo.Create(ctx, user, "parent")
+	err = s.userRepo.Create(ctx, user, "parent")
 	if err != nil {
-		return nil, errors.New("failed to create user account")
+		return nil, fmt.Errorf("failed to create user account: %w", err)
 	}
 
 	// Create parent profile
@@ -230,6 +249,23 @@ func (s *ParentService) Update(ctx context.Context, req *UpdateParentRequest) (*
 	}
 	if existing == nil {
 		return nil, errors.New("parent not found")
+	}
+
+	// Check if email is being changed and if it already exists
+	if existing.Email != req.Email {
+		existingUser, err := s.userRepo.GetByEmail(ctx, req.Email)
+		if err != nil {
+			return nil, fmt.Errorf("failed to check existing email: %w", err)
+		}
+		if existingUser != nil && existingUser.ID != req.UserID {
+			return nil, errors.New("email already exists")
+		}
+
+		// Update email in users table
+		err = s.userRepo.UpdateEmail(ctx, req.UserID, req.Email)
+		if err != nil {
+			return nil, fmt.Errorf("failed to update email: %w", err)
+		}
 	}
 
 	// Update parent profile

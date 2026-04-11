@@ -21,6 +21,7 @@ interface AuthState {
   updateUser: (userData: Partial<User>) => void
   logout: () => Promise<void>
   clearError: () => void
+  clearAuth: () => void  // Clear auth state without API call (for 401 handling)
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -67,6 +68,12 @@ export const useAuthStore = create<AuthState>()(
           error: null,
         })
       },
+      clearAuth: () => set({
+        user: null,
+        token: null,
+        isAuthenticated: false,
+        error: null,
+      }),
       clearError: () => set({ error: null }),
     }),
     { name: 'auth-storage' }

@@ -58,7 +58,7 @@ export function TeacherFormPage() {
     }
 
     fetchTeacher()
-  }, [teacherId, navigate, reset, toast])
+  }, [teacherId, navigate])
 
   const onSubmit = async (data: TeacherFormData) => {
     try {

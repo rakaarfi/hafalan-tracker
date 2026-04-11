@@ -60,7 +60,7 @@ export function ParentFormPage() {
     }
 
     fetchParent()
-  }, [parentId, navigate, reset, toast])
+  }, [parentId, navigate])
 
   const onSubmit = async (data: ParentFormData) => {
     try {
@@ -68,6 +68,7 @@ export function ParentFormPage() {
         await parentsApi.update(parentId, {
           user_id: parentId,
           name: data.name,
+          email: data.email,
           phone: data.phone || '',
           gender: data.gender,
         })

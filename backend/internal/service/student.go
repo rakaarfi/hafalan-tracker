@@ -32,11 +32,12 @@ type CreateStudentRequest struct {
 
 // UpdateStudentRequest represents the request to update a student
 type UpdateStudentRequest struct {
-	ID        string   `json:"id" binding:"required"`
+	ID        string   `json:"id"`
 	Name      string   `json:"name" binding:"required"`
 	ClassID   string   `json:"class_id"`
 	ParentID1 string   `json:"parent_id_1"`
 	ParentID2 string   `json:"parent_id_2"`
+	BirthDate string   `json:"birth_date"`
 }
 
 // Create creates a new student with parent relationships
@@ -132,9 +133,15 @@ func (s *StudentService) Update(ctx context.Context, req *UpdateStudentRequest) 
 
 	// Update student basic info
 	student := &repository.Student{
-		Name:     req.Name,
-		ClassID:  req.ClassID,
-		IsActive: true,
+		Name:      req.Name,
+		ClassID:   req.ClassID,
+		IsActive:  true,
+		BirthDate: nil,
+	}
+
+	// Handle birth_date
+	if req.BirthDate != "" {
+		student.BirthDate = &req.BirthDate
 	}
 
 	err = s.studentRepo.Update(ctx, req.ID, student)
