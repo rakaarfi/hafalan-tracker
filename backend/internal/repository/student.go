@@ -70,9 +70,17 @@ func (r *StudentRepository) GetByParentID(ctx context.Context, parentID string) 
 	query := `
 		SELECT DISTINCT s.id, s.name, s.class_id, s.is_active, s.created_at, c.name as class_name
 		FROM students s
-		JOIN student_parents sp ON s.id = sp.student_id
 		LEFT JOIN classes c ON s.class_id = c.id
-		WHERE sp.parent_id = $1 AND s.is_active = true AND sp.is_active = true
+		WHERE s.is_active = true AND (
+			s.parent_1_id = $1 OR
+			s.parent_2_id = $1 OR
+			EXISTS (
+				SELECT 1 FROM student_parents sp
+				WHERE sp.student_id = s.id
+				AND sp.parent_id = $1
+				AND sp.is_active = true
+			)
+		)
 		ORDER BY s.name
 	`
 
