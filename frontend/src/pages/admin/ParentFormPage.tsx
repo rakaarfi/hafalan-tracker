@@ -3,6 +3,7 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { useNavigate, useParams } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { ArrowLeft, Users, Plus, Trash2, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -24,6 +25,7 @@ type ParentFormData = z.infer<typeof parentSchema>
 
 export function ParentFormPage() {
   const { toast } = useToast()
+  const { t } = useTranslation()
   const { parentId } = useParams<{ parentId?: string }>()
   const navigate = useNavigate()
   const isEditing = !!parentId
@@ -61,7 +63,7 @@ export function ParentFormPage() {
       } catch (error) {
         toast({
           variant: "destructive",
-          title: "Error",
+          title: t('errors.failedToLoad'),
           description: "Gagal memuat data orang tua",
         })
         navigate('/admin/parents')
@@ -91,7 +93,7 @@ export function ParentFormPage() {
       console.error('Failed to fetch children:', error)
       toast({
         variant: "destructive",
-        title: "Error",
+        title: t('errors.failedToLoadChildren'),
         description: "Gagal memuat data anak",
       })
     } finally {
@@ -113,7 +115,14 @@ export function ParentFormPage() {
   }
 
   const handleAddChild = async () => {
-    if (!parentId || !selectedStudentId) return
+    if (!parentId || !selectedStudentId) {
+      toast({
+        variant: "destructive",
+        title: t('errors.failedToAddChild'),
+        description: t('errors.selectStudent'),
+      })
+      return
+    }
 
     try {
       await parentsApi.addChild(parentId, selectedStudentId)
@@ -130,10 +139,19 @@ export function ParentFormPage() {
         description: "Anak berhasil ditambahkan",
       })
     } catch (error: any) {
+      let errorMessage = error.response?.data?.error || error.message || "Gagal menambahkan anak"
+
+      // Translate specific backend error messages
+      if (errorMessage.includes('already has a father')) {
+        errorMessage = t('errors.parentAlreadyHasFather')
+      } else if (errorMessage.includes('already has a mother')) {
+        errorMessage = t('errors.parentAlreadyHasMother')
+      }
+
       toast({
         variant: "destructive",
-        title: "Gagal",
-        description: error.response?.data?.error || error.message || "Gagal menambahkan anak",
+        title: t('errors.failedToAddChild'),
+        description: errorMessage,
       })
     }
   }
@@ -152,10 +170,17 @@ export function ParentFormPage() {
         })
       })
       .catch((error: any) => {
+        let errorMessage = error.response?.data?.error || error.message || "Gagal menghapus anak"
+
+        // Translate specific backend error messages
+        if (errorMessage.includes('not linked to this student')) {
+          errorMessage = t('errors.childNotLinkedToParent')
+        }
+
         toast({
           variant: "destructive",
-          title: "Gagal",
-          description: error.response?.data?.error || error.message || "Gagal menghapus anak",
+          title: t('errors.failedToRemoveChild'),
+          description: errorMessage,
         })
       })
       .finally(() => {
@@ -414,7 +439,7 @@ export function ParentFormPage() {
                 <option value="">Pilih Murid</option>
                 {allStudents.map((student) => (
                   <option key={student.id} value={student.id}>
-                    {student.name} - {student.class_name || 'Tanpa Kelas'}
+                    {student.name} {!student.class_name || student.class_name === 'Tanpa Phone' ? '(Tanpa Kelas)' : `- ${student.class_name}`}
                   </option>
                 ))}
               </select>

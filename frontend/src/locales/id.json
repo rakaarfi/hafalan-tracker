@@ -49,5 +49,25 @@
     "pageMax": "Halaman maksimal adalah 604",
     "required": "Field ini wajib diisi",
     "invalidDate": "Format tanggal tidak valid"
+  },
+  "errors": {
+    "failedToLoad": "Gagal memuat data",
+    "failedToSave": "Gagal menyimpan data",
+    "failedToDelete": "Gagal menghapus data",
+    "failedToCreate": "Gagal membuat data",
+    "failedToUpdate": "Gagal mengupdate data",
+    "notFound": "Data tidak ditemukan",
+    "alreadyExists": "Data sudah ada",
+    "invalidRequest": "Format request tidak valid",
+    "unauthorized": "Anda tidak memiliki akses",
+    "serverError": "Terjadi kesalahan pada server",
+    "networkError": "Gagal terhubung ke server",
+    "parentAlreadyHasFather": "Murid sudah punya ayah. Hapus ayah yang lama terlebih dahulu",
+    "parentAlreadyHasMother": "Murid sudah punya ibu. Hapus ibu yang lama terlebih dahulu",
+    "failedToLoadChildren": "Gagal memuat data anak",
+    "failedToAddChild": "Gagal menambahkan anak",
+    "failedToRemoveChild": "Gagal menghapus anak",
+    "childNotLinkedToParent": "Orang tua ini tidak terhubung dengan murid tersebut",
+    "selectStudent": "Pilih murid terlebih dahulu"
   }
 }
