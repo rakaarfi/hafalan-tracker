@@ -1,4 +1,5 @@
 import axios from 'axios'
+import { useAuthStore } from '@/stores/authStore'
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api/v1'
 
@@ -16,6 +17,10 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
+      // Clear auth state immediately to prevent infinite redirect loop
+      // This ensures PublicRoute won't try to redirect away from /login
+      useAuthStore.getState().clearAuth()
+
       // Only redirect if not already on login page to prevent infinite loop
       if (!window.location.pathname.includes('/login')) {
         // Redirect to login (cookie will be cleared by backend)
@@ -59,7 +64,6 @@ export interface Student {
   parent_2_id?: string
   parent_2_name?: string
   birth_date?: string
-  phone?: string
   photo_url?: string
   progress?: {
     total_units: number

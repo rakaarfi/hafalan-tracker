@@ -19,7 +19,7 @@ func NewRoleRepository(db *sqlx.DB) *RoleRepository {
 
 // Role represents a role in the system
 type Role struct {
-	ID          string  `db:"id"`
+	ID          int     `db:"id"`
 	Name        string  `db:"name"`
 	Description *string `db:"description"`
 }

@@ -36,9 +36,10 @@ type CreateTeacherRequest struct {
 
 // UpdateTeacherRequest represents the request to update a teacher
 type UpdateTeacherRequest struct {
-	UserID   string `json:"user_id" binding:"required"`
-	Name     string `json:"name" binding:"required"`
-	Phone    string `json:"phone"`
+	UserID string `json:"user_id"`
+	Name   string `json:"name" binding:"required"`
+	Email  string `json:"email" binding:"required,email"`
+	Phone  string `json:"phone"`
 }
 
 // Create creates a new teacher with user account
@@ -102,6 +103,23 @@ func (s *TeacherService) Update(ctx context.Context, req *UpdateTeacherRequest) 
 	}
 	if existingTeacher == nil {
 		return nil, errors.New("teacher not found")
+	}
+
+	// Check if email is being changed and if it already exists
+	if existingTeacher.Email != req.Email {
+		existingUser, err := s.userRepo.GetByEmail(ctx, req.Email)
+		if err != nil {
+			return nil, fmt.Errorf("failed to check existing email: %w", err)
+		}
+		if existingUser != nil && existingUser.ID != req.UserID {
+			return nil, errors.New("email already exists")
+		}
+
+		// Update email in users table
+		err = s.userRepo.UpdateEmail(ctx, req.UserID, req.Email)
+		if err != nil {
+			return nil, fmt.Errorf("failed to update email: %w", err)
+		}
 	}
 
 	// Update teacher profile

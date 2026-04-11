@@ -102,11 +102,11 @@ func (r *ParentRepository) GetAll(ctx context.Context, search string) ([]ParentW
 // Create creates a new parent (user account must be created first)
 func (r *ParentRepository) Create(ctx context.Context, parent *Parent) error {
 	query := `
-		INSERT INTO parents (user_id, full_name, phone)
-		VALUES ($1, $2, $3)
+		INSERT INTO parents (user_id, full_name, phone, gender)
+		VALUES ($1, $2, $3, $4)
 	`
 
-	_, err := r.db.ExecContext(ctx, query, parent.UserID, parent.FullName, parent.Phone)
+	_, err := r.db.ExecContext(ctx, query, parent.UserID, parent.FullName, parent.Phone, parent.Gender)
 	return err
 }
 
@@ -114,11 +114,11 @@ func (r *ParentRepository) Create(ctx context.Context, parent *Parent) error {
 func (r *ParentRepository) Update(ctx context.Context, userID string, parent *Parent) error {
 	query := `
 		UPDATE parents
-		SET full_name = $1, phone = $2
-		WHERE user_id = $3
+		SET full_name = $1, phone = $2, gender = $3
+		WHERE user_id = $4
 	`
 
-	_, err := r.db.ExecContext(ctx, query, parent.FullName, parent.Phone, userID)
+	_, err := r.db.ExecContext(ctx, query, parent.FullName, parent.Phone, parent.Gender, userID)
 	return err
 }
 

@@ -19,11 +19,13 @@ func NewStudentRepository(db *sqlx.DB) *StudentRepository {
 
 // Student represents a student in the system
 type Student struct {
-	ID        string `db:"id" json:"id"`
-	Name      string `db:"name" json:"name"`
-	ClassID   string `db:"class_id" json:"class_id"`
-	IsActive  bool   `db:"is_active" json:"is_active"`
-	CreatedAt string `db:"created_at" json:"created_at"`
+	ID        string  `db:"id" json:"id"`
+	Name      string  `db:"name" json:"name"`
+	ClassID   string  `db:"class_id" json:"class_id"`
+	IsActive  bool    `db:"is_active" json:"is_active"`
+	CreatedAt string  `db:"created_at" json:"created_at"`
+	BirthDate *string `db:"birth_date" json:"birth_date,omitempty"`
+	PhotoURL  *string `db:"photo_url" json:"photo_url,omitempty"`
 }
 
 // StudentWithClass represents a student with class information
@@ -40,13 +42,12 @@ type StudentWithDetails struct {
 	Parent1Name string  `db:"parent_1_name" json:"parent_1_name,omitempty"`
 	Parent2ID   string  `db:"parent_2_id" json:"parent_2_id,omitempty"`
 	Parent2Name string  `db:"parent_2_name" json:"parent_2_name,omitempty"`
-	Phone       string  `db:"phone" json:"phone,omitempty"`
 }
 
 // GetByID retrieves a student by ID
 func (r *StudentRepository) GetByID(ctx context.Context, id string) (*StudentWithClass, error) {
 	query := `
-		SELECT s.id, s.name, s.class_id, s.is_active, s.created_at, c.name as class_name
+		SELECT s.id, s.name, s.class_id, s.is_active, s.created_at, s.birth_date, s.photo_url, c.name as class_name
 		FROM students s
 		LEFT JOIN classes c ON s.class_id = c.id
 		WHERE s.id = $1 AND s.is_active = true
@@ -152,13 +153,9 @@ func (r *StudentRepository) GetAllWithDetails(ctx context.Context, search string
 				if p.RelationshipType == "father" {
 					result[i].Parent1ID = p.UserID
 					result[i].Parent1Name = p.FullName
-					result[i].Phone = p.Phone
 				} else if p.RelationshipType == "mother" {
 					result[i].Parent2ID = p.UserID
 					result[i].Parent2Name = p.FullName
-					if result[i].Phone == "" {
-						result[i].Phone = p.Phone
-					}
 				}
 			}
 		}
@@ -213,11 +210,11 @@ func (r *StudentRepository) Create(ctx context.Context, student *Student) error 
 func (r *StudentRepository) Update(ctx context.Context, id string, student *Student) error {
 	query := `
 		UPDATE students
-		SET name = $1, class_id = $2
-		WHERE id = $3
+		SET name = $1, class_id = $2, birth_date = $3
+		WHERE id = $4
 	`
 
-	_, err := r.db.ExecContext(ctx, query, student.Name, student.ClassID, id)
+	_, err := r.db.ExecContext(ctx, query, student.Name, student.ClassID, student.BirthDate, id)
 	return err
 }
 
@@ -271,13 +268,9 @@ func (r *StudentRepository) GetByIDWithDetails(ctx context.Context, id string) (
 			if p.RelationshipType == "father" {
 				result.Parent1ID = p.UserID
 				result.Parent1Name = p.FullName
-				result.Phone = p.Phone
 			} else if p.RelationshipType == "mother" {
 				result.Parent2ID = p.UserID
 				result.Parent2Name = p.FullName
-				if result.Phone == "" {
-					result.Phone = p.Phone
-				}
 			}
 		}
 	}

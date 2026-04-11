@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
-import { Plus, Search, Edit, Trash2, Eye } from 'lucide-react'
+import { Plus, Search, Trash2, Eye } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
@@ -143,14 +143,13 @@ export function StudentListPage() {
               <th className="text-left p-2 md:p-4 border-r-2 border-border text-sm md:text-base">Nama</th>
               <th className="text-left p-2 md:p-4 border-r-2 border-border text-sm md:text-base">Kelas</th>
               <th className="text-left p-2 md:p-4 border-r-2 border-border text-sm md:text-base">Orang Tua</th>
-              <th className="text-left p-2 md:p-4 border-r-2 border-border text-sm md:text-base">No HP</th>
               <th className="text-center p-2 md:p-4 text-sm md:text-base">Aksi</th>
             </tr>
           </thead>
           <tbody className="divide-y-2 divide-border">
             {filteredStudents.length === 0 ? (
               <tr>
-                <td colSpan={5} className="p-8 text-center text-gray-500">
+                <td colSpan={4} className="p-8 text-center text-gray-500">
                   {search ? 'Tidak ada murid ditemukan' : 'Belum ada data murid'}
                 </td>
               </tr>
@@ -168,25 +167,14 @@ export function StudentListPage() {
                       {student.parent_1_name || '-'}
                     </div>
                   </td>
-                  <td className="p-2 md:p-4 border-r-2 border-border text-xs md:text-sm">
-                    {student.phone || '-'}
-                  </td>
                   <td className="p-2 md:p-4">
                     <div className="flex justify-center gap-1 md:gap-2">
-                      <Link to={`/admin/students/${student.id}`} className="inline-block">
-                        <button
-                          className="p-1.5 md:p-2 border-2 border-blue-200 hover:bg-blue-50 min-h-[36px] min-w-[36px]"
-                          title="Lihat"
-                        >
-                          <Eye size={14} className="md:size-[16px]" />
-                        </button>
-                      </Link>
                       <Link to={`/admin/students/${student.id}/edit`} className="inline-block">
                         <button
-                          className="p-1.5 md:p-2 border-2 border-yellow-200 hover:bg-yellow-50 min-h-[36px] min-w-[36px]"
-                          title="Edit"
+                          className="p-1.5 md:p-2 border-2 border-blue-200 hover:bg-blue-50 min-h-[36px] min-w-[36px]"
+                          title="Lihat/Edit"
                         >
-                          <Edit size={14} className="md:size-[16px]" />
+                          <Eye size={14} className="md:size-[16px]" />
                         </button>
                       </Link>
                       <button

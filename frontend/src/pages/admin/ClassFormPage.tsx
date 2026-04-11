@@ -90,7 +90,7 @@ export function ClassFormPage() {
     }
 
     fetchClass()
-  }, [classId, navigate, reset, toast])
+  }, [classId, navigate])
 
   const fetchQuranAssignments = async () => {
     if (!classId) return
@@ -107,6 +107,7 @@ export function ClassFormPage() {
   }
 
   const getActiveAssignment = () => {
+    if (!quranAssignments || quranAssignments.length === 0) return undefined
     return quranAssignments.find(a => a.is_active)
   }
 

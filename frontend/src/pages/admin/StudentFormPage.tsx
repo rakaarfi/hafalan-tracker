@@ -17,7 +17,6 @@ const studentSchema = z.object({
   parent_id_1: z.string().min(1, 'Ayah wajib dipilih'),
   parent_id_2: z.string().optional(),
   birth_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Format tanggal harus YYYY-MM-DD').optional().or(z.literal('')),
-  phone: z.string().optional(),
 })
 
 type StudentFormData = z.infer<typeof studentSchema>
@@ -82,11 +81,20 @@ export function StudentFormPage() {
     if (!studentId) return
     try {
       const student = await studentsApi.getById(studentId)
+
+      // Format birth_date for date input (YYYY-MM-DD)
+      let formattedBirthDate = ''
+      if (student.birth_date) {
+        const date = new Date(student.birth_date)
+        formattedBirthDate = date.toISOString().split('T')[0] // Convert to YYYY-MM-DD
+      }
+
       reset({
         name: student.name,
         class_id: student.class_id,
         parent_id_1: student.parent_1_id || '',
         parent_id_2: student.parent_2_id || '',
+        birth_date: formattedBirthDate,
       })
     } catch (err: any) {
       // Error already handled by toast in parent catch block
@@ -208,18 +216,6 @@ export function StudentFormPage() {
               type="date"
               className="border-2 min-h-[44px]"
               {...register('birth_date')}
-            />
-          </div>
-
-          {/* No HP */}
-          <div>
-            <Label htmlFor="phone">No HP (Orang Tua)</Label>
-            <Input
-              id="phone"
-              type="tel"
-              placeholder="08xxxxxxxxxx"
-              className="border-2 min-h-[44px]"
-              {...register('phone')}
             />
           </div>
 

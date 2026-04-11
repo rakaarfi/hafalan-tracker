@@ -1008,6 +1008,7 @@ func (s *Server) updateTeacher(c *gin.Context) {
 		return
 	}
 
+	// Set UserID from URL parameter
 	req.UserID = id
 
 	teacher, err := s.teacherService.Update(c.Request.Context(), &req)
@@ -1199,7 +1200,7 @@ func (s *Server) getClassQuranTeachers(c *gin.Context) {
 		Notes           *string `json:"notes"`
 	}
 
-	var result []AssignmentWithTeacherName
+	result := []AssignmentWithTeacherName{}
 	for _, assignment := range assignments {
 		// Only include active assignments
 		if !assignment.IsActive {
