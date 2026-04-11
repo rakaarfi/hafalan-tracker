@@ -9,6 +9,7 @@ import { ChildDetailPage } from '@/pages/ChildDetailPage'
 import { AdminDashboard } from '@/pages/admin/AdminDashboard'
 import { AdminOverviewPage } from '@/pages/admin/AdminOverviewPage'
 import { StudentListPage } from '@/pages/admin/StudentListPage'
+import { StudentViewPage } from '@/pages/admin/StudentViewPage'
 import { StudentFormPage } from '@/pages/admin/StudentFormPage'
 import { ParentListPage } from '@/pages/admin/ParentListPage'
 import { ParentFormPage } from '@/pages/admin/ParentFormPage'
@@ -156,6 +157,7 @@ function App() {
             <Route path="dashboard" element={<AdminOverviewPage />} />
             <Route path="students" element={<StudentListPage />} />
             <Route path="students/new" element={<StudentFormPage />} />
+            <Route path="students/:studentId" element={<StudentViewPage />} />
             <Route path="students/:studentId/edit" element={<StudentFormPage />} />
             <Route path="parents" element={<ParentListPage />} />
             <Route path="parents/new" element={<ParentFormPage />} />
