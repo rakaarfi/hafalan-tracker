@@ -25,9 +25,9 @@ INSERT INTO users (email, password_hash, role_id) VALUES
 INSERT INTO users (email, password_hash, role_id) VALUES
 ('bapak.hidayat@email.com', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 3);
 
--- Parent 6: Ibu Aminah (Ibu dari Khadijah Aminah)
+-- Parent 6: Ibu Siti Aminah (Ibu dari Khadijah Aminah)
 INSERT INTO users (email, password_hash, role_id) VALUES
-('ibu.aminah@email.com', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 3);
+('ibu.siti.aminah@email.com', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 3);
 
 -- ============================================
 -- PARENTS PROFILES
@@ -53,9 +53,9 @@ INSERT INTO parents (user_id, full_name, phone, gender) VALUES
 INSERT INTO parents (user_id, full_name, phone, gender) VALUES
 (11, 'Bapak Hidayat', '081234567895', 'male');
 
--- Parent 6: Ibu Aminah (user_id should be 12)
+-- Parent 6: Ibu Siti Aminah (user_id should be 12)
 INSERT INTO parents (user_id, full_name, phone, gender) VALUES
-(12, 'Ibu Aminah', '081234567896', 'female');
+(12, 'Ibu Siti Aminah', '081234567896', 'female');
 
 -- ============================================
 -- STUDENTS (7 students)
