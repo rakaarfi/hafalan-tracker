@@ -24,6 +24,9 @@ export function ParentListPage() {
   const [deleting, setDeleting] = useState<string | null>(null)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [pendingDeleteParent, setPendingDeleteParent] = useState<Parent | null>(null)
+  const [page, setPage] = useState(1)
+  const [totalPages, setTotalPages] = useState(1)
+  const [total, setTotal] = useState(0)
 
   const { toast } = useToast()
 
@@ -31,12 +34,15 @@ export function ParentListPage() {
     fetchParents()
   }, [])
 
-  const fetchParents = async (searchQuery?: string) => {
+  const fetchParents = async (searchQuery?: string, pageNumber = 1) => {
     try {
       setLoading(true)
       setError(null)
-      const data = await parentsApi.getAll(searchQuery)
-      setParents(data)
+      const response = await parentsApi.getAll(searchQuery, pageNumber, 10)
+      setParents(response.data)
+      setTotalPages(response.total_pages)
+      setTotal(response.total)
+      setPage(response.page)
     } catch (err: any) {
       console.error('Failed to fetch parents:', err)
       setError('Gagal memuat data orang tua')
@@ -47,15 +53,13 @@ export function ParentListPage() {
 
   useEffect(() => {
     const timeoutId = setTimeout(() => {
-      if (search.length > 0 || search.length === 0) {
-        fetchParents(search || undefined)
+      if (search.length >= 0) {
+        fetchParents(search || undefined, 1)
       }
     }, 500)
 
     return () => clearTimeout(timeoutId)
   }, [search])
-
-  const filteredParents = parents
 
   const handleDelete = (parent: Parent) => {
     setPendingDeleteParent(parent)
@@ -152,14 +156,14 @@ export function ParentListPage() {
             </tr>
           </thead>
           <tbody className="divide-y-2 divide-border">
-            {filteredParents.length === 0 ? (
+            {parents.length === 0 ? (
               <tr>
                 <td colSpan={4} className="p-8 text-center text-gray-500">
                   {search ? 'Tidak ada orang tua ditemukan' : 'Belum ada data orang tua'}
                 </td>
               </tr>
             ) : (
-              filteredParents.map((parent) => (
+              parents.map((parent) => (
                 <tr key={parent.UserID} className="hover:bg-gray-50">
                   <td className="p-2 md:p-4 border-r-2 border-border">
                     <div className="font-medium text-sm md:text-base">{parent.FullName}</div>
@@ -209,10 +213,63 @@ export function ParentListPage() {
         </table>
       </div>
 
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="mt-4 flex flex-col sm:flex-row justify-between items-center gap-4">
+          <div className="text-sm text-gray-600">
+            Menampilkan {(page - 1) * 10 + 1} - {Math.min(page * 10, total)} dari {total} orang tua
+          </div>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              onClick={() => fetchParents(search || undefined, page - 1)}
+              disabled={page <= 1 || loading}
+              className="min-h-[36px] min-w-[36px]"
+            >
+              Previous
+            </Button>
+            <div className="flex items-center gap-1">
+              {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
+                let pageNum
+                if (totalPages <= 5) {
+                  pageNum = i + 1
+                } else if (page <= 3) {
+                  pageNum = i + 1
+                } else if (page >= totalPages - 2) {
+                  pageNum = totalPages - 4 + i
+                } else {
+                  pageNum = page - 2 + i
+                }
+
+                return (
+                  <Button
+                    key={pageNum}
+                    variant={pageNum === page ? "default" : "outline"}
+                    onClick={() => fetchParents(search || undefined, pageNum)}
+                    disabled={loading}
+                    className="min-h-[36px] min-w-[36px]"
+                  >
+                    {pageNum}
+                  </Button>
+                )
+              })}
+            </div>
+            <Button
+              variant="outline"
+              onClick={() => fetchParents(search || undefined, page + 1)}
+              disabled={page >= totalPages || loading}
+              className="min-h-[36px] min-w-[36px]"
+            >
+              Next
+            </Button>
+          </div>
+        </div>
+      )}
+
       {/* Stats */}
       <div className="mt-6 grid grid-cols-1 gap-4">
         <div className="border-2 border-border bg-white p-4 text-center">
-          <div className="text-2xl font-bold">{parents.length}</div>
+          <div className="text-2xl font-bold">{total}</div>
           <div className="text-sm text-gray-600">Total Orang Tua</div>
         </div>
       </div>

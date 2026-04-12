@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"database/sql"
+	"fmt"
 
 	"github.com/jmoiron/sqlx"
 )
@@ -97,6 +98,56 @@ func (r *ParentRepository) GetAll(ctx context.Context, search string) ([]ParentW
 	}
 
 	return parents, nil
+}
+
+// GetAllPaginated retrieves parents with pagination
+func (r *ParentRepository) GetAllPaginated(ctx context.Context, search string, page, limit int) ([]ParentWithUser, int, error) {
+	offset := (page - 1) * limit
+
+	// Count query
+	countQuery := `
+		SELECT COUNT(*)
+		FROM parents p
+		JOIN users u ON p.user_id = u.id
+	`
+
+	countArgs := []interface{}{}
+	if search != "" {
+		countQuery += " WHERE p.full_name ILIKE $1 OR u.email ILIKE $1"
+		countArgs = append(countArgs, "%"+search+"%")
+	}
+
+	var total int
+	err := r.db.GetContext(ctx, &total, countQuery, countArgs...)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	// Data query
+	query := `
+		SELECT p.user_id, p.full_name, p.phone, p.gender, p.created_at, u.email
+		FROM parents p
+		JOIN users u ON p.user_id = u.id
+	`
+
+	args := []interface{}{}
+	argOffset := 1
+	if search != "" {
+		query += " WHERE p.full_name ILIKE $" + fmt.Sprint(argOffset) + " OR u.email ILIKE $" + fmt.Sprint(argOffset)
+		args = append(args, "%"+search+"%")
+		argOffset++
+	}
+
+	query += " ORDER BY p.full_name LIMIT $" + fmt.Sprint(argOffset) + " OFFSET $" + fmt.Sprint(argOffset+1)
+	args = append(args, limit, offset)
+
+	var parents []ParentWithUser
+	err = r.db.SelectContext(ctx, &parents, query, args...)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	return parents, total, nil
 }
 
 // Create creates a new parent (user account must be created first)

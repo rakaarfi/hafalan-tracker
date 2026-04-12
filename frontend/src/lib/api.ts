@@ -37,6 +37,14 @@ export interface ApiResponse<T> {
   error?: string
 }
 
+export interface PaginatedResponse<T> {
+  data: T[]
+  total: number
+  page: number
+  limit: number
+  total_pages: number
+}
+
 export interface LoginRequest {
   email: string
   password: string
@@ -180,9 +188,10 @@ export const authApi = {
 
 // Students API
 export const studentsApi = {
-  getAll: async (search?: string): Promise<Student[]> => {
-    const params = search ? { search } : {}
-    const response = await api.get<Student[]>('/students', { params })
+  getAll: async (search?: string, page = 1, limit = 10): Promise<PaginatedResponse<Student>> => {
+    const params: any = { page, limit }
+    if (search) params.search = search
+    const response = await api.get<PaginatedResponse<Student>>('/students', { params })
     return response.data
   },
 
@@ -208,9 +217,10 @@ export const studentsApi = {
 
 // Teachers API
 export const teachersApi = {
-  getAll: async (search?: string): Promise<Teacher[]> => {
-    const params = search ? { search } : {}
-    const response = await api.get<Teacher[]>('/teachers', { params })
+  getAll: async (search?: string, page = 1, limit = 10): Promise<PaginatedResponse<Teacher>> => {
+    const params: any = { page, limit }
+    if (search) params.search = search
+    const response = await api.get<PaginatedResponse<Teacher>>('/teachers', { params })
     return response.data
   },
 
@@ -236,9 +246,10 @@ export const teachersApi = {
 
 // Parents API
 export const parentsApi = {
-  getAll: async (search?: string): Promise<Parent[]> => {
-    const params = search ? { search } : {}
-    const response = await api.get<Parent[]>('/parents', { params })
+  getAll: async (search?: string, page = 1, limit = 10): Promise<PaginatedResponse<Parent>> => {
+    const params: any = { page, limit }
+    if (search) params.search = search
+    const response = await api.get<PaginatedResponse<Parent>>('/parents', { params })
     return response.data
   },
 

@@ -3,9 +3,19 @@ package repository
 import (
 	"context"
 	"database/sql"
+	"fmt"
 
 	"github.com/jmoiron/sqlx"
 )
+
+// PaginatedResult represents a paginated response
+type PaginatedResult struct {
+	Data       interface{} `json:"data"`
+	Total      int         `json:"total"`
+	Page       int         `json:"page"`
+	Limit      int         `json:"limit"`
+	TotalPages int         `json:"total_pages"`
+}
 
 // StudentRepository handles student data operations
 type StudentRepository struct {
@@ -132,6 +142,58 @@ func (r *StudentRepository) GetAll(ctx context.Context, search string) ([]Studen
 	return students, nil
 }
 
+// GetAllPaginated retrieves students with pagination
+func (r *StudentRepository) GetAllPaginated(ctx context.Context, search string, page, limit int) ([]StudentWithClass, int, error) {
+	offset := (page - 1) * limit
+
+	// Count query
+	countQuery := `
+		SELECT COUNT(*)
+		FROM students s
+		WHERE s.is_active = true
+	`
+
+	countArgs := []interface{}{}
+	argOffset := 1
+	if search != "" {
+		countQuery += " AND s.name ILIKE $" + fmt.Sprint(argOffset)
+		countArgs = append(countArgs, "%"+search+"%")
+		argOffset++
+	}
+
+	var total int
+	err := r.db.GetContext(ctx, &total, countQuery, countArgs...)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	// Data query
+	query := `
+		SELECT s.id, s.name, s.class_id, s.is_active, s.created_at, c.name as class_name
+		FROM students s
+		LEFT JOIN classes c ON s.class_id = c.id
+		WHERE s.is_active = true
+	`
+
+	args := []interface{}{}
+	if search != "" {
+		query += " AND s.name ILIKE $" + fmt.Sprint(argOffset)
+		args = append(args, "%"+search+"%")
+		argOffset++
+	}
+
+	query += " ORDER BY s.name LIMIT $" + fmt.Sprint(argOffset) + " OFFSET $" + fmt.Sprint(argOffset+1)
+	args = append(args, limit, offset)
+
+	var students []StudentWithClass
+	err = r.db.SelectContext(ctx, &students, query, args...)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	return students, total, nil
+}
+
 // GetAllWithDetails retrieves all students with class and parent information
 func (r *StudentRepository) GetAllWithDetails(ctx context.Context, search string) ([]StudentWithDetails, error) {
 	// First, get all students with class info using the existing method
@@ -164,6 +226,40 @@ func (r *StudentRepository) GetAllWithDetails(ctx context.Context, search string
 	}
 
 	return result, nil
+}
+
+// GetAllWithDetailsPaginated retrieves students with pagination and parent information
+func (r *StudentRepository) GetAllWithDetailsPaginated(ctx context.Context, search string, page, limit int) ([]StudentWithDetails, int, error) {
+	// First, get paginated students with class info
+	students, total, err := r.GetAllPaginated(ctx, search, page, limit)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	// Convert to StudentWithDetails and fetch parent info for each student
+	result := make([]StudentWithDetails, len(students))
+	for i, student := range students {
+		result[i] = StudentWithDetails{
+			Student:   student.Student,
+			ClassName: student.ClassName,
+		}
+
+		// Fetch parents for this student
+		parents, err := r.getParentsForStudent(ctx, student.ID)
+		if err == nil && len(parents) > 0 {
+			for _, p := range parents {
+				if p.RelationshipType == "father" {
+					result[i].Parent1ID = p.UserID
+					result[i].Parent1Name = p.FullName
+				} else if p.RelationshipType == "mother" {
+					result[i].Parent2ID = p.UserID
+					result[i].Parent2Name = p.FullName
+				}
+			}
+		}
+	}
+
+	return result, total, nil
 }
 
 // getParentsForStudent fetches all parents for a student
