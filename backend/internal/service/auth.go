@@ -39,7 +39,9 @@ type LoginResponse struct {
 // UserResponse represents user information in responses
 type UserResponse struct {
 	ID    string `json:"id"`
+	Name  string `json:"name"`
 	Email string `json:"email"`
+	Phone string `json:"phone"`
 	Role  string `json:"role"`
 }
 
@@ -65,11 +67,18 @@ func (s *AuthService) Login(ctx context.Context, req *LoginRequest) (*LoginRespo
 		return nil, err
 	}
 
+	// Get user name based on role (for now, use email as placeholder)
+	// TODO: Fetch actual name from teachers/parents tables
+	userName := req.Email // Temporary fallback
+	phone := ""
+
 	return &LoginResponse{
 		Token: token,
 		User: UserResponse{
 			ID:    user.ID,
+			Name:  userName,
 			Email: user.Email,
+			Phone: phone,
 			Role:  user.RoleName,
 		},
 	}, nil
