@@ -12,8 +12,8 @@ RUN bun install --frozen-lockfile
 # Copy source code
 COPY . .
 
-# Build the application (skip TypeScript check for faster build)
-RUN bun run build --mode production
+# Build the application
+RUN bun run build
 
 # Production stage with nginx
 FROM nginx:alpine
