@@ -166,22 +166,35 @@ func (r *TeacherRepository) GetAllWithClassesPaginated(ctx context.Context, sear
 	whereArgs := []interface{}{}
 	argOffset := 0
 
-	// For filtering by teacher type and class, we need to join with appropriate tables
+	// Build JOIN and WHERE based on filters
+	joins := ""
 	if teacherType == "homeroom" {
 		// Only homeroom teachers
+		joins += ` JOIN classes c ON c.homeroom_teacher_id = t.user_id`
 		if classID != "" {
-			// Specific homeroom teacher for a class
 			whereConditions = append(whereConditions, "c.id = $"+fmt.Sprint(argOffset+1))
 			whereArgs = append(whereArgs, classID)
 			argOffset++
 		}
 	} else if teacherType == "quran" {
 		// Only Quran teachers
+		joins += ` JOIN class_quran_teachers cqt ON cqt.quran_teacher_id = t.user_id AND cqt.is_active = true`
 		if classID != "" {
-			// Quran teachers for a specific class
 			whereConditions = append(whereConditions, "cqt.class_id = $"+fmt.Sprint(argOffset+1))
 			whereArgs = append(whereArgs, classID)
 			argOffset++
+		}
+	} else {
+		// All teachers - but if classID is specified, show teachers associated with that class
+		if classID != "" {
+			// Show teachers who are either homeroom or Quran teacher for this class
+			joins += ` LEFT JOIN classes c ON c.homeroom_teacher_id = t.user_id AND c.id = $` + fmt.Sprint(argOffset+1)
+			whereArgs = append(whereArgs, classID)
+			argOffset++
+			joins += ` LEFT JOIN class_quran_teachers cqt ON cqt.quran_teacher_id = t.user_id AND cqt.class_id = $` + fmt.Sprint(argOffset+1) + " AND cqt.is_active = true"
+			whereArgs = append(whereArgs, classID)
+			argOffset++
+			whereConditions = append(whereConditions, "(c.id IS NOT NULL OR cqt.class_id IS NOT NULL)")
 		}
 	}
 
@@ -190,17 +203,7 @@ func (r *TeacherRepository) GetAllWithClassesPaginated(ctx context.Context, sear
 		SELECT COUNT(DISTINCT t.user_id)
 		FROM teachers t
 		JOIN users u ON t.user_id = u.id
-	`
-
-	// Add appropriate joins based on filter
-	if teacherType == "homeroom" {
-		countQuery += ` JOIN classes c ON c.homeroom_teacher_id = t.user_id`
-	} else if teacherType == "quran" {
-		countQuery += ` JOIN class_quran_teachers cqt ON cqt.quran_teacher_id = t.user_id AND cqt.is_active = true`
-		if classID == "" {
-			countQuery += ` JOIN classes c ON c.id = cqt.class_id`
-		}
-	}
+	` + joins
 
 	if len(whereConditions) > 0 || search != "" {
 		countQuery += " WHERE "
@@ -232,22 +235,39 @@ func (r *TeacherRepository) GetAllWithClassesPaginated(ctx context.Context, sear
 		SELECT DISTINCT t.user_id, t.full_name, t.phone, t.created_at, u.email
 		FROM teachers t
 		JOIN users u ON t.user_id = u.id
-	`
-
-	// Add appropriate joins based on filter
-	if teacherType == "homeroom" {
-		query += ` JOIN classes c ON c.homeroom_teacher_id = t.user_id`
-	} else if teacherType == "quran" {
-		query += ` JOIN class_quran_teachers cqt ON cqt.quran_teacher_id = t.user_id AND cqt.is_active = true`
-		if classID == "" {
-			query += ` JOIN classes c ON c.id = cqt.class_id`
-		}
-	}
+	` + joins
 
 	// Build WHERE clause for data query
 	whereConditions = []string{}
 	whereArgs = []interface{}{}
 	argOffset = 0
+
+	// Rebuild WHERE conditions for data query (same logic as count query)
+	if teacherType == "homeroom" {
+		if classID != "" {
+			whereConditions = append(whereConditions, "c.id = $"+fmt.Sprint(argOffset+1))
+			whereArgs = append(whereArgs, classID)
+			argOffset++
+		}
+	} else if teacherType == "quran" {
+		if classID != "" {
+			whereConditions = append(whereConditions, "cqt.class_id = $"+fmt.Sprint(argOffset+1))
+			whereArgs = append(whereArgs, classID)
+			argOffset++
+		}
+	} else {
+		// For "all teachers" with class filter
+		if classID != "" {
+			// Need to add the same LEFT JOINs and parameters
+			query += ` LEFT JOIN classes c ON c.homeroom_teacher_id = t.user_id AND c.id = $` + fmt.Sprint(argOffset+1)
+			whereArgs = append(whereArgs, classID)
+			argOffset++
+			query += ` LEFT JOIN class_quran_teachers cqt ON cqt.quran_teacher_id = t.user_id AND cqt.class_id = $` + fmt.Sprint(argOffset+1) + " AND cqt.is_active = true"
+			whereArgs = append(whereArgs, classID)
+			argOffset++
+			whereConditions = append(whereConditions, "(c.id IS NOT NULL OR cqt.class_id IS NOT NULL)")
+		}
+	}
 
 	if len(whereConditions) > 0 || search != "" {
 		query += " WHERE "
