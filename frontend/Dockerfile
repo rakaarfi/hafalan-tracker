@@ -3,6 +3,9 @@ FROM oven/bun:1-alpine AS builder
 
 WORKDIR /app
 
+# Set environment for production
+ENV NODE_ENV=production
+
 # Copy package files
 COPY package.json bun.lock ./
 
