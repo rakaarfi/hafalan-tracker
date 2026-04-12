@@ -181,6 +181,7 @@ func (r *StudentRepository) GetAllPaginated(ctx context.Context, search string, 
 	`
 
 	args := []interface{}{}
+	argOffset = 1
 	if search != "" {
 		query += " AND s.name ILIKE $" + fmt.Sprint(argOffset)
 		args = append(args, "%"+search+"%")
