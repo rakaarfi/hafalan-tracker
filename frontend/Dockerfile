@@ -1,5 +1,5 @@
 # Multi-stage build for React + Vite frontend with Bun
-FROM oven/bun:1-alpine AS builder
+FROM oven/bun:1.3.1-alpine AS builder
 
 WORKDIR /app
 
