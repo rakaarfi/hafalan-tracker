@@ -80,10 +80,10 @@ function PublicRoute({ children }: { children: React.ReactNode }) {
 function App() {
   const { isAuthenticated, checkAuth } = useAuthStore()
 
-  // Check authentication on app mount
+  // Check authentication on app mount ONLY
   useEffect(() => {
     checkAuth()
-  }, [checkAuth])
+  }, []) // Empty dependency array - run only once on mount
 
   return (
     <BrowserRouter>

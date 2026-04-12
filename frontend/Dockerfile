@@ -38,15 +38,9 @@ server {
         # Forward cookies for authentication
         proxy_set_header Cookie \$http_cookie;
 
-        # CORS headers
-        add_header Access-Control-Allow-Origin *;
-        add_header Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS";
-        add_header Access-Control-Allow-Headers "Content-Type, Authorization";
-        add_header Access-Control-Allow-Credentials true;
-
-        if (\$request_method = OPTIONS) {
-            return 204;
-        }
+        # Forward cookie from backend to client
+        proxy_cookie_domain backend \$host;
+        proxy_cookie_path / /api/;
     }
 
     location / {
