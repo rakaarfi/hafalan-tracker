@@ -165,7 +165,7 @@ export function TeacherListPage() {
             </tr>
           </thead>
           <tbody className="divide-y-2 divide-border">
-            {teachers.length === 0 ? (
+            {!teachers || teachers.length === 0 ? (
               <tr>
                 <td colSpan={5} className="p-8 text-center text-gray-500">
                   {search ? 'Tidak ada guru ditemukan' : 'Belum ada data guru'}
