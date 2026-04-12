@@ -157,6 +157,16 @@ func (r *TeacherRepository) GetAllWithClasses(ctx context.Context, search string
 	return teachers, nil
 }
 
+package repository
+
+import (
+	"context"
+	"database/sql"
+	"fmt"
+
+	"github.com/jmoiron/sqlx"
+)
+
 // GetAllWithClassesPaginated retrieves teachers with pagination and their assigned classes
 func (r *TeacherRepository) GetAllWithClassesPaginated(ctx context.Context, search string, teacherType string, classID string, page, limit int) ([]TeacherWithClasses, int, error) {
 	offset := (page - 1) * limit
@@ -188,12 +198,10 @@ func (r *TeacherRepository) GetAllWithClassesPaginated(ctx context.Context, sear
 		// All teachers - but if classID is specified, show teachers associated with that class
 		if classID != "" {
 			// Show teachers who are either homeroom or Quran teacher for this class
-			joins += ` LEFT JOIN classes c ON c.homeroom_teacher_id = t.user_id AND c.id = $` + fmt.Sprint(argOffset+1)
-			whereArgs = append(whereArgs, classID)
-			argOffset++
-			joins += ` LEFT JOIN class_quran_teachers cqt ON cqt.quran_teacher_id = t.user_id AND cqt.class_id = $` + fmt.Sprint(argOffset+1) + " AND cqt.is_active = true"
-			whereArgs = append(whereArgs, classID)
-			argOffset++
+			joins += ` LEFT JOIN classes c ON c.homeroom_teacher_id = t.user_id AND c.id = $1`
+			joins += ` LEFT JOIN class_quran_teachers cqt ON cqt.quran_teacher_id = t.user_id AND cqt.class_id = $2 AND cqt.is_active = true`
+			whereArgs = append(whereArgs, classID, classID)
+			argOffset = 2  // We used 2 parameters
 			whereConditions = append(whereConditions, "(c.id IS NOT NULL OR cqt.class_id IS NOT NULL)")
 		}
 	}
@@ -259,12 +267,10 @@ func (r *TeacherRepository) GetAllWithClassesPaginated(ctx context.Context, sear
 		// For "all teachers" with class filter
 		if classID != "" {
 			// Need to add the same LEFT JOINs and parameters
-			query += ` LEFT JOIN classes c ON c.homeroom_teacher_id = t.user_id AND c.id = $` + fmt.Sprint(argOffset+1)
-			whereArgs = append(whereArgs, classID)
-			argOffset++
-			query += ` LEFT JOIN class_quran_teachers cqt ON cqt.quran_teacher_id = t.user_id AND cqt.class_id = $` + fmt.Sprint(argOffset+1) + " AND cqt.is_active = true"
-			whereArgs = append(whereArgs, classID)
-			argOffset++
+			query += ` LEFT JOIN classes c ON c.homeroom_teacher_id = t.user_id AND c.id = $1`
+			query += ` LEFT JOIN class_quran_teachers cqt ON cqt.quran_teacher_id = t.user_id AND cqt.class_id = $2 AND cqt.is_active = true`
+			whereArgs = append(whereArgs, classID, classID)
+			argOffset = 2  // We used 2 parameters
 			whereConditions = append(whereConditions, "(c.id IS NOT NULL OR cqt.class_id IS NOT NULL)")
 		}
 	}
@@ -340,8 +346,6 @@ func (r *TeacherRepository) GetAllWithClassesPaginated(ctx context.Context, sear
 
 	return teachers, total, nil
 }
-
-// Create creates a new teacher (user account must be created first)
 func (r *TeacherRepository) Create(ctx context.Context, teacher *Teacher) error {
 	query := `
 		INSERT INTO teachers (user_id, full_name, phone)
