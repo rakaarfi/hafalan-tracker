@@ -26,12 +26,15 @@ WORKDIR /root/
 # Copy the binary from builder
 COPY --from=builder /app/server .
 
+# Copy migration files
+COPY --from=builder /app/migrations ./migrations/
+
 # Expose port
 EXPOSE 8080
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
-  CMD wget --spider -q http://localhost:8080/ping || exit 1
+  CMD wget --spider -q http://localhost:8080/health || exit 1
 
 # Run the binary
 CMD ["./server"]
