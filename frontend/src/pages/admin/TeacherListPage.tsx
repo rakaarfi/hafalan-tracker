@@ -41,13 +41,14 @@ export function TeacherListPage() {
       setLoading(true)
       setError(null)
       const response = await teachersApi.getAll(searchQuery, pageNumber, 10)
-      setTeachers(response.data)
-      setTotalPages(response.total_pages)
-      setTotal(response.total)
-      setPage(response.page)
+      setTeachers(response.data || [])
+      setTotalPages(response.total_pages || 1)
+      setTotal(response.total || 0)
+      setPage(response.page || 1)
     } catch (err: any) {
       console.error('Failed to fetch teachers:', err)
       setError('Gagal memuat data guru')
+      setTeachers([])
     } finally {
       setLoading(false)
     }
