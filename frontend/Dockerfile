@@ -1,5 +1,5 @@
 # Multi-stage build for React + Vite frontend
-FROM oven/bun:1 AS builder
+FROM oven/bun:1.3.1 AS builder
 
 WORKDIR /app
 
