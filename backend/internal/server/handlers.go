@@ -1429,16 +1429,20 @@ func (s *Server) getClassQuranTeachers(c *gin.Context) {
 		return
 	}
 
-	// Get teacher names for each assignment
-	type AssignmentWithTeacherName struct {
+	// Get teacher names for each assignment and map to frontend format
+	type QuranTeacherAssignment struct {
 		ID               int     `json:"id"`
 		ClassID          int     `json:"class_id"`
-		TeacherID        int     `json:"teacher_id"`
-		QuranTeacherName string `json:"quran_teacher_name"`
-		AssignedAt       string  `json:"assigned_at"`
+		QuranTeacherID   int     `json:"quran_teacher_id"`
+		QuranTeacherName string  `json:"quran_teacher_name"`
+		AcademicYear     string  `json:"academic_year"`
+		StartDate        string  `json:"start_date"`
+		EndDate          *string `json:"end_date"`
+		IsActive         bool    `json:"is_active"`
+		Notes            *string `json:"notes"`
 	}
 
-	result := []AssignmentWithTeacherName{}
+	result := []QuranTeacherAssignment{}
 	for _, assignment := range assignments {
 		// Get teacher name
 		teacher, err := s.teacherRepo.GetByUserID(c.Request.Context(), fmt.Sprint(assignment.TeacherID))
@@ -1449,12 +1453,17 @@ func (s *Server) getClassQuranTeachers(c *gin.Context) {
 			teacherName = "Unknown"
 		}
 
-		result = append(result, AssignmentWithTeacherName{
+		// Map to frontend format with defaults for missing fields
+		result = append(result, QuranTeacherAssignment{
 			ID:               assignment.ID,
 			ClassID:          assignment.ClassID,
-			TeacherID:        assignment.TeacherID,
+			QuranTeacherID:   assignment.TeacherID,
 			QuranTeacherName: teacherName,
-			AssignedAt:       assignment.AssignedAt,
+			AcademicYear:     "2025/2026", // Default academic year
+			StartDate:        assignment.AssignedAt,
+			EndDate:          nil,         // No end date in simple schema
+			IsActive:         true,        // All assignments are active in simple schema
+			Notes:            nil,         // No notes in simple schema
 		})
 	}
 
@@ -1518,21 +1527,29 @@ func (s *Server) assignQuranTeacherToClass(c *gin.Context) {
 		return
 	}
 
-	// Return the created assignment with teacher name
-	type AssignmentWithTeacherName struct {
+	// Return the created assignment with teacher name in frontend format
+	type QuranTeacherAssignment struct {
 		ID               int     `json:"id"`
 		ClassID          int     `json:"class_id"`
-		TeacherID        int     `json:"teacher_id"`
+		QuranTeacherID   int     `json:"quran_teacher_id"`
 		QuranTeacherName string  `json:"quran_teacher_name"`
-		AssignedAt       string  `json:"assigned_at"`
+		AcademicYear     string  `json:"academic_year"`
+		StartDate        string  `json:"start_date"`
+		EndDate          *string `json:"end_date"`
+		IsActive         bool    `json:"is_active"`
+		Notes            *string `json:"notes"`
 	}
 
-	result := AssignmentWithTeacherName{
+	result := QuranTeacherAssignment{
 		ID:               assignment.ID,
 		ClassID:          assignment.ClassID,
-		TeacherID:        assignment.TeacherID,
+		QuranTeacherID:   assignment.TeacherID,
 		QuranTeacherName: teacher.FullName,
-		AssignedAt:       assignment.AssignedAt,
+		AcademicYear:     "2025/2026", // Default academic year
+		StartDate:        assignment.AssignedAt,
+		EndDate:          nil,         // No end date in simple schema
+		IsActive:         true,        // All assignments are active in simple schema
+		Notes:            nil,         // No notes in simple schema
 	}
 
 	c.JSON(http.StatusCreated, result)
@@ -1604,21 +1621,29 @@ func (s *Server) updateQuranTeacherAssignment(c *gin.Context) {
 		return
 	}
 
-	// Return the updated assignment with teacher name
-	type AssignmentWithTeacherName struct {
+	// Return the updated assignment with teacher name in frontend format
+	type QuranTeacherAssignment struct {
 		ID               int     `json:"id"`
 		ClassID          int     `json:"class_id"`
-		TeacherID        int     `json:"teacher_id"`
+		QuranTeacherID   int     `json:"quran_teacher_id"`
 		QuranTeacherName string  `json:"quran_teacher_name"`
-		AssignedAt       string  `json:"assigned_at"`
+		AcademicYear     string  `json:"academic_year"`
+		StartDate        string  `json:"start_date"`
+		EndDate          *string `json:"end_date"`
+		IsActive         bool    `json:"is_active"`
+		Notes            *string `json:"notes"`
 	}
 
-	result := AssignmentWithTeacherName{
+	result := QuranTeacherAssignment{
 		ID:               newAssignment.ID,
 		ClassID:          newAssignment.ClassID,
-		TeacherID:        newAssignment.TeacherID,
+		QuranTeacherID:   newAssignment.TeacherID,
 		QuranTeacherName: teacher.FullName,
-		AssignedAt:       newAssignment.AssignedAt,
+		AcademicYear:     "2025/2026", // Default academic year
+		StartDate:        newAssignment.AssignedAt,
+		EndDate:          nil,         // No end date in simple schema
+		IsActive:         true,        // All assignments are active in simple schema
+		Notes:            nil,         // No notes in simple schema
 	}
 
 	c.JSON(http.StatusOK, result)
