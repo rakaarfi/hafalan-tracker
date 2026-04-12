@@ -143,7 +143,7 @@ func (r *StudentRepository) GetAll(ctx context.Context, search string) ([]Studen
 }
 
 // GetAllPaginated retrieves students with pagination
-func (r *StudentRepository) GetAllPaginated(ctx context.Context, search string, page, limit int) ([]StudentWithClass, int, error) {
+func (r *StudentRepository) GetAllPaginated(ctx context.Context, search string, classID string, page, limit int) ([]StudentWithClass, int, error) {
 	offset := (page - 1) * limit
 
 	// Count query
@@ -158,6 +158,11 @@ func (r *StudentRepository) GetAllPaginated(ctx context.Context, search string, 
 	if search != "" {
 		countQuery += " AND s.name ILIKE $" + fmt.Sprint(argOffset)
 		countArgs = append(countArgs, "%"+search+"%")
+		argOffset++
+	}
+	if classID != "" {
+		countQuery += " AND s.class_id = $" + fmt.Sprint(argOffset)
+		countArgs = append(countArgs, classID)
 		argOffset++
 	}
 
@@ -179,6 +184,11 @@ func (r *StudentRepository) GetAllPaginated(ctx context.Context, search string, 
 	if search != "" {
 		query += " AND s.name ILIKE $" + fmt.Sprint(argOffset)
 		args = append(args, "%"+search+"%")
+		argOffset++
+	}
+	if classID != "" {
+		query += " AND s.class_id = $" + fmt.Sprint(argOffset)
+		args = append(args, classID)
 		argOffset++
 	}
 
@@ -229,9 +239,9 @@ func (r *StudentRepository) GetAllWithDetails(ctx context.Context, search string
 }
 
 // GetAllWithDetailsPaginated retrieves students with pagination and parent information
-func (r *StudentRepository) GetAllWithDetailsPaginated(ctx context.Context, search string, page, limit int) ([]StudentWithDetails, int, error) {
+func (r *StudentRepository) GetAllWithDetailsPaginated(ctx context.Context, search string, classID string, page, limit int) ([]StudentWithDetails, int, error) {
 	// First, get paginated students with class info
-	students, total, err := r.GetAllPaginated(ctx, search, page, limit)
+	students, total, err := r.GetAllPaginated(ctx, search, classID, page, limit)
 	if err != nil {
 		return nil, 0, err
 	}

@@ -188,9 +188,10 @@ export const authApi = {
 
 // Students API
 export const studentsApi = {
-  getAll: async (search?: string, page = 1, limit = 10): Promise<PaginatedResponse<Student>> => {
+  getAll: async (search?: string, classId?: string, page = 1, limit = 10): Promise<PaginatedResponse<Student>> => {
     const params: any = { page, limit }
     if (search) params.search = search
+    if (classId) params.class_id = classId
     const response = await api.get<PaginatedResponse<Student>>('/students', { params })
     return response.data
   },
@@ -217,9 +218,11 @@ export const studentsApi = {
 
 // Teachers API
 export const teachersApi = {
-  getAll: async (search?: string, page = 1, limit = 10): Promise<PaginatedResponse<Teacher>> => {
+  getAll: async (search?: string, teacherType?: string, classId?: string, page = 1, limit = 10): Promise<PaginatedResponse<Teacher>> => {
     const params: any = { page, limit }
     if (search) params.search = search
+    if (teacherType) params.teacher_type = teacherType
+    if (classId) params.class_id = classId
     const response = await api.get<PaginatedResponse<Teacher>>('/teachers', { params })
     return response.data
   },
