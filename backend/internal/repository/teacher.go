@@ -157,12 +157,6 @@ func (r *TeacherRepository) GetAllWithClasses(ctx context.Context, search string
 	return teachers, nil
 }
 
-package repository
-
-import (
-	"context"
-	"database/sql"
-	"fmt"
 
 	"github.com/jmoiron/sqlx"
 )
