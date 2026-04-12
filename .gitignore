@@ -16,6 +16,9 @@ bin/
 .env
 .env.local
 .env.*.local
+.env.production
+.env.prod
+.env.dev
 
 # IDE
 .vscode/
