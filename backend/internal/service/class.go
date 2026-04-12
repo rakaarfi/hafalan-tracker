@@ -24,17 +24,15 @@ func NewClassService(classRepo *repository.ClassRepository, teacherRepo *reposit
 
 // CreateClassRequest represents the request to create a class
 type CreateClassRequest struct {
-	Name               string  `json:"name" binding:"required"`
-	GradeLevel         string  `json:"grade_level" binding:"required"`
-	HomeroomTeacherID  *string `json:"homeroom_teacher_id"`
+	Name      string  `json:"name" binding:"required"`
+	TeacherID *string `json:"teacher_id"`
 }
 
 // UpdateClassRequest represents the request to update a class
 type UpdateClassRequest struct {
-	ID                 string  `json:"id" binding:"required"`
-	Name               string  `json:"name" binding:"required"`
-	GradeLevel         string  `json:"grade_level" binding:"required"`
-	HomeroomTeacherID  *string `json:"homeroom_teacher_id"`
+	ID        string  `json:"id" binding:"required"`
+	Name      string  `json:"name" binding:"required"`
+	TeacherID *string `json:"teacher_id"`
 }
 
 // Create creates a new class
@@ -52,13 +50,11 @@ func (s *ClassService) Create(ctx context.Context, req *CreateClassRequest) (*re
 
 	// Create class
 	createReq := &struct {
-		Name               string
-		GradeLevel         string
-		HomeroomTeacherID *string
+		Name      string
+		TeacherID *string
 	}{
-		Name:               req.Name,
-		GradeLevel:         req.GradeLevel,
-		HomeroomTeacherID: req.HomeroomTeacherID,
+		Name:      req.Name,
+		TeacherID: req.TeacherID,
 	}
 
 	class, err := s.classRepo.Create(ctx, createReq)
@@ -93,13 +89,11 @@ func (s *ClassService) Update(ctx context.Context, req *UpdateClassRequest) (*re
 
 	// Update class
 	updateReq := &struct {
-		Name               string
-		GradeLevel         string
-		HomeroomTeacherID *string
+		Name      string
+		TeacherID *string
 	}{
-		Name:               req.Name,
-		GradeLevel:         req.GradeLevel,
-		HomeroomTeacherID: req.HomeroomTeacherID,
+		Name:      req.Name,
+		TeacherID: req.TeacherID,
 	}
 
 	class, err := s.classRepo.Update(ctx, req.ID, updateReq)
