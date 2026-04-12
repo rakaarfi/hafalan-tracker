@@ -33,13 +33,14 @@ export function StudentListPage() {
       setLoading(true)
       setError(null)
       const response = await studentsApi.getAll(searchQuery, pageNumber, 10)
-      setStudents(response.data)
-      setTotalPages(response.total_pages)
-      setTotal(response.total)
-      setPage(response.page)
+      setStudents(response.data || [])
+      setTotalPages(response.total_pages || 1)
+      setTotal(response.total || 0)
+      setPage(response.page || 1)
     } catch (err: any) {
       console.error('Failed to fetch students:', err)
       setError('Gagal memuat data murid')
+      setStudents([])
     } finally {
       setLoading(false)
     }

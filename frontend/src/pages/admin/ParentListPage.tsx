@@ -39,13 +39,14 @@ export function ParentListPage() {
       setLoading(true)
       setError(null)
       const response = await parentsApi.getAll(searchQuery, pageNumber, 10)
-      setParents(response.data)
-      setTotalPages(response.total_pages)
-      setTotal(response.total)
-      setPage(response.page)
+      setParents(response.data || [])
+      setTotalPages(response.total_pages || 1)
+      setTotal(response.total || 0)
+      setPage(response.page || 1)
     } catch (err: any) {
       console.error('Failed to fetch parents:', err)
       setError('Gagal memuat data orang tua')
+      setParents([])
     } finally {
       setLoading(false)
     }
