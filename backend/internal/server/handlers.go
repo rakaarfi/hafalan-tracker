@@ -269,8 +269,7 @@ func (s *Server) createMemorization(c *gin.Context) {
 	req.TeacherID = userID
 
 	// VALIDATION: Check if student is in teacher's assigned class
-	academicYear := "2025/2026"
-	assignments, err := s.classQuranTeacherRepo.GetActiveByTeacher(c.Request.Context(), teacherID, academicYear)
+	assignments, err := s.classQuranTeacherRepo.GetActiveByTeacher(c.Request.Context(), teacherID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"error": "Failed to verify teacher assignment",
@@ -384,8 +383,7 @@ func (s *Server) updateMemorization(c *gin.Context) {
 	}
 
 	// Additional validation: Check if student is still in teacher's assigned class
-	academicYear := "2025/2026"
-	assignments, err := s.classQuranTeacherRepo.GetActiveByTeacher(c.Request.Context(), teacherID, academicYear)
+	assignments, err := s.classQuranTeacherRepo.GetActiveByTeacher(c.Request.Context(), teacherID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"error": "Failed to verify teacher assignment",
@@ -501,8 +499,7 @@ func (s *Server) getTeacherStudents(c *gin.Context) {
 
 	// Get all active class assignments for this teacher in current academic year
 	// For now, use 2025/2026 as default - this should be configurable later
-	academicYear := "2025/2026"
-	assignments, err := s.classQuranTeacherRepo.GetActiveByTeacher(ctx, teacherID, academicYear)
+	assignments, err := s.classQuranTeacherRepo.GetActiveByTeacher(ctx, teacherID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"error": "Failed to retrieve teacher assignments",
@@ -578,8 +575,7 @@ func (s *Server) getTeacherClasses(c *gin.Context) {
 	ctx := c.Request.Context()
 
 	// Get all active class assignments for this teacher in current academic year
-	academicYear := "2025/2026"
-	assignments, err := s.classQuranTeacherRepo.GetActiveByTeacher(ctx, teacherID, academicYear)
+	assignments, err := s.classQuranTeacherRepo.GetActiveByTeacher(ctx, teacherID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"error": "Failed to retrieve teacher assignments",
@@ -679,8 +675,7 @@ func (s *Server) getStudentMemorizations(c *gin.Context) {
 		}
 
 		// Get teacher's assigned classes
-		academicYear := "2025/2026"
-		assignments, err := s.classQuranTeacherRepo.GetActiveByTeacher(ctx, teacherID, academicYear)
+		assignments, err := s.classQuranTeacherRepo.GetActiveByTeacher(ctx, teacherID)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{
 				"error": "Failed to verify teacher permissions",
@@ -1431,34 +1426,24 @@ func (s *Server) getClassQuranTeachers(c *gin.Context) {
 	// Get history of Quran teachers for this class
 	assignments, err := s.classQuranTeacherRepo.GetHistoryByClass(c.Request.Context(), classIDInt)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": "Failed to retrieve Quran teacher assignments",
-		})
+		// Return empty array instead of error
+		c.JSON(http.StatusOK, []interface{}{})
 		return
 	}
 
 	// Get teacher names for each assignment
 	type AssignmentWithTeacherName struct {
-		ID              int     `json:"id"`
-		ClassID         int     `json:"class_id"`
-		QuranTeacherID  int     `json:"quran_teacher_id"`
+		ID               int     `json:"id"`
+		ClassID          int     `json:"class_id"`
+		TeacherID        int     `json:"teacher_id"`
 		QuranTeacherName string `json:"quran_teacher_name"`
-		AcademicYear    string  `json:"academic_year"`
-		StartDate       string  `json:"start_date"`
-		EndDate         *string `json:"end_date"`
-		IsActive        bool    `json:"is_active"`
-		Notes           *string `json:"notes"`
+		AssignedAt       string  `json:"assigned_at"`
 	}
 
 	result := []AssignmentWithTeacherName{}
 	for _, assignment := range assignments {
-		// Only include active assignments
-		if !assignment.IsActive {
-			continue
-		}
-
 		// Get teacher name
-		teacher, err := s.teacherRepo.GetByUserID(c.Request.Context(), fmt.Sprint(assignment.QuranTeacherID))
+		teacher, err := s.teacherRepo.GetByUserID(c.Request.Context(), fmt.Sprint(assignment.TeacherID))
 		var teacherName string
 		if err == nil && teacher != nil {
 			teacherName = teacher.FullName
@@ -1469,13 +1454,9 @@ func (s *Server) getClassQuranTeachers(c *gin.Context) {
 		result = append(result, AssignmentWithTeacherName{
 			ID:               assignment.ID,
 			ClassID:          assignment.ClassID,
-			QuranTeacherID:   assignment.QuranTeacherID,
+			TeacherID:        assignment.TeacherID,
 			QuranTeacherName: teacherName,
-			AcademicYear:     assignment.AcademicYear,
-			StartDate:        assignment.StartDate.Format("2006-01-02"),
-			EndDate:          formatDatePtr(assignment.EndDate),
-			IsActive:         assignment.IsActive,
-			Notes:            assignment.Notes,
+			AssignedAt:       assignment.AssignedAt,
 		})
 	}
 
