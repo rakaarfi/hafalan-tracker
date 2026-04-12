@@ -1,7 +1,9 @@
 import axios from 'axios'
 import { useAuthStore } from '@/stores/authStore'
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api/v1'
+// Use relative URL for production (same origin), or env var for development
+// In production with nginx proxy, both frontend and backend are on same host
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || `${window.location.origin}/api/v1`
 
 // Create axios instance
 const api = axios.create({

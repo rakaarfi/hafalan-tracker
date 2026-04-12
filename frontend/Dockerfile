@@ -26,6 +26,29 @@ server {
     gzip on;
     gzip_types text/plain text/css application/json application/javascript text/xml application/xml application/xml+rss text/javascript;
 
+    # Proxy API requests to backend
+    location /api/ {
+        proxy_pass http://backend:8080;
+        proxy_http_version 1.1;
+        proxy_set_header Host \$host;
+        proxy_set_header X-Real-IP \$remote_addr;
+        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto \$scheme;
+
+        # Forward cookies for authentication
+        proxy_set_header Cookie \$http_cookie;
+
+        # CORS headers
+        add_header Access-Control-Allow-Origin *;
+        add_header Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS";
+        add_header Access-Control-Allow-Headers "Content-Type, Authorization";
+        add_header Access-Control-Allow-Credentials true;
+
+        if (\$request_method = OPTIONS) {
+            return 204;
+        }
+    }
+
     location / {
         try_files \$uri \$uri/ /index.html;
     }
