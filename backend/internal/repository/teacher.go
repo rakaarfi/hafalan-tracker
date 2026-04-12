@@ -162,7 +162,7 @@ func (r *TeacherRepository) GetAllWithClassesPaginated(ctx context.Context, sear
 	offset := (page - 1) * limit
 
 	// Build WHERE conditions for filtering
-	whereConditions := []
+	whereConditions := []string{}
 	whereArgs := []interface{}{}
 	argOffset := 0
 
@@ -245,7 +245,7 @@ func (r *TeacherRepository) GetAllWithClassesPaginated(ctx context.Context, sear
 	}
 
 	// Build WHERE clause for data query
-	whereConditions = []
+	whereConditions = []string{}
 	whereArgs = []interface{}{}
 	argOffset = 0
 
@@ -310,16 +310,6 @@ func (r *TeacherRepository) GetAllWithClassesPaginated(ctx context.Context, sear
 			WHERE cqt.quran_teacher_id = $1 AND cqt.is_active = true
 			ORDER BY c.name
 		`
-		var quranClasses []string
-		err = r.db.SelectContext(ctx, &quranClasses, quranQuery, teachers[i].UserID)
-		if err != nil {
-			return nil, 0, err
-		}
-		teachers[i].QuranTeacherClasses = quranClasses
-	}
-
-	return teachers, total, nil
-}
 		var quranClasses []string
 		err = r.db.SelectContext(ctx, &quranClasses, quranQuery, teachers[i].UserID)
 		if err != nil {
