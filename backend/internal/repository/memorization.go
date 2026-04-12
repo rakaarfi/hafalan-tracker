@@ -70,7 +70,7 @@ func (r *MemorizationRepository) GetByID(ctx context.Context, id int) (*Memoriza
 			NULL as page_start, m.ayah_start as page_end,
 			CASE WHEN m.score >= 85 THEN 'fluent' WHEN m.score >= 70 THEN 'good' ELSE 'needs_improvement' END as status,
 			m.notes, m.memorization_date as test_date,
-			true as is_active, m.created_at, m.updated_at,
+			true as is_active, m.created_at, m.created_at as updated_at,
 			s.full_name as student_name, t.full_name as teacher_name,
 			m.surah_number, NULL as surah_name,
 			NULL as juz_number
@@ -100,7 +100,7 @@ func (r *MemorizationRepository) GetByStudentID(ctx context.Context, studentID i
 			NULL as page_start, m.ayah_start as page_end,
 			CASE WHEN m.score >= 85 THEN 'fluent' WHEN m.score >= 70 THEN 'good' ELSE 'needs_improvement' END as status,
 			m.notes, m.memorization_date as test_date,
-			true as is_active, m.created_at, m.updated_at,
+			true as is_active, m.created_at, m.created_at as updated_at,
 			s.full_name as student_name, t.full_name as teacher_name,
 			m.surah_number, NULL as surah_name,
 			NULL as juz_number
@@ -128,7 +128,7 @@ func (r *MemorizationRepository) GetByTeacherID(ctx context.Context, teacherID i
 			NULL as page_start, m.ayah_start as page_end,
 			CASE WHEN m.score >= 85 THEN 'fluent' WHEN m.score >= 70 THEN 'good' ELSE 'needs_improvement' END as status,
 			m.notes, m.memorization_date as test_date,
-			true as is_active, m.created_at, m.updated_at,
+			true as is_active, m.created_at, m.created_at as updated_at,
 			s.full_name as student_name, t.full_name as teacher_name,
 			m.surah_number, NULL as surah_name,
 			NULL as juz_number
