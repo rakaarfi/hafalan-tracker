@@ -38,9 +38,8 @@ server {
         # Forward cookies for authentication
         proxy_set_header Cookie \$http_cookie;
 
-        # Forward cookie from backend to client
+        # Forward cookie from backend to client (domain only, keep path as-is)
         proxy_cookie_domain backend \$host;
-        proxy_cookie_path / /api/;
     }
 
     location / {
