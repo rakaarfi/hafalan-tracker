@@ -12,6 +12,7 @@ import { StudentListPage } from '@/pages/admin/StudentListPage'
 import { StudentViewPage } from '@/pages/admin/StudentViewPage'
 import { StudentFormPage } from '@/pages/admin/StudentFormPage'
 import { ParentListPage } from '@/pages/admin/ParentListPage'
+import { ParentViewPage } from '@/pages/admin/ParentViewPage'
 import { ParentFormPage } from '@/pages/admin/ParentFormPage'
 import { TeacherListPage } from '@/pages/admin/TeacherListPage'
 import { TeacherFormPage } from '@/pages/admin/TeacherFormPage'
@@ -161,6 +162,7 @@ function App() {
             <Route path="students/:studentId/edit" element={<StudentFormPage />} />
             <Route path="parents" element={<ParentListPage />} />
             <Route path="parents/new" element={<ParentFormPage />} />
+            <Route path="parents/:parentId" element={<ParentViewPage />} />
             <Route path="parents/:parentId/edit" element={<ParentFormPage />} />
             <Route path="teachers" element={<TeacherListPage />} />
             <Route path="teachers/new" element={<TeacherFormPage />} />
