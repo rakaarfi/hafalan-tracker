@@ -29,6 +29,7 @@ type Server struct {
 	parentRepo              *repository.ParentRepository
 	classRepo               *repository.ClassRepository
 	classQuranTeacherRepo    *repository.ClassQuranTeacherRepository
+	statsRepo               *repository.StatsRepository
 }
 
 // New creates a new server instance
@@ -58,6 +59,7 @@ func New(cfg *config.Config, db *database.DB) *Server {
 	classRepo := repository.NewClassRepository(db.DB)
 	classQuranTeacherRepo := repository.NewClassQuranTeacherRepository(db.DB)
 	settingsRepo := repository.NewSettingsRepository(db.DB)
+	statsRepo := repository.NewStatsRepository(db.DB)
 
 	// Initialize services
 	authService := service.NewAuthService(userRepo, jwtManager)
@@ -86,6 +88,7 @@ func New(cfg *config.Config, db *database.DB) *Server {
 		parentRepo:              parentRepo,
 		classRepo:               classRepo,
 		classQuranTeacherRepo:    classQuranTeacherRepo,
+		statsRepo:               statsRepo,
 	}
 
 	// Setup routes
