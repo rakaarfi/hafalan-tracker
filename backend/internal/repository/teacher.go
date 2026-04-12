@@ -193,7 +193,8 @@ func (r *TeacherRepository) GetAllWithClassesPaginated(ctx context.Context, sear
 		if classID != "" {
 			// Show teachers who are either homeroom or Quran teacher for this class
 			joins += ` LEFT JOIN class_quran_teachers cqt ON cqt.quran_teacher_id = t.user_id AND cqt.class_id = $2 AND cqt.is_active = true`
- 			joins += ` LEFT JOIN classes c ON c.homeroom_teacher_id = t.user_id AND c.id = $1`
+			joins += ` LEFT JOIN classes c ON c.homeroom_teacher_id = t.user_id AND c.id = $1`
+
 
 			whereArgs = append(whereArgs, classID, classID)
 			argOffset = 2  // We used 2 parameters
