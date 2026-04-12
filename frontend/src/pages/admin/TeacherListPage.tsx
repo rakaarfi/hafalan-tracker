@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { useToast } from '@/hooks/use-toast'
-import { teachersApi } from '@/lib/api'
+import { teachersApi, classesApi } from '@/lib/api'
 
 interface Teacher {
   UserID: string
@@ -16,6 +16,11 @@ interface Teacher {
   CreatedAt: string
   HomeroomClasses?: string[]
   QuranTeacherClasses?: string[]
+}
+
+interface Class {
+  id: string
+  name: string
 }
 
 export function TeacherListPage() {
@@ -29,18 +34,35 @@ export function TeacherListPage() {
   const [page, setPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
   const [total, setTotal] = useState(0)
+  const [classes, setClasses] = useState<Class[]>([])
+  const [teacherType, setTeacherType] = useState('')
+  const [selectedClassId, setSelectedClassId] = useState('')
+  const [loadingClasses, setLoadingClasses] = useState(true)
 
   const { toast } = useToast()
 
   useEffect(() => {
     fetchTeachers()
+    fetchClasses()
   }, [])
 
-  const fetchTeachers = async (searchQuery?: string, pageNumber = 1) => {
+  const fetchClasses = async () => {
+    try {
+      setLoadingClasses(true)
+      const data = await classesApi.getAll()
+      setClasses(data)
+    } catch (err: any) {
+      console.error('Failed to fetch classes:', err)
+    } finally {
+      setLoadingClasses(false)
+    }
+  }
+
+  const fetchTeachers = async (searchQuery?: string, type?: string, classId?: string, pageNumber = 1) => {
     try {
       setLoading(true)
       setError(null)
-      const response = await teachersApi.getAll(searchQuery, pageNumber, 10)
+      const response = await teachersApi.getAll(searchQuery, type, classId, pageNumber, 10)
       setTeachers(response.data || [])
       setTotalPages(response.total_pages || 1)
       setTotal(response.total || 0)
@@ -57,12 +79,12 @@ export function TeacherListPage() {
   useEffect(() => {
     const timeoutId = setTimeout(() => {
       if (search.length >= 0) {
-        fetchTeachers(search || undefined, 1)
+        fetchTeachers(search || undefined, teacherType || undefined, selectedClassId || undefined, 1)
       }
     }, 500)
 
     return () => clearTimeout(timeoutId)
-  }, [search])
+  }, [search, teacherType, selectedClassId])
 
   const handleDelete = (teacher: Teacher) => {
     setPendingDeleteTeacher(teacher)
@@ -126,7 +148,7 @@ export function TeacherListPage() {
         <div className="border-2 border-red-200 bg-red-50 p-4 mb-6">
           <p className="text-red-800 font-medium">{error}</p>
           <button
-            onClick={() => fetchTeachers()}
+            onClick={() => fetchTeachers(search || undefined, teacherType || undefined, selectedClassId || undefined)}
             className="mt-2 px-4 py-2 border-2 border-red-300 text-red-700 hover:bg-red-100 min-h-[44px] min-w-[44px]"
           >
             Coba Lagi
@@ -134,9 +156,9 @@ export function TeacherListPage() {
         </div>
       )}
 
-      {/* Search */}
-      <div className="mb-6">
-        <div className="relative">
+      {/* Search & Filter */}
+      <div className="mb-6 flex flex-col sm:flex-row gap-4">
+        <div className="relative flex-1">
           <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-500" />
           <Input
             placeholder="Cari nama atau email guru..."
@@ -144,6 +166,32 @@ export function TeacherListPage() {
             onChange={(e) => setSearch(e.target.value)}
             className="pl-10 border-2 min-h-[44px]"
           />
+        </div>
+        <div className="relative sm:w-48">
+          <select
+            value={teacherType}
+            onChange={(e) => setTeacherType(e.target.value)}
+            className="w-full h-9 px-3 border-2 border-input bg-transparent rounded-none text-sm min-h-[44px] flex items-center"
+          >
+            <option value="">Semua Guru</option>
+            <option value="homeroom">Wali Kelas</option>
+            <option value="quran">Guru Quran</option>
+          </select>
+        </div>
+        <div className="relative sm:w-48">
+          <select
+            value={selectedClassId}
+            onChange={(e) => setSelectedClassId(e.target.value)}
+            disabled={loadingClasses}
+            className="w-full h-9 px-3 border-2 border-input bg-transparent rounded-none text-sm min-h-[44px] flex items-center"
+          >
+            <option value="">Semua Kelas</option>
+            {classes.map((cls) => (
+              <option key={cls.id} value={cls.id}>
+                {cls.name}
+              </option>
+            ))}
+          </select>
         </div>
       </div>
 
@@ -258,7 +306,7 @@ export function TeacherListPage() {
           <div className="flex gap-2">
             <Button
               variant="outline"
-              onClick={() => fetchTeachers(search || undefined, page - 1)}
+              onClick={() => fetchTeachers(search || undefined, teacherType || undefined, selectedClassId || undefined, page - 1)}
               disabled={page <= 1 || loading}
               className="min-h-[36px] min-w-[36px]"
             >
@@ -281,7 +329,7 @@ export function TeacherListPage() {
                   <Button
                     key={pageNum}
                     variant={pageNum === page ? "default" : "outline"}
-                    onClick={() => fetchTeachers(search || undefined, pageNum)}
+                    onClick={() => fetchTeachers(search || undefined, teacherType || undefined, selectedClassId || undefined, pageNum)}
                     disabled={loading}
                     className="min-h-[36px] min-w-[36px]"
                   >
@@ -292,7 +340,7 @@ export function TeacherListPage() {
             </div>
             <Button
               variant="outline"
-              onClick={() => fetchTeachers(search || undefined, page + 1)}
+              onClick={() => fetchTeachers(search || undefined, teacherType || undefined, selectedClassId || undefined, page + 1)}
               disabled={page >= totalPages || loading}
               className="min-h-[36px] min-w-[36px]"
             >

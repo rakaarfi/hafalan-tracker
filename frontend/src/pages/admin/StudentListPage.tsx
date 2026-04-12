@@ -7,7 +7,12 @@ import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { useToast } from '@/hooks/use-toast'
-import { studentsApi, Student } from '@/lib/api'
+import { studentsApi, classesApi, Student } from '@/lib/api'
+
+interface Class {
+  id: string
+  name: string
+}
 
 export function StudentListPage() {
   const { t } = useTranslation()
@@ -21,18 +26,34 @@ export function StudentListPage() {
   const [page, setPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
   const [total, setTotal] = useState(0)
+  const [classes, setClasses] = useState<Class[]>([])
+  const [selectedClassId, setSelectedClassId] = useState('')
+  const [loadingClasses, setLoadingClasses] = useState(true)
 
   const { toast } = useToast()
 
   useEffect(() => {
     fetchStudents()
+    fetchClasses()
   }, [])
 
-  const fetchStudents = async (searchQuery?: string, pageNumber = 1) => {
+  const fetchClasses = async () => {
+    try {
+      setLoadingClasses(true)
+      const data = await classesApi.getAll()
+      setClasses(data)
+    } catch (err: any) {
+      console.error('Failed to fetch classes:', err)
+    } finally {
+      setLoadingClasses(false)
+    }
+  }
+
+  const fetchStudents = async (searchQuery?: string, classId?: string, pageNumber = 1) => {
     try {
       setLoading(true)
       setError(null)
-      const response = await studentsApi.getAll(searchQuery, pageNumber, 10)
+      const response = await studentsApi.getAll(searchQuery, classId, pageNumber, 10)
       setStudents(response.data || [])
       setTotalPages(response.total_pages || 1)
       setTotal(response.total || 0)
@@ -50,12 +71,12 @@ export function StudentListPage() {
   useEffect(() => {
     const timeoutId = setTimeout(() => {
       if (search.length >= 0) {
-        fetchStudents(search || undefined, 1)
+        fetchStudents(search || undefined, selectedClassId || undefined, 1)
       }
     }, 500)
 
     return () => clearTimeout(timeoutId)
-  }, [search])
+  }, [search, selectedClassId])
 
   const handleDelete = (student: Student) => {
     setPendingDeleteStudent(student)
@@ -127,9 +148,9 @@ export function StudentListPage() {
         </div>
       )}
 
-      {/* Search Bar */}
-      <div className="mb-6">
-        <div className="relative">
+      {/* Search Bar & Filter */}
+      <div className="mb-6 flex flex-col sm:flex-row gap-4">
+        <div className="relative flex-1">
           <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-500" />
           <Input
             placeholder="Cari nama murid..."
@@ -137,6 +158,21 @@ export function StudentListPage() {
             onChange={(e) => setSearch(e.target.value)}
             className="pl-10 border-2 min-h-[44px]"
           />
+        </div>
+        <div className="relative sm:w-64">
+          <select
+            value={selectedClassId}
+            onChange={(e) => setSelectedClassId(e.target.value)}
+            disabled={loadingClasses}
+            className="w-full h-9 px-3 border-2 border-input bg-transparent rounded-none text-sm min-h-[44px] flex items-center"
+          >
+            <option value="">Semua Kelas</option>
+            {classes.map((cls) => (
+              <option key={cls.id} value={cls.id}>
+                {cls.name}
+              </option>
+            ))}
+          </select>
         </div>
       </div>
 
@@ -216,7 +252,7 @@ export function StudentListPage() {
           <div className="flex gap-2">
             <Button
               variant="outline"
-              onClick={() => fetchStudents(search || undefined, page - 1)}
+              onClick={() => fetchStudents(search || undefined, selectedClassId || undefined, page - 1)}
               disabled={page <= 1 || loading}
               className="min-h-[36px] min-w-[36px]"
             >
@@ -239,7 +275,7 @@ export function StudentListPage() {
                   <Button
                     key={pageNum}
                     variant={pageNum === page ? "default" : "outline"}
-                    onClick={() => fetchStudents(search || undefined, pageNum)}
+                    onClick={() => fetchStudents(search || undefined, selectedClassId || undefined, pageNum)}
                     disabled={loading}
                     className="min-h-[36px] min-w-[36px]"
                   >
@@ -250,7 +286,7 @@ export function StudentListPage() {
             </div>
             <Button
               variant="outline"
-              onClick={() => fetchStudents(search || undefined, page + 1)}
+              onClick={() => fetchStudents(search || undefined, selectedClassId || undefined, page + 1)}
               disabled={page >= totalPages || loading}
               className="min-h-[36px] min-w-[36px]"
             >
