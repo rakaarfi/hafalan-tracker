@@ -20,11 +20,11 @@ func NewParentRepository(db *sqlx.DB) *ParentRepository {
 
 // Parent represents a parent in the system
 type Parent struct {
-	UserID    string `db:"user_id"`
-	FullName  string `db:"full_name"`
-	Phone     string `db:"phone"`
-	Gender    string `db:"gender"`
-	CreatedAt string `db:"created_at"`
+	UserID    string  `db:"user_id"`
+	FullName  string  `db:"full_name"`
+	Phone     string  `db:"phone"`
+	Gender    *string `db:"gender"`
+	CreatedAt string  `db:"created_at"`
 }
 
 // ParentWithUser represents a parent with user information
