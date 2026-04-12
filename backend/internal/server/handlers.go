@@ -1463,31 +1463,202 @@ func (s *Server) getClassQuranTeachers(c *gin.Context) {
 }
 // assignQuranTeacherToClass assigns a Quran teacher to a class
 func (s *Server) assignQuranTeacherToClass(c *gin.Context) {
+	classID := c.Param("id")
 
-	c.JSON(http.StatusNotImplemented, gin.H{
-		"error": "Quran teacher assignment feature is temporarily disabled",
-	})
+	// Convert classID to int
+	classIDInt, err := strconv.Atoi(classID)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Invalid class ID",
+		})
+		return
+	}
 
+	// Parse request body
+	var req struct {
+		TeacherID int `json:"teacher_id" binding:"required"`
+	}
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Teacher ID is required",
+		})
+		return
+	}
+
+	// Verify teacher exists
+	teacher, err := s.teacherRepo.GetByUserID(c.Request.Context(), fmt.Sprint(req.TeacherID))
+	if err != nil || teacher == nil {
+		c.JSON(http.StatusNotFound, gin.H{
+			"error": "Teacher not found",
+		})
+		return
+	}
+
+	// Check if assignment already exists
+	existing, _ := s.classQuranTeacherRepo.GetByClassAndTeacher(c.Request.Context(), classIDInt, req.TeacherID)
+	if existing != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Teacher is already assigned to this class",
+		})
+		return
+	}
+
+	// Create assignment
+	assignment := &repository.ClassQuranTeacher{
+		ClassID:   classIDInt,
+		TeacherID: req.TeacherID,
+	}
+
+	err = s.classQuranTeacherRepo.Create(c.Request.Context(), assignment)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Failed to assign teacher to class",
+		})
+		return
+	}
+
+	// Return the created assignment with teacher name
+	type AssignmentWithTeacherName struct {
+		ID               int     `json:"id"`
+		ClassID          int     `json:"class_id"`
+		TeacherID        int     `json:"teacher_id"`
+		QuranTeacherName string  `json:"quran_teacher_name"`
+		AssignedAt       string  `json:"assigned_at"`
+	}
+
+	result := AssignmentWithTeacherName{
+		ID:               assignment.ID,
+		ClassID:          assignment.ClassID,
+		TeacherID:        assignment.TeacherID,
+		QuranTeacherName: teacher.FullName,
+		AssignedAt:       assignment.AssignedAt,
+	}
+
+	c.JSON(http.StatusCreated, result)
 }
 
 
 // updateQuranTeacherAssignment updates a Quran teacher assignment
 func (s *Server) updateQuranTeacherAssignment(c *gin.Context) {
+	assignmentID := c.Param("assignmentId")
 
-	c.JSON(http.StatusNotImplemented, gin.H{
-		"error": "Quran teacher assignment feature is temporarily disabled",
-	})
+	// Convert assignmentID to int
+	assignmentIDInt, err := strconv.Atoi(assignmentID)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Invalid assignment ID",
+		})
+		return
+	}
 
+	// Get existing assignment
+	assignment, err := s.classQuranTeacherRepo.GetByID(c.Request.Context(), assignmentIDInt)
+	if err != nil || assignment == nil {
+		c.JSON(http.StatusNotFound, gin.H{
+			"error": "Assignment not found",
+		})
+		return
+	}
+
+	// Parse request body (currently only supports teacher_id update)
+	var req struct {
+		TeacherID int `json:"teacher_id" binding:"required"`
+	}
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Teacher ID is required",
+		})
+		return
+	}
+
+	// Verify new teacher exists
+	teacher, err := s.teacherRepo.GetByUserID(c.Request.Context(), fmt.Sprint(req.TeacherID))
+	if err != nil || teacher == nil {
+		c.JSON(http.StatusNotFound, gin.H{
+			"error": "Teacher not found",
+		})
+		return
+	}
+
+	// Delete old assignment and create new one
+	err = s.classQuranTeacherRepo.Delete(c.Request.Context(), assignmentIDInt)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Failed to update assignment",
+		})
+		return
+	}
+
+	newAssignment := &repository.ClassQuranTeacher{
+		ClassID:   assignment.ClassID,
+		TeacherID: req.TeacherID,
+	}
+
+	err = s.classQuranTeacherRepo.Create(c.Request.Context(), newAssignment)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Failed to create new assignment",
+		})
+		return
+	}
+
+	// Return the updated assignment with teacher name
+	type AssignmentWithTeacherName struct {
+		ID               int     `json:"id"`
+		ClassID          int     `json:"class_id"`
+		TeacherID        int     `json:"teacher_id"`
+		QuranTeacherName string  `json:"quran_teacher_name"`
+		AssignedAt       string  `json:"assigned_at"`
+	}
+
+	result := AssignmentWithTeacherName{
+		ID:               newAssignment.ID,
+		ClassID:          newAssignment.ClassID,
+		TeacherID:        newAssignment.TeacherID,
+		QuranTeacherName: teacher.FullName,
+		AssignedAt:       newAssignment.AssignedAt,
+	}
+
+	c.JSON(http.StatusOK, result)
 }
 
 
 // endQuranTeacherAssignment ends a Quran teacher assignment
 func (s *Server) endQuranTeacherAssignment(c *gin.Context) {
+	assignmentID := c.Param("assignmentId")
 
-	c.JSON(http.StatusNotImplemented, gin.H{
-		"error": "Quran teacher assignment feature is temporarily disabled",
+	// Convert assignmentID to int
+	assignmentIDInt, err := strconv.Atoi(assignmentID)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Invalid assignment ID",
+		})
+		return
+	}
+
+	// Verify assignment exists
+	assignment, err := s.classQuranTeacherRepo.GetByID(c.Request.Context(), assignmentIDInt)
+	if err != nil || assignment == nil {
+		c.JSON(http.StatusNotFound, gin.H{
+			"error": "Assignment not found",
+		})
+		return
+	}
+
+	// Delete the assignment
+	err = s.classQuranTeacherRepo.Delete(c.Request.Context(), assignmentIDInt)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Failed to end assignment",
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Assignment ended successfully",
 	})
-
 }
 
 
