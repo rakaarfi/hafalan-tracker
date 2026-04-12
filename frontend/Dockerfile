@@ -12,6 +12,10 @@ RUN npm install --legacy-peer-deps
 # Copy source code
 COPY . .
 
+# Set environment variables for build
+ENV NODE_ENV=production
+ENV VITE_API_BASE_URL=${VITE_API_BASE_URL}
+
 # Build the application
 RUN npm run build
 
