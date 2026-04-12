@@ -219,11 +219,16 @@ func (s *ParentService) Create(ctx context.Context, req *CreateParentRequest) (*
 	}
 
 	// Create parent profile
+	var genderPtr *string
+	if req.Gender != "" {
+		genderPtr = &req.Gender
+	}
+
 	parent := &repository.Parent{
 		UserID:   user.ID,
 		FullName: req.Name,
 		Phone:    req.Phone,
-		Gender:   req.Gender,
+		Gender:   genderPtr,
 	}
 
 	err = s.parentRepo.Create(ctx, parent)
@@ -269,10 +274,15 @@ func (s *ParentService) Update(ctx context.Context, req *UpdateParentRequest) (*
 	}
 
 	// Update parent profile
+	var genderPtr *string
+	if req.Gender != "" {
+		genderPtr = &req.Gender
+	}
+
 	updateReq := &repository.Parent{
 		FullName: req.Name,
 		Phone:    req.Phone,
-		Gender:   req.Gender,
+		Gender:   genderPtr,
 	}
 
 	err = s.parentRepo.Update(ctx, req.UserID, updateReq)
