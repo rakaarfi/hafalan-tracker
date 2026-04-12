@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"database/sql"
+	"fmt"
 
 	"github.com/jmoiron/sqlx"
 )
@@ -154,6 +155,97 @@ func (r *TeacherRepository) GetAllWithClasses(ctx context.Context, search string
 	}
 
 	return teachers, nil
+}
+
+// GetAllWithClassesPaginated retrieves teachers with pagination and their assigned classes
+func (r *TeacherRepository) GetAllWithClassesPaginated(ctx context.Context, search string, page, limit int) ([]TeacherWithClasses, int, error) {
+	offset := (page - 1) * limit
+
+	// Count query
+	countQuery := `
+		SELECT COUNT(*)
+		FROM teachers t
+		JOIN users u ON t.user_id = u.id
+	`
+
+	countArgs := []interface{}{}
+	if search != "" {
+		countQuery += " WHERE t.full_name ILIKE $1 OR u.email ILIKE $1"
+		countArgs = append(countArgs, "%"+search+"%")
+	}
+
+	var total int
+	err := r.db.GetContext(ctx, &total, countQuery, countArgs...)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	// Data query
+	query := `
+		SELECT t.user_id, t.full_name, t.phone, t.created_at, u.email
+		FROM teachers t
+		JOIN users u ON t.user_id = u.id
+	`
+
+	args := []interface{}{}
+	argOffset := 1
+	if search != "" {
+		query += " WHERE t.full_name ILIKE $" + fmt.Sprint(argOffset) + " OR u.email ILIKE $" + fmt.Sprint(argOffset)
+		args = append(args, "%"+search+"%")
+		argOffset++
+	}
+
+	query += " ORDER BY t.full_name LIMIT $" + fmt.Sprint(argOffset) + " OFFSET $" + fmt.Sprint(argOffset+1)
+	args = append(args, limit, offset)
+
+	rows, err := r.db.QueryContext(ctx, query, args...)
+	if err != nil {
+		return nil, 0, err
+	}
+	defer rows.Close()
+
+	var teachers []TeacherWithClasses
+	for rows.Next() {
+		var t TeacherWithClasses
+		if err := rows.Scan(&t.UserID, &t.FullName, &t.Phone, &t.CreatedAt, &t.Email); err != nil {
+			return nil, 0, err
+		}
+		teachers = append(teachers, t)
+	}
+
+	// Now, get class information for each teacher
+	for i := range teachers {
+		// Get homeroom classes
+		homeroomQuery := `
+			SELECT c.name
+			FROM classes c
+			WHERE c.homeroom_teacher_id = $1
+			ORDER BY c.name
+		`
+		var homeroomClasses []string
+		err := r.db.SelectContext(ctx, &homeroomClasses, homeroomQuery, teachers[i].UserID)
+		if err != nil {
+			return nil, 0, err
+		}
+		teachers[i].HomeroomClasses = homeroomClasses
+
+		// Get Quran teacher classes
+		quranQuery := `
+			SELECT DISTINCT c.name
+			FROM classes c
+			INNER JOIN class_quran_teachers cqt ON c.id = cqt.class_id
+			WHERE cqt.quran_teacher_id = $1 AND cqt.is_active = true
+			ORDER BY c.name
+		`
+		var quranClasses []string
+		err = r.db.SelectContext(ctx, &quranClasses, quranQuery, teachers[i].UserID)
+		if err != nil {
+			return nil, 0, err
+		}
+		teachers[i].QuranTeacherClasses = quranClasses
+	}
+
+	return teachers, total, nil
 }
 
 // Create creates a new teacher (user account must be created first)

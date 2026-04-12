@@ -790,8 +790,17 @@ func (s *Server) getDashboardStats(c *gin.Context) {
 // getAllStudents retrieves all students (for admin)
 func (s *Server) getAllStudents(c *gin.Context) {
 	search := c.Query("search")
+	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
+	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "10"))
 
-	students, err := s.studentRepo.GetAllWithDetails(c.Request.Context(), search)
+	if page < 1 {
+		page = 1
+	}
+	if limit < 1 || limit > 100 {
+		limit = 10
+	}
+
+	students, total, err := s.studentRepo.GetAllWithDetailsPaginated(c.Request.Context(), search, page, limit)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"error": "Failed to retrieve students",
@@ -799,14 +808,30 @@ func (s *Server) getAllStudents(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, students)
+	totalPages := (total + limit - 1) / limit
+	c.JSON(http.StatusOK, gin.H{
+		"data":        students,
+		"total":       total,
+		"page":        page,
+		"limit":       limit,
+		"total_pages": totalPages,
+	})
 }
 
 // getAllTeachers retrieves all teachers
 func (s *Server) getAllTeachers(c *gin.Context) {
 	search := c.Query("search")
+	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
+	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "10"))
 
-	teachers, err := s.teacherRepo.GetAllWithClasses(c.Request.Context(), search)
+	if page < 1 {
+		page = 1
+	}
+	if limit < 1 || limit > 100 {
+		limit = 10
+	}
+
+	teachers, total, err := s.teacherRepo.GetAllWithClassesPaginated(c.Request.Context(), search, page, limit)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"error": "Failed to retrieve teachers",
@@ -814,7 +839,14 @@ func (s *Server) getAllTeachers(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, teachers)
+	totalPages := (total + limit - 1) / limit
+	c.JSON(http.StatusOK, gin.H{
+		"data":        teachers,
+		"total":       total,
+		"page":        page,
+		"limit":       limit,
+		"total_pages": totalPages,
+	})
 }
 
 // getTeacher retrieves a specific teacher by ID
@@ -842,8 +874,17 @@ func (s *Server) getTeacher(c *gin.Context) {
 // getAllParents retrieves all parents
 func (s *Server) getAllParents(c *gin.Context) {
 	search := c.Query("search")
+	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
+	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "10"))
 
-	parents, err := s.parentRepo.GetAll(c.Request.Context(), search)
+	if page < 1 {
+		page = 1
+	}
+	if limit < 1 || limit > 100 {
+		limit = 10
+	}
+
+	parents, total, err := s.parentRepo.GetAllPaginated(c.Request.Context(), search, page, limit)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"error": "Failed to retrieve parents",
@@ -851,7 +892,14 @@ func (s *Server) getAllParents(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, parents)
+	totalPages := (total + limit - 1) / limit
+	c.JSON(http.StatusOK, gin.H{
+		"data":        parents,
+		"total":       total,
+		"page":        page,
+		"limit":       limit,
+		"total_pages": totalPages,
+	})
 }
 
 // getParent retrieves a specific parent by ID
