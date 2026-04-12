@@ -61,6 +61,9 @@ func (s *Server) login(c *gin.Context) {
 	isProduction := c.GetHeader("X-Forwarded-Proto") == "https"
 	secureFlag := isProduction // true if HTTPS, false if HTTP
 
+	// Set SameSite to Lax for cross-origin compatibility
+	c.SetSameSite(http.SameSiteLaxMode)
+
 	c.SetCookie(
 		"auth_token",
 		resp.Token,
