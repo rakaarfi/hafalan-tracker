@@ -54,18 +54,25 @@ export function StudentViewPage() {
 
       // Fetch memorization history
       const memData = await memorizationsApi.getByStudent(studentId)
-      setMemorizations(memData || [])
+      const mems = memData || []
+      setMemorizations(mems)
 
       // Extract unique teachers from memorizations
       const uniqueTeachers = Array.from(new Set(
-        memData
-          .filter(m => m.teacher_name)
+        mems
+          .filter(m => m && m.teacher_name)
           .map(m => m.teacher_name)
-      )) as string[]
+      ))
       setTeachers(uniqueTeachers)
     } catch (err: any) {
       console.error('Failed to fetch data:', err)
-      setError('Gagal memuat data murid')
+      const errorMsg = err.response?.data?.error || err.message || 'Gagal memuat data murid'
+      setError(errorMsg)
+      toast({
+        variant: "destructive",
+        title: "Gagal memuat data",
+        description: errorMsg,
+      })
     } finally {
       setLoading(false)
     }
