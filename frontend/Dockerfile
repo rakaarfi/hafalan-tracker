@@ -1,24 +1,11 @@
 # Multi-stage build for React + Vite frontend
-FROM oven/bun:1.3.1 AS builder
+# Build locally first: cd frontend && bun run build
+FROM node:20-alpine AS builder
 
 WORKDIR /app
 
-# Copy package files
-COPY package.json bun.lock ./
-
-# Install dependencies
-RUN bun install --frozen-lockfile
-
-# Copy source code
-COPY . .
-
-# Set environment variables for build
-ENV NODE_ENV=production
-ENV BUN_RUNTIME_TRANSPILER_CACHE_PATH=0
-ENV VITE_API_BASE_URL=${VITE_API_BASE_URL}
-
-# Build the application
-RUN bun run build
+# Copy pre-built dist files (built locally with Bun)
+COPY dist/ ./dist/
 
 # Production stage with nginx
 FROM nginx:alpine

@@ -4,7 +4,8 @@ vendor/
 bun_install/
 
 # Build outputs
-dist/
+# Note: frontend/dist is committed for Docker deployment (Bun build workaround)
+backend/dist/
 build/
 *.exe
 *.dll
