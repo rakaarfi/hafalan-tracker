@@ -55,7 +55,7 @@ func (s *Server) login(c *gin.Context) {
 	}
 
 	// Set JWT token in httpOnly cookie (secure against XSS)
-	c.SetSameSite(http.SameSiteStrictMode)
+	c.SetSameSite(http.SameSiteLaxMode)
 
 	// Check if running in production (HTTPS)
 	isProduction := c.GetHeader("X-Forwarded-Proto") == "https"
