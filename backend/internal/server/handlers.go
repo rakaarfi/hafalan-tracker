@@ -1281,7 +1281,7 @@ func (s *Server) removeChildFromParent(c *gin.Context) {
 
 	// Verify this parent is actually linked to this student
 	relationshipType := "father"
-	if parent.Gender == "female" {
+	if parent.Gender != nil && *parent.Gender == "female" {
 		relationshipType = "mother"
 	}
 
