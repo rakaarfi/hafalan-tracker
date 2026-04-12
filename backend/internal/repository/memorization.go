@@ -65,18 +65,19 @@ func (r *MemorizationRepository) Create(ctx context.Context, mem *Memorization) 
 // GetByID retrieves a memorization by ID
 func (r *MemorizationRepository) GetByID(ctx context.Context, id int) (*MemorizationWithDetails, error) {
 	query := `
-		SELECT m.id, m.student_id, m.teacher_id, m.surah_id, m.juz_id, m.unit_type,
-			m.page_start, m.page_end, m.status, m.notes, m.test_date,
-			m.is_active, m.created_at, m.updated_at,
-			s.name as student_name, t.full_name as teacher_name,
-			sur.surah_number, sur.name_latin as surah_name,
-			j.juz_number
-		FROM memorization m
+		SELECT m.id, m.student_id, m.teacher_id, m.surah_number as surah_id,
+			NULL as juz_id, 'surah' as unit_type,
+			NULL as page_start, m.ayah_start as page_end,
+			CASE WHEN m.score >= 85 THEN 'fluent' WHEN m.score >= 70 THEN 'good' ELSE 'needs_improvement' END as status,
+			m.notes, m.memorization_date as test_date,
+			true as is_active, m.created_at, m.updated_at,
+			s.full_name as student_name, t.full_name as teacher_name,
+			m.surah_number, NULL as surah_name,
+			NULL as juz_number
+		FROM memorization_records m
 		JOIN students s ON m.student_id = s.id
 		JOIN teachers t ON m.teacher_id = t.user_id
-		LEFT JOIN surah sur ON m.surah_id = sur.id
-		LEFT JOIN juz j ON m.juz_id = j.id
-		WHERE m.id = $1 AND m.is_active = true
+		WHERE m.id = $1
 	`
 
 	var mem MemorizationWithDetails
@@ -94,19 +95,20 @@ func (r *MemorizationRepository) GetByID(ctx context.Context, id int) (*Memoriza
 // GetByStudentID retrieves all memorizations for a student
 func (r *MemorizationRepository) GetByStudentID(ctx context.Context, studentID int) ([]MemorizationWithDetails, error) {
 	query := `
-		SELECT m.id, m.student_id, m.teacher_id, m.surah_id, m.juz_id, m.unit_type,
-			m.page_start, m.page_end, m.status, m.notes, m.test_date,
-			m.is_active, m.created_at, m.updated_at,
-			s.name as student_name, t.full_name as teacher_name,
-			sur.surah_number, sur.name_latin as surah_name,
-			j.juz_number
-		FROM memorization m
+		SELECT m.id, m.student_id, m.teacher_id, m.surah_number as surah_id,
+			NULL as juz_id, 'surah' as unit_type,
+			NULL as page_start, m.ayah_start as page_end,
+			CASE WHEN m.score >= 85 THEN 'fluent' WHEN m.score >= 70 THEN 'good' ELSE 'needs_improvement' END as status,
+			m.notes, m.memorization_date as test_date,
+			true as is_active, m.created_at, m.updated_at,
+			s.full_name as student_name, t.full_name as teacher_name,
+			m.surah_number, NULL as surah_name,
+			NULL as juz_number
+		FROM memorization_records m
 		JOIN students s ON m.student_id = s.id
 		JOIN teachers t ON m.teacher_id = t.user_id
-		LEFT JOIN surah sur ON m.surah_id = sur.id
-		LEFT JOIN juz j ON m.juz_id = j.id
-		WHERE m.student_id = $1 AND m.is_active = true
-		ORDER BY m.test_date DESC, m.created_at DESC
+		WHERE m.student_id = $1
+		ORDER BY m.memorization_date DESC, m.created_at DESC
 	`
 
 	var mems []MemorizationWithDetails
@@ -121,19 +123,20 @@ func (r *MemorizationRepository) GetByStudentID(ctx context.Context, studentID i
 // GetByTeacherID retrieves all memorizations for a teacher
 func (r *MemorizationRepository) GetByTeacherID(ctx context.Context, teacherID int) ([]MemorizationWithDetails, error) {
 	query := `
-		SELECT m.id, m.student_id, m.teacher_id, m.surah_id, m.juz_id, m.unit_type,
-			m.page_start, m.page_end, m.status, m.notes, m.test_date,
-			m.is_active, m.created_at, m.updated_at,
-			s.name as student_name, t.full_name as teacher_name,
-			sur.surah_number, sur.name_latin as surah_name,
-			j.juz_number
-		FROM memorization m
+		SELECT m.id, m.student_id, m.teacher_id, m.surah_number as surah_id,
+			NULL as juz_id, 'surah' as unit_type,
+			NULL as page_start, m.ayah_start as page_end,
+			CASE WHEN m.score >= 85 THEN 'fluent' WHEN m.score >= 70 THEN 'good' ELSE 'needs_improvement' END as status,
+			m.notes, m.memorization_date as test_date,
+			true as is_active, m.created_at, m.updated_at,
+			s.full_name as student_name, t.full_name as teacher_name,
+			m.surah_number, NULL as surah_name,
+			NULL as juz_number
+		FROM memorization_records m
 		JOIN students s ON m.student_id = s.id
 		JOIN teachers t ON m.teacher_id = t.user_id
-		LEFT JOIN surah sur ON m.surah_id = sur.id
-		LEFT JOIN juz j ON m.juz_id = j.id
-		WHERE m.teacher_id = $1 AND m.is_active = true
-		ORDER BY m.test_date DESC, m.created_at DESC
+		WHERE m.teacher_id = $1
+		ORDER BY m.memorization_date DESC, m.created_at DESC
 	`
 
 	var mems []MemorizationWithDetails
