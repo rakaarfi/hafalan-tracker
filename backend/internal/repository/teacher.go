@@ -128,7 +128,7 @@ func (r *TeacherRepository) GetAllWithClasses(ctx context.Context, search string
 		homeroomQuery := `
 			SELECT c.name
 			FROM classes c
-			WHERE c.homeroom_teacher_id = $1
+			WHERE c.teacher_id = $1
 			ORDER BY c.name
 		`
 		var homeroomClasses []string
@@ -143,7 +143,7 @@ func (r *TeacherRepository) GetAllWithClasses(ctx context.Context, search string
 			SELECT DISTINCT c.name
 			FROM classes c
 			INNER JOIN class_quran_teachers cqt ON c.id = cqt.class_id
-			WHERE cqt.quran_teacher_id = $1 AND cqt.is_active = true
+			WHERE cqt.teacher_id = $1
 			ORDER BY c.name
 		`
 		var quranClasses []string
@@ -172,7 +172,7 @@ func (r *TeacherRepository) GetAllWithClassesPaginated(ctx context.Context, sear
 		if teacherType == "homeroom" {
 			// Only homeroom teachers
 			cfg := filterConfig{
-				joins: ` JOIN classes c ON c.homeroom_teacher_id = t.user_id`,
+				joins: ` JOIN classes c ON c.teacher_id = t.user_id`,
 			}
 			if classID != "" {
 				cfg.whereClause = "c.id = $1"
@@ -183,7 +183,7 @@ func (r *TeacherRepository) GetAllWithClassesPaginated(ctx context.Context, sear
 		} else if teacherType == "quran" {
 			// Only Quran teachers
 			cfg := filterConfig{
-				joins: ` JOIN class_quran_teachers cqt ON cqt.quran_teacher_id = t.user_id AND cqt.is_active = true`,
+				joins: ` JOIN class_quran_teachers cqt ON cqt.teacher_id = t.user_id`,
 			}
 			if classID != "" {
 				cfg.whereClause = "cqt.class_id = $1"
@@ -196,8 +196,8 @@ func (r *TeacherRepository) GetAllWithClassesPaginated(ctx context.Context, sear
 			if classID != "" {
 				// Show teachers who are either homeroom or Quran teacher for this class
 				return filterConfig{
-					joins: ` LEFT JOIN classes c ON c.homeroom_teacher_id = t.user_id AND c.id = $1
-					        LEFT JOIN class_quran_teachers cqt ON cqt.quran_teacher_id = t.user_id AND cqt.class_id = $2 AND cqt.is_active = true`,
+					joins: ` LEFT JOIN classes c ON c.teacher_id = t.user_id AND c.id = $1
+					        LEFT JOIN class_quran_teachers cqt ON cqt.teacher_id = t.user_id AND cqt.class_id = $2`,
 					whereClause:    "(c.id IS NOT NULL OR cqt.class_id IS NOT NULL)",
 					filterArgs:     []interface{}{classID, classID},
 					requiresFilter: true,
@@ -271,7 +271,7 @@ func (r *TeacherRepository) GetAllWithClassesPaginated(ctx context.Context, sear
 		homeroomQuery := `
 			SELECT c.name
 			FROM classes c
-			WHERE c.homeroom_teacher_id = $1
+			WHERE c.teacher_id = $1
 			ORDER BY c.name
 		`
 		var homeroomClasses []string
@@ -286,7 +286,7 @@ func (r *TeacherRepository) GetAllWithClassesPaginated(ctx context.Context, sear
 			SELECT DISTINCT c.name
 			FROM classes c
 			INNER JOIN class_quran_teachers cqt ON c.id = cqt.class_id
-			WHERE cqt.quran_teacher_id = $1 AND cqt.is_active = true
+			WHERE cqt.teacher_id = $1
 			ORDER BY c.name
 		`
 		var quranClasses []string
