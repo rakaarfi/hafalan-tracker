@@ -1,19 +1,19 @@
-# Multi-stage build for React + Vite frontend with BUN
-FROM oven/bun:1-alpine AS builder
+# Multi-stage build for React + Vite frontend
+FROM node:20-alpine AS builder
 
 WORKDIR /app
 
 # Copy package files
-COPY package.json bun.lock ./
+COPY package.json package-lock.json ./
 
-# Install dependencies using BUN
-RUN bun install --frozen-lockfile
+# Install dependencies
+RUN npm ci
 
 # Copy source code
 COPY . .
 
 # Build the application
-RUN bun run build
+RUN npm run build
 
 # Production stage with nginx
 FROM nginx:alpine
