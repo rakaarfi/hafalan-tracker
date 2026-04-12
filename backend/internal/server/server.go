@@ -114,6 +114,9 @@ func (s *Server) setupRoutes() {
 		protected := v1.Group("/")
 		protected.Use(s.authMiddleware())
 		{
+				// Current user info
+				protected.GET("/me", s.getCurrentUser)
+
 			// User management
 			protected.GET("/users", s.getUsers)
 			protected.GET("/users/:id", s.getUser)

@@ -1786,3 +1786,16 @@ func formatDatePtr(t *time.Time) *string {
 	formatted := t.Format("2006-01-02")
 	return &formatted
 }
+
+// getCurrentUser returns the currently authenticated user
+func (s *Server) getCurrentUser(c *gin.Context) {
+	userID := c.GetString("user_id")
+	role := c.GetString("role")
+	email := c.GetString("email")
+
+	c.JSON(http.StatusOK, gin.H{
+		"id":     userID,
+		"email":   email,
+		"role":    role,
+	})
+}

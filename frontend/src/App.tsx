@@ -1,5 +1,6 @@
 import { BrowserRouter } from 'react-router-dom'
 import { Routes, Route, Navigate } from 'react-router-dom'
+import { useEffect } from 'react'
 import { Toaster } from '@/components/ui/toaster'
 import { LoginPage } from '@/pages/LoginPage'
 import { TeacherDashboard } from '@/pages/TeacherDashboard'
@@ -77,7 +78,12 @@ function PublicRoute({ children }: { children: React.ReactNode }) {
 }
 
 function App() {
-  const { isAuthenticated } = useAuthStore()
+  const { isAuthenticated, checkAuth } = useAuthStore()
+
+  // Check authentication on app mount
+  useEffect(() => {
+    checkAuth()
+  }, [checkAuth])
 
   return (
     <BrowserRouter>

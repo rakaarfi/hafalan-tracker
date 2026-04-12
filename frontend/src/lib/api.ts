@@ -196,6 +196,11 @@ export const authApi = {
     // Call backend logout to clear cookie
     await api.post('/public/logout')
   },
+
+  getCurrentUser: async (): Promise<User> => {
+    const response = await api.get<{ user: User }>('/me')
+    return response.data.user
+  },
 }
 
 // Students API

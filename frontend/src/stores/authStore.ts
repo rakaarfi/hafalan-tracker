@@ -1,5 +1,4 @@
 import { create } from 'zustand'
-import { persist } from 'zustand/middleware'
 import { authApi } from '@/lib/api'
 
 export interface User {
@@ -17,6 +16,7 @@ interface AuthState {
   isLoading: boolean
   error: string | null
   login: (email: string, password: string) => Promise<void>
+  checkAuth: () => Promise<void>
   setAuth: (user: User, token: string) => void
   updateUser: (userData: Partial<User>) => void
   logout: () => Promise<void>
@@ -24,58 +24,75 @@ interface AuthState {
   clearAuth: () => void  // Clear auth state without API call (for 401 handling)
 }
 
-export const useAuthStore = create<AuthState>()(
-  persist(
-    (set) => ({
-      user: null,
-      token: null, // Kept for compatibility but not used with httpOnly cookies
-      isAuthenticated: false,
-      isLoading: false,
-      error: null,
-      login: async (email: string, password: string) => {
-        set({ isLoading: true, error: null })
-        try {
-          const response = await authApi.login({ email, password })
-          set({
-            user: response.user,
-            token: null, // Token is in httpOnly cookie, not stored
-            isAuthenticated: true,
-            isLoading: false,
-            error: null,
-          })
-        } catch (error: any) {
-          set({
-            isLoading: false,
-            error: error.response?.data?.error || 'Login failed. Please check your credentials.',
-          })
-          throw error
-        }
-      },
-      setAuth: (user, token) => set({
+export const useAuthStore = create<AuthState>()((set) => ({
+  user: null,
+  token: null, // Kept for compatibility but not used with httpOnly cookies
+  isAuthenticated: false,
+  isLoading: false,
+  error: null,
+  login: async (email: string, password: string) => {
+    set({ isLoading: true, error: null })
+    try {
+      const response = await authApi.login({ email, password })
+      set({
+        user: response.user,
+        token: null, // Token is in httpOnly cookie, not stored
+        isAuthenticated: true,
+        isLoading: false,
+        error: null,
+      })
+    } catch (error: any) {
+      set({
+        isLoading: false,
+        error: error.response?.data?.error || 'Login failed. Please check your credentials.',
+      })
+      throw error
+    }
+  },
+  checkAuth: async () => {
+    set({ isLoading: true, error: null })
+    try {
+      const user = await authApi.getCurrentUser()
+      set({
         user,
         token: null, // Token is in httpOnly cookie
-        isAuthenticated: true
-      }),
-      updateUser: (userData) => set((state) => ({
-        user: state.user ? { ...state.user, ...userData } : null
-      })),
-      logout: async () => {
-        await authApi.logout()
-        set({
-          user: null,
-          token: null,
-          isAuthenticated: false,
-          error: null,
-        })
-      },
-      clearAuth: () => set({
+        isAuthenticated: true,
+        isLoading: false,
+        error: null,
+      })
+    } catch (error: any) {
+      // Not authenticated - clear state
+      set({
         user: null,
         token: null,
         isAuthenticated: false,
+        isLoading: false,
         error: null,
-      }),
-      clearError: () => set({ error: null }),
-    }),
-    { name: 'auth-storage' }
-  )
-)
+      })
+    }
+  },
+  setAuth: (user, token) => set({
+    user,
+    token: null, // Token is in httpOnly cookie
+    isAuthenticated: true
+  }),
+  updateUser: (userData) => set((state) => ({
+    user: state.user ? { ...state.user, ...userData } : null
+  })),
+  logout: async () => {
+    await authApi.logout()
+    set({
+      user: null,
+      token: null,
+      isAuthenticated: false,
+      error: null,
+    })
+  },
+  clearAuth: () => set({
+    user: null,
+    token: null,
+    isAuthenticated: false,
+    error: null,
+  }),
+  clearError: () => set({ error: null }),
+}))
