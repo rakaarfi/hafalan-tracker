@@ -58,10 +58,10 @@ func (r *ClassRepository) GetAll(ctx context.Context, search string) ([]Class, e
 	for rows.Next() {
 		var c Class
 		err := rows.Scan(
-			&c.ID, &c.Name, &c.GradeLevel, &c.HomeroomTeacherID,
+			&c.ID, &c.Name, &c.TeacherID,
 			&c.TeacherName,
 			&c.StudentsCount,
-			&c.CreatedAt, &c.UpdatedAt,
+			&c.CreatedAt,
 		)
 		if err != nil {
 			return nil, err
