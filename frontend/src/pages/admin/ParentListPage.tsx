@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { Plus, Search, Edit, Trash2, Users } from 'lucide-react'
+import { Plus, Search, Edit, Trash2, Eye } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
@@ -87,10 +87,6 @@ export function ParentListPage() {
     }
   }
 
-  const getInitials = (name: string) => {
-    return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
-  }
-
   if (loading) {
     return (
       <div className="text-center py-12">
@@ -131,7 +127,7 @@ export function ParentListPage() {
         </div>
       )}
 
-      {/* Search */}
+      {/* Search Bar */}
       <div className="mb-6">
         <div className="relative">
           <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-500" />
@@ -144,58 +140,73 @@ export function ParentListPage() {
         </div>
       </div>
 
-      {/* Parents Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-        {filteredParents.length === 0 ? (
-          <div className="col-span-full text-center py-12 border-2 border-border bg-white">
-            <Users size={48} className="mx-auto text-gray-400 mb-4" />
-            <p className="text-gray-500">{search ? 'Tidak ada orang tua ditemukan' : 'Belum ada data orang tua'}</p>
-          </div>
-        ) : (
-          filteredParents.map((parent) => (
-            <div key={parent.UserID} className="border-2 border-border bg-white p-4 md:p-6">
-              {/* Header */}
-              <div className="flex items-start gap-3 md:gap-4 mb-4">
-                <div className="w-10 h-10 md:w-12 md:h-12 bg-primary text-white flex items-center justify-center text-base md:text-lg font-bold flex-shrink-0">
-                  {getInitials(parent.FullName)}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <h3 className="font-semibold text-base md:text-lg truncate">{parent.FullName}</h3>
-                  <p className="text-xs md:text-sm text-gray-600 truncate">{parent.Email}</p>
-                </div>
-              </div>
-
-              {/* Info */}
-              <div className="space-y-2 mb-4">
-                <div className="text-xs md:text-sm">
-                  <span className="text-gray-600">No HP:</span>
-                  <span className="font-medium ml-2">{parent.Phone || '-'}</span>
-                </div>
-              </div>
-
-              {/* Actions */}
-              <div className="flex gap-2">
-                <Link to={`/admin/parents/${parent.UserID}/edit`} className="flex-1">
-                  <button
-                    disabled={deleting === parent.UserID}
-                    className="w-full p-2 border-2 border-yellow-200 hover:bg-yellow-50 min-h-[36px] flex items-center justify-center gap-1 text-xs md:text-sm"
-                  >
-                    <Edit size={14} md:size={16} />
-                    Edit
-                  </button>
-                </Link>
-                <button
-                  onClick={() => handleDelete(parent)}
-                  disabled={deleting === parent.UserID}
-                  className="flex-1 p-2 border-2 border-red-200 hover:bg-red-50 min-h-[36px] flex items-center justify-center gap-1 disabled:opacity-50 text-xs md:text-sm"
-                >
-                  <Trash2 size={14} md:size={16} />
-                  Hapus
-                </button>
-              </div>
-            </div>
-          ))
-        )}
+      {/* Parents Table */}
+      <div className="border-2 border-border bg-white overflow-x-auto rounded-lg">
+        <table className="w-full min-w-[600px]">
+          <thead className="bg-gray-50 border-b-2 border-border">
+            <tr>
+              <th className="text-left p-2 md:p-4 border-r-2 border-border text-sm md:text-base">Nama</th>
+              <th className="text-left p-2 md:p-4 border-r-2 border-border text-sm md:text-base">Email</th>
+              <th className="text-left p-2 md:p-4 border-r-2 border-border text-sm md:text-base">No HP</th>
+              <th className="text-center p-2 md:p-4 text-sm md:text-base">Aksi</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y-2 divide-border">
+            {filteredParents.length === 0 ? (
+              <tr>
+                <td colSpan={4} className="p-8 text-center text-gray-500">
+                  {search ? 'Tidak ada orang tua ditemukan' : 'Belum ada data orang tua'}
+                </td>
+              </tr>
+            ) : (
+              filteredParents.map((parent) => (
+                <tr key={parent.UserID} className="hover:bg-gray-50">
+                  <td className="p-2 md:p-4 border-r-2 border-border">
+                    <div className="font-medium text-sm md:text-base">{parent.FullName}</div>
+                  </td>
+                  <td className="p-2 md:p-4 border-r-2 border-border">
+                    <div className="text-sm text-gray-500 text-xs md:text-sm">
+                      {parent.Email}
+                    </div>
+                  </td>
+                  <td className="p-2 md:p-4 border-r-2 border-border">
+                    <div className="text-sm text-gray-500 text-xs md:text-sm">
+                      {parent.Phone || '-'}
+                    </div>
+                  </td>
+                  <td className="p-2 md:p-4">
+                    <div className="flex justify-center gap-1 md:gap-2">
+                      <Link to={`/admin/parents/${parent.UserID}`} className="inline-block">
+                        <button
+                          className="p-1.5 md:p-2 border-2 border-blue-200 hover:bg-blue-50 min-h-[36px] min-w-[36px]"
+                          title="Lihat Detail"
+                        >
+                          <Eye size={14} className="md:size-[16px]" />
+                        </button>
+                      </Link>
+                      <Link to={`/admin/parents/${parent.UserID}/edit`} className="inline-block">
+                        <button
+                          className="p-1.5 md:p-2 border-2 border-yellow-200 hover:bg-yellow-50 min-h-[36px] min-w-[36px]"
+                          title="Edit"
+                        >
+                          <Edit size={14} className="md:size-[16px]" />
+                        </button>
+                      </Link>
+                      <button
+                        onClick={() => handleDelete(parent)}
+                        disabled={deleting === parent.UserID}
+                        className="p-1.5 md:p-2 border-2 border-red-200 hover:bg-red-50 min-h-[36px] min-w-[36px] disabled:opacity-50"
+                        title="Hapus"
+                      >
+                        <Trash2 size={14} className="md:size-[16px]" />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
       </div>
 
       {/* Stats */}
