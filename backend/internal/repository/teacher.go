@@ -156,144 +156,101 @@ func (r *TeacherRepository) GetAllWithClasses(ctx context.Context, search string
 
 	return teachers, nil
 }
-
-
-	"github.com/jmoiron/sqlx"
-)
-
 // GetAllWithClassesPaginated retrieves teachers with pagination and their assigned classes
 func (r *TeacherRepository) GetAllWithClassesPaginated(ctx context.Context, search string, teacherType string, classID string, page, limit int) ([]TeacherWithClasses, int, error) {
 	offset := (page - 1) * limit
 
-	// Build WHERE conditions for filtering
-	whereConditions := []string{}
-	whereArgs := []interface{}{}
-	argOffset := 0
-
-	// Build JOIN and WHERE based on filters
-	joins := ""
-	if teacherType == "homeroom" {
-		// Only homeroom teachers
-		joins += ` JOIN classes c ON c.homeroom_teacher_id = t.user_id`
-		if classID != "" {
-			whereConditions = append(whereConditions, "c.id = $"+fmt.Sprint(argOffset+1))
-			whereArgs = append(whereArgs, classID)
-			argOffset++
-		}
-	} else if teacherType == "quran" {
-		// Only Quran teachers
-		joins += ` JOIN class_quran_teachers cqt ON cqt.quran_teacher_id = t.user_id AND cqt.is_active = true`
-		if classID != "" {
-			whereConditions = append(whereConditions, "cqt.class_id = $"+fmt.Sprint(argOffset+1))
-			whereArgs = append(whereArgs, classID)
-			argOffset++
-		}
-	} else {
-		// All teachers - but if classID is specified, show teachers associated with that class
-		if classID != "" {
-			// Show teachers who are either homeroom or Quran teacher for this class
-			joins += ` LEFT JOIN class_quran_teachers cqt ON cqt.quran_teacher_id = t.user_id AND cqt.class_id = $2 AND cqt.is_active = true`
-			joins += ` LEFT JOIN classes c ON c.homeroom_teacher_id = t.user_id AND c.id = $1`
-
-
-			whereArgs = append(whereArgs, classID, classID)
-			argOffset = 2  // We used 2 parameters
-			whereConditions = append(whereConditions, "(c.id IS NOT NULL OR cqt.class_id IS NOT NULL)")
-		}
+	// Build WHERE conditions and JOINs based on filters
+	type filterConfig struct {
+		joins          string
+		whereClause    string
+		filterArgs     []interface{}
+		requiresFilter bool
 	}
 
-	// Build count query
-	countQuery := `
-		SELECT COUNT(DISTINCT t.user_id)
+	buildFilterConfig := func() filterConfig {
+		if teacherType == "homeroom" {
+			// Only homeroom teachers
+			cfg := filterConfig{
+				joins: ` JOIN classes c ON c.homeroom_teacher_id = t.user_id`,
+			}
+			if classID != "" {
+				cfg.whereClause = "c.id = $1"
+				cfg.filterArgs = []interface{}{classID}
+				cfg.requiresFilter = true
+			}
+			return cfg
+		} else if teacherType == "quran" {
+			// Only Quran teachers
+			cfg := filterConfig{
+				joins: ` JOIN class_quran_teachers cqt ON cqt.quran_teacher_id = t.user_id AND cqt.is_active = true`,
+			}
+			if classID != "" {
+				cfg.whereClause = "cqt.class_id = $1"
+				cfg.filterArgs = []interface{}{classID}
+				cfg.requiresFilter = true
+			}
+			return cfg
+		} else {
+			// All teachers - but if classID is specified, show teachers associated with that class
+			if classID != "" {
+				// Show teachers who are either homeroom or Quran teacher for this class
+				return filterConfig{
+					joins: ` LEFT JOIN classes c ON c.homeroom_teacher_id = t.user_id AND c.id = $1
+					        LEFT JOIN class_quran_teachers cqt ON cqt.quran_teacher_id = t.user_id AND cqt.class_id = $2 AND cqt.is_active = true`,
+					whereClause:    "(c.id IS NOT NULL OR cqt.class_id IS NOT NULL)",
+					filterArgs:     []interface{}{classID, classID},
+					requiresFilter: true,
+				}
+			}
+		}
+		return filterConfig{}
+	}
+
+	cfg := buildFilterConfig()
+
+	// Build base query parts
+	baseQuery := `
 		FROM teachers t
 		JOIN users u ON t.user_id = u.id
-	` + joins
+	` + cfg.joins
 
-	if len(whereConditions) > 0 || search != "" {
-		countQuery += " WHERE "
-	}
+	// Build WHERE clause with search
+	whereClause := ""
+	queryArgs := cfg.filterArgs
+	argOffset := len(cfg.filterArgs)
 
-	// Add search condition
 	if search != "" {
-		countQuery += "(t.full_name ILIKE $" + fmt.Sprint(argOffset+1) + " OR u.email ILIKE $" + fmt.Sprint(argOffset+1) + ")"
-		whereArgs = append(whereArgs, "%"+search+"%")
+		whereClause = "(t.full_name ILIKE $" + fmt.Sprint(argOffset+1) + " OR u.email ILIKE $" + fmt.Sprint(argOffset+1) + ")"
+		queryArgs = append(queryArgs, "%"+search+"%")
 		argOffset++
 	}
 
-	// Add filter conditions
-	if len(whereConditions) > 0 {
-		if search != "" {
-			countQuery += " AND "
+	if cfg.whereClause != "" {
+		if whereClause != "" {
+			whereClause += " AND "
 		}
-		countQuery += whereConditions[0]
+		whereClause += cfg.whereClause
 	}
 
+	if whereClause != "" {
+		whereClause = " WHERE " + whereClause
+	}
+
+	// Build and execute count query
+	countQuery := "SELECT COUNT(DISTINCT t.user_id)" + baseQuery + whereClause
 	var total int
-	err := r.db.GetContext(ctx, &total, countQuery, whereArgs...)
+	err := r.db.GetContext(ctx, &total, countQuery, queryArgs...)
 	if err != nil {
 		return nil, 0, err
 	}
 
-	// Build data query
-	query := `
-		SELECT DISTINCT t.user_id, t.full_name, t.phone, t.created_at, u.email
-		FROM teachers t
-		JOIN users u ON t.user_id = u.id
-	` + joins
+	// Build and execute data query
+	dataQuery := `SELECT DISTINCT t.user_id, t.full_name, t.phone, t.created_at, u.email` + baseQuery + whereClause
+	dataQuery += " ORDER BY t.full_name LIMIT $" + fmt.Sprint(argOffset+1) + " OFFSET $" + fmt.Sprint(argOffset+2)
+	queryArgs = append(queryArgs, limit, offset)
 
-	// Build WHERE clause for data query
-	whereConditions = []string{}
-	whereArgs = []interface{}{}
-	argOffset = 0
-
-	// Rebuild WHERE conditions for data query (same logic as count query)
-	if teacherType == "homeroom" {
-		if classID != "" {
-			whereConditions = append(whereConditions, "c.id = $"+fmt.Sprint(argOffset+1))
-			whereArgs = append(whereArgs, classID)
-			argOffset++
-		}
-	} else if teacherType == "quran" {
-		if classID != "" {
-			whereConditions = append(whereConditions, "cqt.class_id = $"+fmt.Sprint(argOffset+1))
-			whereArgs = append(whereArgs, classID)
-			argOffset++
-		}
-	} else {
-		// For "all teachers" with class filter
-		if classID != "" {
-			// Need to add the same LEFT JOINs and parameters
-			query += ` LEFT JOIN classes c ON c.homeroom_teacher_id = t.user_id AND c.id = $1`
-			query += ` LEFT JOIN class_quran_teachers cqt ON cqt.quran_teacher_id = t.user_id AND cqt.class_id = $2 AND cqt.is_active = true`
-			whereArgs = append(whereArgs, classID, classID)
-			argOffset = 2  // We used 2 parameters
-			whereConditions = append(whereConditions, "(c.id IS NOT NULL OR cqt.class_id IS NOT NULL)")
-		}
-	}
-
-	if len(whereConditions) > 0 || search != "" {
-		query += " WHERE "
-	}
-
-	// Add search condition
-	if search != "" {
-		query += "(t.full_name ILIKE $" + fmt.Sprint(argOffset+1) + " OR u.email ILIKE $" + fmt.Sprint(argOffset+1) + ")"
-		whereArgs = append(whereArgs, "%"+search+"%")
-		argOffset++
-	}
-
-	// Add filter conditions
-	if len(whereConditions) > 0 {
-		if search != "" {
-			query += " AND "
-		}
-		query += whereConditions[0]
-	}
-
-	query += " ORDER BY t.full_name LIMIT $" + fmt.Sprint(argOffset+1) + " OFFSET $" + fmt.Sprint(argOffset+2)
-	whereArgs = append(whereArgs, limit, offset)
-
-	rows, err := r.db.QueryContext(ctx, query, whereArgs...)
+	rows, err := r.db.QueryContext(ctx, dataQuery, queryArgs...)
 	if err != nil {
 		return nil, 0, err
 	}
