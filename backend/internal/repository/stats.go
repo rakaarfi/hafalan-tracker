@@ -28,9 +28,9 @@ func (r *StatsRepository) GetDashboardStats(ctx context.Context) (*DashboardStat
 	query := `
 		SELECT
 			(SELECT COUNT(*) FROM students) as total_students,
-			(SELECT COUNT(*) FROM users WHERE role = 'teacher') as total_teachers,
-			(SELECT COUNT(*) FROM users WHERE role = 'parent') as total_parents,
-			(SELECT COUNT(*) FROM memorizations) as total_memorizations
+			(SELECT COUNT(*) FROM users u JOIN roles r ON u.role_id = r.id WHERE r.name = 'teacher') as total_teachers,
+			(SELECT COUNT(*) FROM users u JOIN roles r ON u.role_id = r.id WHERE r.name = 'parent') as total_parents,
+			(SELECT COUNT(*) FROM memorization_records) as total_memorizations
 	`
 
 	var stats DashboardStats

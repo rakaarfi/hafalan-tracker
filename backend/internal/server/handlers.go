@@ -773,15 +773,23 @@ func (s *Server) getDashboardStats(c *gin.Context) {
 		}
 	}
 
-	// Get total memorizations
-	// For now, we'll return basic stats
+	// Get real stats from database
+	dbStats, err := s.statsRepo.GetDashboardStats(c.Request.Context())
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Failed to retrieve statistics",
+		})
+		return
+	}
+
+	// Combine with student stats
 	stats := map[string]interface{}{
 		"total_students":      totalStudents,
 		"active_students":     activeStudents,
-		"total_teachers":      3, // From seed data
-		"total_parents":       5, // From seed data
-		"total_memorizations": 6, // From seed data
-		"recent_tests":        6,
+		"total_teachers":      dbStats.TotalTeachers,
+		"total_parents":       dbStats.TotalParents,
+		"total_memorizations": dbStats.TotalMemorizations,
+		"recent_tests":        dbStats.TotalMemorizations,
 	}
 
 	c.JSON(http.StatusOK, stats)
