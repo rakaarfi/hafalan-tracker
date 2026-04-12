@@ -37,14 +37,14 @@ type UpdateClassRequest struct {
 
 // Create creates a new class
 func (s *ClassService) Create(ctx context.Context, req *CreateClassRequest) (*repository.Class, error) {
-	// Validate homeroom teacher if provided
-	if req.HomeroomTeacherID != nil {
-		teacher, err := s.teacherRepo.GetByID(ctx, *req.HomeroomTeacherID)
+	// Validate teacher if provided
+	if req.TeacherID != nil {
+		teacher, err := s.teacherRepo.GetByID(ctx, *req.TeacherID)
 		if err != nil {
 			return nil, fmt.Errorf("failed to verify teacher: %w", err)
 		}
 		if teacher == nil {
-			return nil, errors.New("homeroom teacher not found")
+			return nil, errors.New("teacher not found")
 		}
 	}
 
@@ -76,14 +76,14 @@ func (s *ClassService) Update(ctx context.Context, req *UpdateClassRequest) (*re
 		return nil, errors.New("class not found")
 	}
 
-	// Validate homeroom teacher if provided
-	if req.HomeroomTeacherID != nil {
-		teacher, err := s.teacherRepo.GetByID(ctx, *req.HomeroomTeacherID)
+	// Validate teacher if provided
+	if req.TeacherID != nil {
+		teacher, err := s.teacherRepo.GetByID(ctx, *req.TeacherID)
 		if err != nil {
 			return nil, fmt.Errorf("failed to verify teacher: %w", err)
 		}
 		if teacher == nil {
-			return nil, errors.New("homeroom teacher not found")
+			return nil, errors.New("teacher not found")
 		}
 	}
 
