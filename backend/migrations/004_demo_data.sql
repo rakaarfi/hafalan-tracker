@@ -2,7 +2,7 @@
 -- This file contains realistic sample data for demonstration
 
 -- ============================================
--- PARENT USER ACCOUNTS (6 parents)
+-- PARENT USER ACCOUNTS (6 new parents)
 -- ============================================
 
 -- Parent 1: Bapak Santoso (Ayah dari Ahmad Fauzi)
@@ -33,61 +33,61 @@ INSERT INTO users (email, password_hash, role_id) VALUES
 -- PARENTS PROFILES
 -- ============================================
 
--- Parent 1: Bapak Santoso
+-- Parent 1: Bapak Santoso (user_id should be 7)
 INSERT INTO parents (user_id, full_name, phone, gender) VALUES
-(6, 'Bapak Santoso', '081234567891', 'male');
+(7, 'Bapak Santoso', '081234567891', 'male');
 
--- Parent 2: Ibu Rahayu
+-- Parent 2: Ibu Rahayu (user_id should be 8)
 INSERT INTO parents (user_id, full_name, phone, gender) VALUES
-(7, 'Ibu Rahayu', '081234567892', 'female');
+(8, 'Ibu Rahayu', '081234567892', 'female');
 
--- Parent 3: Bapak Widjaja
+-- Parent 3: Bapak Widjaja (user_id should be 9)
 INSERT INTO parents (user_id, full_name, phone, gender) VALUES
-(8, 'Bapak Widjaja', '081234567893', 'male');
+(9, 'Bapak Widjaja', '081234567893', 'male');
 
--- Parent 4: Ibu Fatmawati
+-- Parent 4: Ibu Fatmawati (user_id should be 10)
 INSERT INTO parents (user_id, full_name, phone, gender) VALUES
-(9, 'Ibu Fatmawati', '081234567894', 'female');
+(10, 'Ibu Fatmawati', '081234567894', 'female');
 
--- Parent 5: Bapak Hidayat
+-- Parent 5: Bapak Hidayat (user_id should be 11)
 INSERT INTO parents (user_id, full_name, phone, gender) VALUES
-(10, 'Bapak Hidayat', '081234567895', 'male');
+(11, 'Bapak Hidayat', '081234567895', 'male');
 
--- Parent 6: Ibu Aminah
+-- Parent 6: Ibu Aminah (user_id should be 12)
 INSERT INTO parents (user_id, full_name, phone, gender) VALUES
-(11, 'Ibu Aminah', '081234567896', 'female');
+(12, 'Ibu Aminah', '081234567896', 'female');
 
 -- ============================================
 -- STUDENTS (7 students)
 -- ============================================
 
--- Student 1: Ahmad Fauzi (Kelas 1A) - Ayah saja
+-- Student 1: Ahmad Fauzi (Kelas 1A) - Ayah saja (user_id 7)
 INSERT INTO students (full_name, birth_date, gender, enrollment_date, phone, parent_id_1, parent_id_2, class_id, is_active) VALUES
-('Ahmad Fauzi', '2018-03-15', 'male', '2024-07-15', '081111111001', 6, NULL, 1, true);
+('Ahmad Fauzi', '2018-03-15', 'male', '2024-07-15', '081111111001', 7, NULL, 1, true);
 
--- Student 2: Aisyah Putri (Kelas 1A) - Ibu saja
+-- Student 2: Aisyah Putri (Kelas 1A) - Ibu saja (user_id 8)
 INSERT INTO students (full_name, birth_date, gender, enrollment_date, phone, parent_id_1, parent_id_2, class_id, is_active) VALUES
-('Aisyah Putri', '2018-05-20', 'female', '2024-07-15', '081111111002', NULL, 7, 1, true);
+('Aisyah Putri', '2018-05-20', 'female', '2024-07-15', '081111111002', NULL, 8, 1, true);
 
--- Student 3: Muhammad Rizki (Kelas 1A) - Ayah saja
+-- Student 3: Muhammad Rizki (Kelas 1A) - Ayah saja (user_id 9)
 INSERT INTO students (full_name, birth_date, gender, enrollment_date, phone, parent_id_1, parent_id_2, class_id, is_active) VALUES
-('Muhammad Rizki', '2017-08-10', 'male', '2024-07-15', '081111111003', 8, NULL, 1, true);
+('Muhammad Rizki', '2017-08-10', 'male', '2024-07-15', '081111111003', 9, NULL, 1, true);
 
--- Student 4: Fatimah Zahra (Kelas 1B) - Ibu saja
+-- Student 4: Fatimah Zahra (Kelas 1B) - Ibu saja (user_id 10)
 INSERT INTO students (full_name, birth_date, gender, enrollment_date, phone, parent_id_1, parent_id_2, class_id, is_active) VALUES
-('Fatimah Zahra', '2018-11-25', 'female', '2024-07-15', '081111111004', NULL, 9, 2, true);
+('Fatimah Zahra', '2018-11-25', 'female', '2024-07-15', '081111111004', NULL, 10, 2, true);
 
--- Student 5: Ibrahim Khalil (Kelas 1B) - Ayah (punya kakak di kelas 6)
+-- Student 5: Ibrahim Khalil (Kelas 1B) - Ayah (user_id 11, punya kakak di kelas 6)
 INSERT INTO students (full_name, birth_date, gender, enrollment_date, phone, parent_id_1, parent_id_2, class_id, is_active) VALUES
-('Ibrahim Khalil', '2017-02-14', 'male', '2024-07-15', '081111111005', 10, NULL, 2, true);
+('Ibrahim Khalil', '2017-02-14', 'male', '2024-07-15', '081111111005', 11, NULL, 2, true);
 
--- Student 6: Umar Faruq (Kelas 6A) - Ayah (sama seperti Ibrahim)
+-- Student 6: Umar Faruq (Kelas 6A) - Ayah (user_id 11, sama seperti Ibrahim)
 INSERT INTO students (full_name, birth_date, gender, enrollment_date, phone, parent_id_1, parent_id_2, class_id, is_active) VALUES
-('Umar Faruq', '2013-06-18', 'male', '2024-07-15', '081111111006', 10, NULL, 3, true);
+('Umar Faruq', '2013-06-18', 'male', '2024-07-15', '081111111006', 11, NULL, 3, true);
 
--- Student 7: Khadijah Aminah (Kelas 6A) - Ibu saja
+-- Student 7: Khadijah Aminah (Kelas 6A) - Ibu saja (user_id 12)
 INSERT INTO students (full_name, birth_date, gender, enrollment_date, phone, parent_id_1, parent_id_2, class_id, is_active) VALUES
-('Khadijah Aminah', '2013-09-30', 'female', '2024-07-15', '081111111007', NULL, 11, 3, true);
+('Khadijah Aminah', '2013-09-30', 'female', '2024-07-15', '081111111007', NULL, 12, 3, true);
 
 -- ============================================
 -- MEMORIZATION RECORDS (Demo progress data)
