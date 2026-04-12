@@ -93,10 +93,10 @@ func (r *ClassRepository) GetByID(ctx context.Context, id string) (*Class, error
 
 	var c Class
 	err := r.db.QueryRowContext(ctx, query, id).Scan(
-		&c.ID, &c.Name, &c.GradeLevel, &c.HomeroomTeacherID,
+		&c.ID, &c.Name, &c.TeacherID,
 		&c.TeacherName,
 		&c.StudentsCount,
-		&c.CreatedAt, &c.UpdatedAt,
+		&c.CreatedAt,
 	)
 	if err == sql.ErrNoRows {
 		return nil, fmt.Errorf("class not found")
