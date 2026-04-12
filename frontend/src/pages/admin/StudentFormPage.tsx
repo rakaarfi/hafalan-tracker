@@ -30,6 +30,7 @@ interface Parent {
   UserID: string
   FullName: string
   Email: string
+  Gender: string  // Added for gender filtering
 }
 
 export function StudentFormPage() {
@@ -65,7 +66,7 @@ export function StudentFormPage() {
         parentsApi.getAll()
       ])
       setClasses(classesData)
-      setParents(parentsData)
+      setParents(parentsData.data)  // Extract array from PaginatedResponse
     } catch (err: any) {
       toast({
         variant: "destructive",

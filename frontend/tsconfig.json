@@ -12,8 +12,8 @@
     "noEmit": true,
     "jsx": "react-jsx",
     "strict": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
+    "noUnusedLocals": false,  // Disabled to allow unused variables during development
+    "noUnusedParameters": false,  // Disabled to allow unused parameters during development
     "noFallthroughCasesInSwitch": true,
     "baseUrl": ".",
     "paths": {

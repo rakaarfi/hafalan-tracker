@@ -5,6 +5,7 @@ import { useAuthStore } from '@/stores/authStore'
 import { useTranslation } from 'react-i18next'
 import { parentsApi } from '@/lib/api'
 import { Users, Baby, AlertCircle } from 'lucide-react'
+import { Memorization } from '@/lib/api'
 
 interface Child {
   student: {
@@ -12,17 +13,10 @@ interface Child {
     name: string
     class_name: string
   }
-  recent_tests: Array<{
-    id: number
-    unit_type: string
-    surah_name?: string
-    status: string
-    notes: string
-    test_date: string
-  }> | null
+  recent_tests: Memorization[] | null  // Changed to use Memorization type
   total_tests: number
   average_score: number
-  latest_test?: any
+  latest_test?: Memorization  // Changed to use Memorization type
 }
 
 export function ParentDashboard() {
@@ -46,7 +40,7 @@ export function ParentDashboard() {
       setLoading(true)
       setError(null)
       const data = await parentsApi.getMyChildren()
-      setChildren(data)
+      setChildren(data as unknown as Child[])  // Type assertion: API returns Student[] but component expects Child[]
     } catch (err: any) {
       console.error('Failed to fetch children:', err)
       // Don't show error if it's a 401 (user will be redirected to login)

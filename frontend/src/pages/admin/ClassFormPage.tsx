@@ -52,7 +52,7 @@ export function ClassFormPage() {
     const fetchTeachers = async () => {
       try {
         const data = await teachersApi.getAll()
-        setTeachers(data)
+        setTeachers(data.data)  // Extract array from PaginatedResponse
       } catch (error) {
         // Error handled by toast
       }

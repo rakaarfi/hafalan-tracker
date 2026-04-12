@@ -5,7 +5,7 @@ import { authApi } from '@/lib/api'
 export interface User {
   id: string
   email: string
-  role: 'admin' | 'teacher' | 'parent'
+  role: string  // Backend returns loose string, not strict union type
   name?: string
   phone?: string
 }

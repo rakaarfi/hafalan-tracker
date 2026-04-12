@@ -55,7 +55,7 @@ export function ParentFormPage() {
           name: parent.FullName,
           email: parent.Email,
           phone: parent.Phone || '',
-          gender: parent.Gender || 'male',
+          gender: (parent.Gender || 'male') as "male" | "female",  // Type assertion for strict gender type
         })
 
         // Fetch children
@@ -85,9 +85,7 @@ export function ParentFormPage() {
   const fetchChildren = async (id: string) => {
     try {
       setLoadingChildren(true)
-      console.log('Fetching children for parent:', id)
       const childrenData = await parentsApi.getChildren(id)
-      console.log('Children data:', childrenData)
       setChildren(childrenData)
     } catch (error) {
       console.error('Failed to fetch children:', error)
@@ -105,7 +103,7 @@ export function ParentFormPage() {
     try {
       const studentsData = await studentsApi.getAll()
       // Filter out students that are already children
-      const availableStudents = studentsData.filter(s =>
+      const availableStudents = studentsData.data.filter(s =>  // Extract data array from PaginatedResponse
         !children.some(c => c.id === s.id)
       )
       setAllStudents(availableStudents)

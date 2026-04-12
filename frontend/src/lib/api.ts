@@ -43,6 +43,7 @@ export interface PaginatedResponse<T> {
   page: number
   limit: number
   total_pages: number
+  filter?: string  // Added for filtering functionality
 }
 
 export interface LoginRequest {
@@ -73,6 +74,7 @@ export interface Student {
   parent_2_name?: string
   birth_date?: string
   photo_url?: string
+  last_status?: string  // Added for StudentListItem and TeacherDashboard
   progress?: {
     total_units: number
     completed: number
@@ -88,6 +90,10 @@ export interface Teacher {
   CreatedAt: string
   HomeroomClasses?: string[]
   QuranTeacherClasses?: string[]
+  // Additional fields for form compatibility
+  name?: string      // Alias for FullName
+  email?: string     // Alias for Email
+  phone?: string     // Alias for Phone
 }
 
 export interface Parent {
@@ -97,6 +103,12 @@ export interface Parent {
   Email: string
   Gender: string
   CreatedAt: string
+  // Additional fields for form compatibility
+  user_id?: string   // Alias for UserID
+  name?: string      // Alias for FullName
+  email?: string     // Alias for Email
+  phone?: string     // Alias for Phone
+  gender?: "male" | "female"  // Strict type for form validation
 }
 
 export interface Class {

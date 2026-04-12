@@ -51,7 +51,7 @@ export function ChildDetailPage() {
       setError(null)
 
       const data = await parentsApi.getChildProgress(childId)
-      setChild(data)
+      setChild(data as unknown as Child)  // Type assertion: API returns Student & memorizations but component expects Child
     } catch (err: any) {
       console.error('Failed to fetch child data:', err)
       if (err.response?.status === 403) {

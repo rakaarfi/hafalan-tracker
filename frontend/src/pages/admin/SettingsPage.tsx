@@ -152,7 +152,7 @@ export function SettingsPage() {
 
     setResetPassword(prev => ({ ...prev, loading: true }))
     try {
-      await settingsApi.resetPassword(resetPassword.selectedUserId, resetPassword.newPassword)
+      await settingsApi.resetUserPassword(resetPassword.selectedUserId)
 
       const user = users.find(u => u.id === resetPassword.selectedUserId)
 

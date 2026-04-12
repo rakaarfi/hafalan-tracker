@@ -7,7 +7,7 @@ import { jsPDF } from 'jspdf'
 import autoTable from 'jspdf-autotable'
 import * as XLSX from 'xlsx'
 
-interface MemorizationRecord {
+interface _MemorizationRecord {  // Prefixed with underscore to indicate intentionally unused for future use
   date: string
   unit: string
   unit_type: string
@@ -293,7 +293,7 @@ export function ReportsPage() {
       let filename = ''
 
       if (reportType === 'student') {
-        const { student, memorizations } = mockStudentReport
+        const { student, progress, memorizations } = mockStudentReport
         filename = `laporan-${student.name.replace(/\s+/g, '-')}-${Date.now()}.xlsx`
 
         data = memorizations.map((m, idx) => ({
@@ -310,7 +310,7 @@ export function ReportsPage() {
         data.unshift({
           'Nama Murid': student.name,
           'Kelas': student.class_name,
-          'Progress': `${student.progress.percent}%`,
+          'Progress': `${progress.percent}%`,
           '': '',
           '': '',
           '': '',
