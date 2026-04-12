@@ -1200,7 +1200,7 @@ func (s *Server) addChildToParent(c *gin.Context) {
 
 	// Determine relationship type based on parent gender
 	relationshipType := "father"
-	if parent.Gender == "female" {
+	if parent.Gender != nil && *parent.Gender == "female" {
 		relationshipType = "mother"
 	}
 
