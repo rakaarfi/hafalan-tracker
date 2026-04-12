@@ -152,7 +152,7 @@ export function StudentListPage() {
             </tr>
           </thead>
           <tbody className="divide-y-2 divide-border">
-            {students.length === 0 ? (
+            {!students || students.length === 0 ? (
               <tr>
                 <td colSpan={4} className="p-8 text-center text-gray-500">
                   {search ? 'Tidak ada murid ditemukan' : 'Belum ada data murid'}
