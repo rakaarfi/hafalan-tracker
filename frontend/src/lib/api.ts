@@ -163,7 +163,7 @@ export interface Settings {
 
 export interface User {
   id: string
-  name: string
+  name?: string  // Made optional since backend might not always return it
   email: string
   phone?: string
   role: string
