@@ -1,4 +1,25 @@
 services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: hafalan-postgres
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=${DB_USER:-hafalan_user}
+      - POSTGRES_PASSWORD=${DB_PASSWORD:-hafalan_pass}
+      - POSTGRES_DB=${DB_NAME:-hafalan_tracker}
+    ports:
+      - "${DB_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-hafalan_user}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    networks:
+      - hafalan-network
+
   backend:
     build:
       context: ./backend
@@ -6,43 +27,53 @@ services:
     container_name: hafalan-backend
     restart: unless-stopped
     environment:
-      - DB_HOST=${DB_HOST}
-      - DB_PORT=${DB_PORT}
-      - DB_USER=${DB_USER}
-      - DB_PASSWORD=${DB_PASSWORD}
-      - DB_NAME=${DB_NAME}
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_USER=${DB_USER:-hafalan_user}
+      - DB_PASSWORD=${DB_PASSWORD:-hafalan_pass}
+      - DB_NAME=${DB_NAME:-hafalan_tracker}
       - DB_SSLMODE=${DB_SSLMODE:-disable}
       - SERVER_PORT=${SERVER_PORT:-8080}
-      - JWT_SECRET=${JWT_SECRET}
-      - CORS_ORIGINS=${CORS_ORIGINS}
+      - JWT_SECRET=${JWT_SECRET:-your-secret-key-change-in-production}
+      - CORS_ORIGINS=${CORS_ORIGINS:-http://localhost,http://localhost:80}
     ports:
       - "${BACKEND_PORT:-8080}:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
     networks:
       - hafalan-network
       - dokploy-network
     healthcheck:
-      test: ["CMD", "wget", "--spider", "-q", "http://localhost:8080/ping"]
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:8080/health"]
       interval: 30s
       timeout: 10s
       retries: 3
       start_period: 40s
-    env_file:
-      - .env
 
   frontend:
     build:
       context: ./frontend
       dockerfile: Dockerfile
       args:
-        - VITE_API_BASE_URL=http://100.81.99.27:8080/api/v1
+        - VITE_API_BASE_URL=${VITE_API_BASE_URL:-http://localhost:8080/api/v1}
     container_name: hafalan-frontend
     restart: unless-stopped
     ports:
       - "${FRONTEND_PORT:-80}:80"
-    networks:
-      - hafalan-network
     depends_on:
       - backend
+    networks:
+      - hafalan-network
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+volumes:
+  postgres_data:
 
 networks:
   hafalan-network:

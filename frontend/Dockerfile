@@ -1,11 +1,15 @@
-# Multi-stage build for React + Vite frontend
-# Build locally first: cd frontend && bun run build
-FROM node:20-alpine AS builder
+# Multi-stage build for React + Vite frontend with Bun
+FROM oven/bun:1-alpine AS builder
 
 WORKDIR /app
 
-# Copy pre-built dist files (built locally with Bun)
-COPY dist/ ./dist/
+# Install dependencies
+COPY package.json bun.lockb ./
+RUN bun install --frozen-lockfile
+
+# Copy source code and build
+COPY . .
+RUN bun run build
 
 # Production stage with nginx
 FROM nginx:alpine
@@ -42,6 +46,6 @@ EXPOSE 80
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \
-  CMD wget --spider -q http://localhost:80/ || exit 1
+    CMD wget --spider -q http://localhost/ || exit 1
 
 CMD ["nginx", "-g", "daemon off;"]
