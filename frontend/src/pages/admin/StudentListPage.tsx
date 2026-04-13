@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { Plus, Search, Edit, Trash2, Eye } from 'lucide-react'
@@ -33,13 +33,7 @@ export function StudentListPage() {
 
   const { toast } = useToast()
   const { isAuthenticated } = useAuthStore()
-
-  useEffect(() => {
-    if (isAuthenticated) {
-      fetchStudents()
-      fetchClasses()
-    }
-  }, [isAuthenticated])
+  const hasFetchedInitially = useRef(false)
 
   const fetchClasses = async () => {
     try {
@@ -72,10 +66,19 @@ export function StudentListPage() {
     }
   }
 
-  // Debounced search
+  // Single useEffect for both initial fetch and debounced search
   useEffect(() => {
     if (!isAuthenticated) return
 
+    // Initial fetch when auth completes
+    if (!hasFetchedInitially.current) {
+      fetchStudents()
+      fetchClasses()
+      hasFetchedInitially.current = true
+      return
+    }
+
+    // Debounced search for subsequent changes
     const timeoutId = setTimeout(() => {
       if (search.length >= 0) {
         fetchStudents(search || undefined, selectedClassId || undefined, 1)

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import { Plus, Search, Edit, Trash2, Eye } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -31,12 +31,7 @@ export function ParentListPage() {
 
   const { toast } = useToast()
   const { isAuthenticated } = useAuthStore()
-
-  useEffect(() => {
-    if (isAuthenticated) {
-      fetchParents()
-    }
-  }, [isAuthenticated])
+  const hasFetchedInitially = useRef(false)
 
   const fetchParents = async (searchQuery?: string, pageNumber = 1) => {
     try {
@@ -59,6 +54,14 @@ export function ParentListPage() {
   useEffect(() => {
     if (!isAuthenticated) return
 
+    // Initial fetch when auth completes
+    if (!hasFetchedInitially.current) {
+      fetchParents()
+      hasFetchedInitially.current = true
+      return
+    }
+
+    // Debounced search for subsequent changes
     const timeoutId = setTimeout(() => {
       if (search.length >= 0) {
         fetchParents(search || undefined, 1)
