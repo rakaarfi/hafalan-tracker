@@ -1,13 +1,41 @@
 import { Badge } from '@/components/ui/badge'
 import { useTranslation } from 'react-i18next'
-import { Student } from '@/lib/api'
+import { TeacherStudent } from '@/lib/api'
 
 interface StudentListItemProps {
-  student: Student
+  student: TeacherStudent
 }
 
 export function StudentListItem({ student }: StudentListItemProps) {
   const { t } = useTranslation()
+
+  const getRoleBadges = () => {
+    const badges = []
+    const isHomeroom = student.is_homeroom_teacher
+    const isQuran = student.is_quran_teacher
+
+    if (isHomeroom && isQuran) {
+      badges.push(
+        <Badge key="both" variant="secondary" className="bg-purple-100 text-purple-800 text-xs">
+          Wali & Quran
+        </Badge>
+      )
+    } else if (isHomeroom) {
+      badges.push(
+        <Badge key="homeroom" variant="secondary" className="bg-blue-100 text-blue-800 text-xs">
+          Wali Kelas
+        </Badge>
+      )
+    } else if (isQuran) {
+      badges.push(
+        <Badge key="quran" variant="secondary" className="bg-green-100 text-green-800 text-xs">
+          Guru Quran
+        </Badge>
+      )
+    }
+
+    return badges
+  }
 
   const getStatusColor = (status?: string) => {
     switch (status) {
@@ -27,9 +55,16 @@ export function StudentListItem({ student }: StudentListItemProps) {
       onClick={() => window.location.href = `/teacher/students/${student.id}`}
       className="w-full text-left p-4 border-2 border-border hover:border-primary transition-colors min-h-[80px] flex items-center"
     >
-      <div className="flex justify-between items-start w-full">
+      <div className="flex justify-between items-start w-full gap-4">
         <div className="flex-1">
-          <h3 className="font-semibold text-lg">{student.name}</h3>
+          <div className="flex items-center gap-2 flex-wrap">
+            <h3 className="font-semibold text-lg">{student.name}</h3>
+            {getRoleBadges().length > 0 && (
+              <div className="flex gap-1 flex-wrap">
+                {getRoleBadges()}
+              </div>
+            )}
+          </div>
           <p className="text-sm text-gray-600">{student.class_name || '-'}</p>
         </div>
         {student.last_status && (

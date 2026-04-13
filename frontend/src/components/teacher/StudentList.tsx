@@ -3,9 +3,9 @@ import { StudentListItem } from './StudentListItem'
 import { Input } from '@/components/ui/input'
 import { Search } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
-import { Student } from '@/lib/api'
+import { TeacherStudent } from '@/lib/api'
 
-export function StudentList({ students }: { students: Student[] }) {
+export function StudentList({ students }: { students: TeacherStudent[] }) {
   const { t } = useTranslation()
   const [search, setSearch] = useState('')
 

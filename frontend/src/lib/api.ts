@@ -136,6 +136,25 @@ export interface QuranTeacherAssignment {
   notes: string | null
 }
 
+export interface TeacherClass {
+  id: string
+  name: string
+  grade_level: string
+  is_homeroom_teacher: boolean
+  is_quran_teacher: boolean
+}
+
+export interface TeacherStudent {
+  id: string
+  name: string
+  class_id: string
+  class_name: string
+  grade_level: string
+  is_homeroom_teacher: boolean
+  is_quran_teacher: boolean
+  last_status?: string
+}
+
 export interface Memorization {
   id: number
   student_id: number
@@ -406,13 +425,13 @@ export const memorizationsApi = {
 
 // Teacher API
 export const teacherApi = {
-  getMyStudents: async (): Promise<Student[]> => {
-    const response = await api.get<Student[]>('/teachers/me/students')
+  getMyStudents: async (): Promise<TeacherStudent[]> => {
+    const response = await api.get<TeacherStudent[]>('/teachers/me/students')
     return response.data
   },
 
-  getMyClasses: async (): Promise<Class[]> => {
-    const response = await api.get<Class[]>('/teachers/me/classes')
+  getMyClasses: async (): Promise<TeacherClass[]> => {
+    const response = await api.get<TeacherClass[]>('/teachers/me/classes')
     return response.data
   },
 

@@ -3,14 +3,15 @@ import { StudentList } from '@/components/teacher/StudentList'
 import { UserDropdown } from '@/components/common/UserDropdown'
 import { useAuthStore } from '@/stores/authStore'
 import { useTranslation } from 'react-i18next'
-import { teacherApi, Student, Class } from '@/lib/api'
+import { teacherApi, TeacherClass, TeacherStudent } from '@/lib/api'
 import { GraduationCap, Users } from 'lucide-react'
+import { Badge } from '@/components/ui/badge'
 
 export function TeacherDashboard() {
   const { t } = useTranslation()
   const { user, isAuthenticated } = useAuthStore()
-  const [students, setStudents] = useState<Student[]>([])
-  const [classes, setClasses] = useState<Class[]>([])
+  const [students, setStudents] = useState<TeacherStudent[]>([])
+  const [classes, setClasses] = useState<TeacherClass[]>([])
   const [selectedClass, setSelectedClass] = useState<string>('all')
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -43,6 +44,33 @@ export function TeacherDashboard() {
     } finally {
       setLoading(false)
     }
+  }
+
+  // Helper function to get role badges
+  const getRoleBadges = (isHomeroom: boolean, isQuran: boolean) => {
+    const badges = []
+
+    if (isHomeroom && isQuran) {
+      badges.push(
+        <Badge key="both" variant="secondary" className="bg-purple-100 text-purple-800 text-xs">
+          📚 Wali & Guru Quran
+        </Badge>
+      )
+    } else if (isHomeroom) {
+      badges.push(
+        <Badge key="homeroom" variant="secondary" className="bg-blue-100 text-blue-800 text-xs">
+          📚 Wali Kelas
+        </Badge>
+      )
+    } else if (isQuran) {
+      badges.push(
+        <Badge key="quran" variant="secondary" className="bg-green-100 text-green-800 text-xs">
+          📖 Guru Quran
+        </Badge>
+      )
+    }
+
+    return badges
   }
 
   const filteredStudents = selectedClass === 'all'
@@ -125,7 +153,10 @@ export function TeacherDashboard() {
                       : 'bg-white text-gray-700 hover:bg-gray-50'
                   }`}
                 >
-                  Semua Kelas ({students.length})
+                  <div className="flex flex-col items-center">
+                    <span>Semua Kelas</span>
+                    <span className="text-xs text-gray-600">({students.length})</span>
+                  </div>
                 </button>
                 {classes.map((cls) => (
                   <button
@@ -137,7 +168,13 @@ export function TeacherDashboard() {
                         : 'bg-white text-gray-700 hover:bg-gray-50'
                     }`}
                   >
-                    {cls.name} ({students.filter(s => s.class_id === cls.id).length})
+                    <div className="flex flex-col items-center">
+                      <span>{cls.name}</span>
+                      <span className="flex flex-wrap gap-1 mt-1">
+                        {getRoleBadges(cls.is_homeroom_teacher, cls.is_quran_teacher)}
+                      </span>
+                      <span className="text-xs text-gray-600">({students.filter(s => s.class_id === cls.id).length})</span>
+                    </div>
                   </button>
                 ))}
               </div>
