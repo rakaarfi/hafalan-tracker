@@ -40,7 +40,6 @@ export function ClassListPage() {
       const data = await classesApi.getAll(searchQuery)
       setClasses(data || [])
     } catch (err: any) {
-      console.error('Failed to fetch classes:', err)
       setError('Gagal memuat data kelas')
       setClasses([])
     } finally {
@@ -88,7 +87,6 @@ export function ClassListPage() {
         description: "Kelas berhasil dihapus",
       })
     } catch (error: any) {
-      console.error('Delete error:', error)
       toast({
         variant: "destructive",
         title: "Gagal",

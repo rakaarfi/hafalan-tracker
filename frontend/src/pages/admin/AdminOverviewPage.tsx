@@ -44,7 +44,6 @@ export function AdminOverviewPage() {
         ]
         setRecentActivities(activities)
       } catch (error) {
-        console.error('Failed to fetch activities:', error)
       }
     }
 
@@ -64,7 +63,6 @@ export function AdminOverviewPage() {
       const data = await dashboardApi.getStats()
       setStats(data)
     } catch (err: any) {
-      console.error('Failed to fetch stats:', err)
       setError('Gagal memuat statistik')
     } finally {
       setLoading(false)

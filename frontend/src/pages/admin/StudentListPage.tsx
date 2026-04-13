@@ -41,7 +41,6 @@ export function StudentListPage() {
       const data = await classesApi.getAll()
       setClasses(data || [])
     } catch (err: any) {
-      console.error('Failed to fetch classes:', err)
       setClasses([])
     } finally {
       setLoadingClasses(false)
@@ -58,7 +57,6 @@ export function StudentListPage() {
       setTotal(response.total || 0)
       setPage(response.page || 1)
     } catch (err: any) {
-      console.error('Failed to fetch students:', err)
       setError('Gagal memuat data murid')
       setStudents([])
     } finally {
@@ -105,7 +103,6 @@ export function StudentListPage() {
         description: "Murid berhasil dihapus",
       })
     } catch (error: any) {
-      console.error('Delete error:', error)
       toast({
         variant: "destructive",
         title: "Gagal",

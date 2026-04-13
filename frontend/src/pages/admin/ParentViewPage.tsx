@@ -52,7 +52,6 @@ export function ParentViewPage() {
               averageScore: calculateAverageScore(mems || [])
             }
           } catch (err) {
-            console.error(`Failed to fetch progress for ${child.id}:`, err)
             return {
               ...child,
               memorizations: [],
@@ -64,7 +63,6 @@ export function ParentViewPage() {
       )
       setChildrenWithProgress(childrenWithProgressData)
     } catch (err: any) {
-      console.error('Failed to fetch data:', err)
       setError('Gagal memuat data orang tua')
     } finally {
       setLoading(false)

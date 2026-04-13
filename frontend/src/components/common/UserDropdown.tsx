@@ -34,16 +34,13 @@ export function UserDropdown({ user }: UserDropdownProps) {
   }, [userMenuOpen])
 
   const handleProfileClick = (e: React.MouseEvent) => {
-    console.log('[UserDropdown] Profile clicked')
     e.preventDefault()
     e.stopPropagation()
     setUserMenuOpen(false)
-    console.log('[UserDropdown] Navigating to /profile')
     navigate('/profile')
   }
 
   const handleLogoutClick = (e: React.MouseEvent) => {
-    console.log('[UserDropdown] Logout clicked')
     e.preventDefault()
     e.stopPropagation()
     setUserMenuOpen(false)
@@ -51,7 +48,6 @@ export function UserDropdown({ user }: UserDropdownProps) {
   }
 
   const handleLogout = () => {
-    console.log('[UserDropdown] Logout confirmed')
     logout()
     setLogoutDialogOpen(false)
     setUserMenuOpen(false)
@@ -59,7 +55,6 @@ export function UserDropdown({ user }: UserDropdownProps) {
   }
 
   const handleToggleDropdown = () => {
-    console.log('[UserDropdown] Toggle dropdown, current state:', userMenuOpen)
     setUserMenuOpen(!userMenuOpen)
   }
 
@@ -93,7 +88,6 @@ export function UserDropdown({ user }: UserDropdownProps) {
         {userMenuOpen && (
           <DismissableLayer
             onDismiss={() => {
-              console.log('[UserDropdown] Dismissed by Radix UI')
               setUserMenuOpen(false)
             }}
           >

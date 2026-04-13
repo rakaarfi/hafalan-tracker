@@ -43,7 +43,6 @@ export function ParentListPage() {
       setTotal(response.total || 0)
       setPage(response.page || 1)
     } catch (err: any) {
-      console.error('Failed to fetch parents:', err)
       setError('Gagal memuat data orang tua')
       setParents([])
     } finally {
@@ -88,7 +87,6 @@ export function ParentListPage() {
         description: "Orang tua berhasil dihapus",
       })
     } catch (error: any) {
-      console.error('Delete error:', error)
       toast({
         variant: "destructive",
         title: "Gagal",

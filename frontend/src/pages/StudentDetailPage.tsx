@@ -39,7 +39,6 @@ export function StudentDetailPage() {
       const memData = await memorizationsApi.getByStudent(studentId)
       setMemorizations(memData || [])
     } catch (err: any) {
-      console.error('Failed to fetch data:', err)
       setError('Gagal memuat data murid')
     } finally {
       setLoading(false)

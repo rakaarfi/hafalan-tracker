@@ -92,7 +92,6 @@ export function ParentFormPage() {
       const childrenData = await parentsApi.getChildren(id)
       setChildren(childrenData)
     } catch (error) {
-      console.error('Failed to fetch children:', error)
       toast({
         variant: "destructive",
         title: t('errors.failedToLoadChildren'),
@@ -112,7 +111,6 @@ export function ParentFormPage() {
       )
       setAllStudents(availableStudents)
     } catch (error) {
-      console.error('Failed to fetch students:', error)
     }
   }
 

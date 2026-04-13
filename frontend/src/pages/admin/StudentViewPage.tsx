@@ -65,7 +65,6 @@ export function StudentViewPage() {
       ))
       setTeachers(uniqueTeachers)
     } catch (err: any) {
-      console.error('Failed to fetch data:', err)
       const errorMsg = err.response?.data?.error || err.message || 'Gagal memuat data murid'
       setError(errorMsg)
       toast({

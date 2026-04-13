@@ -45,7 +45,6 @@ export function ParentDashboard() {
       const data = await parentsApi.getMyChildren()
       setChildren(data as unknown as Child[])  // Type assertion: API returns Student[] but component expects Child[]
     } catch (err: any) {
-      console.error('Failed to fetch children:', err)
       // Don't show error if it's a 401 (user will be redirected to login)
       if (err.response?.status !== 401) {
         setError('Gagal memuat data anak')

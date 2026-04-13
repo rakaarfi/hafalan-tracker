@@ -53,7 +53,6 @@ export function ChildDetailPage() {
       const data = await parentsApi.getChildProgress(childId)
       setChild(data as unknown as Child)  // Type assertion: API returns Student & memorizations but component expects Child
     } catch (err: any) {
-      console.error('Failed to fetch child data:', err)
       if (err.response?.status === 403) {
         setError('Anda tidak memiliki akses untuk melihat data anak ini')
       } else {
