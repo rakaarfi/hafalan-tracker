@@ -57,6 +57,8 @@ export function ParentListPage() {
   }
 
   useEffect(() => {
+    if (!isAuthenticated) return
+
     const timeoutId = setTimeout(() => {
       if (search.length >= 0) {
         fetchParents(search || undefined, 1)
@@ -64,7 +66,7 @@ export function ParentListPage() {
     }, 500)
 
     return () => clearTimeout(timeoutId)
-  }, [search])
+  }, [search, isAuthenticated])
 
   const handleDelete = (parent: Parent) => {
     setPendingDeleteParent(parent)

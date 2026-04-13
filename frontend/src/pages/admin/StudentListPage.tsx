@@ -74,6 +74,8 @@ export function StudentListPage() {
 
   // Debounced search
   useEffect(() => {
+    if (!isAuthenticated) return
+
     const timeoutId = setTimeout(() => {
       if (search.length >= 0) {
         fetchStudents(search || undefined, selectedClassId || undefined, 1)
@@ -81,7 +83,7 @@ export function StudentListPage() {
     }, 500)
 
     return () => clearTimeout(timeoutId)
-  }, [search, selectedClassId])
+  }, [search, selectedClassId, isAuthenticated])
 
   const handleDelete = (student: Student) => {
     setPendingDeleteStudent(student)

@@ -82,6 +82,8 @@ export function TeacherListPage() {
   }
 
   useEffect(() => {
+    if (!isAuthenticated) return
+
     const timeoutId = setTimeout(() => {
       if (search.length >= 0) {
         fetchTeachers(search || undefined, teacherType || undefined, selectedClassId || undefined, 1)
@@ -89,7 +91,7 @@ export function TeacherListPage() {
     }, 500)
 
     return () => clearTimeout(timeoutId)
-  }, [search, teacherType, selectedClassId])
+  }, [search, teacherType, selectedClassId, isAuthenticated])
 
   const handleDelete = (teacher: Teacher) => {
     setPendingDeleteTeacher(teacher)

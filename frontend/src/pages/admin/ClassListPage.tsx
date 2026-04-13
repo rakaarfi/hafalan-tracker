@@ -54,6 +54,8 @@ export function ClassListPage() {
   }
 
   useEffect(() => {
+    if (!isAuthenticated) return
+
     const timeoutId = setTimeout(() => {
       if (search.length > 0 || search.length === 0) {
         fetchClasses(search || undefined)
@@ -61,7 +63,7 @@ export function ClassListPage() {
     }, 500)
 
     return () => clearTimeout(timeoutId)
-  }, [search])
+  }, [search, isAuthenticated])
 
   const filteredClasses = classes
 
