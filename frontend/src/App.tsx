@@ -57,7 +57,16 @@ function ProtectedRoute({ children, allowedRoles }: { children: React.ReactNode;
 
 // Profile Redirect Component - Redirects to role-appropriate profile page
 function ProfileRedirect() {
-  const { user } = useAuthStore()
+  const { user, isLoading } = useAuthStore()
+
+  // Show loading while checking authentication
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
+      </div>
+    )
+  }
 
   // Admin goes to admin profile (with sidebar)
   if (user?.role === 'admin') {
