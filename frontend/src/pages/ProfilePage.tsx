@@ -180,7 +180,7 @@ export function ProfilePage({ embedded = false }: ProfilePageProps) {
                 <p className="text-sm text-yellow-800 font-medium">
                   Penting: Ganti Password Anda
                 </p>
-                <p className="text-xs text-yellow-700 mt-1">
+                <p className="text-xs text-yellow-700 mt-1 whitespace-nowrap">
                   Password Anda dibuat dari nomor HP. Untuk keamanan, silakan ganti password dengan password yang lebih kuat.
                 </p>
               </div>
