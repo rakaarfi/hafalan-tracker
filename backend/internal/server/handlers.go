@@ -15,6 +15,26 @@ import (
 	"github.com/rakaarfi/hafalan-tracker/backend/internal/service"
 )
 
+// TeacherClassResponse represents a class with role information
+type TeacherClassResponse struct {
+	ID                string `json:"id"`
+	Name              string `json:"name"`
+	GradeLevel        string `json:"grade_level"`
+	IsHomeroomTeacher bool   `json:"is_homeroom_teacher"`
+	IsQuranTeacher    bool   `json:"is_quran_teacher"`
+}
+
+// TeacherStudentResponse represents a student with role information
+type TeacherStudentResponse struct {
+	ID                string `json:"id"`
+	Name              string `json:"name"`
+	ClassID           string `json:"class_id"`
+	ClassName         string `json:"class_name"`
+	GradeLevel        string `json:"grade_level"`
+	IsHomeroomTeacher bool   `json:"is_homeroom_teacher"`
+	IsQuranTeacher    bool   `json:"is_quran_teacher"`
+}
+
 // healthCheck returns the health status of the server
 func (s *Server) healthCheck(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
@@ -536,30 +556,37 @@ func (s *Server) getTeacherStudents(c *gin.Context) {
 		return
 	}
 
-	// If no assignments found, return empty array
-	if len(assignments) == 0 {
-		c.JSON(http.StatusOK, []gin.H{})
-		return
-	}
-
-	// Get class IDs from assignments
-	classIDs := make([]int, len(assignments))
+	// Get class IDs from quran teacher assignments
+	quranClassIDs := make([]int, len(assignments))
 	for i, assignment := range assignments {
-		classIDs[i] = assignment.ClassID
+		quranClassIDs[i] = assignment.ClassID
 	}
 
-	// Get students from assigned classes
+	// Get students from assigned classes (either as quran teacher OR homeroom teacher)
 	query := `
-		SELECT s.id, s.name, s.class_id, c.name as class_name, c.grade_level
+		SELECT DISTINCT
+			s.id,
+			s.name,
+			s.class_id,
+			c.name as class_name,
+			c.grade_level,
+			CASE WHEN c.homeroom_teacher_id = $2 THEN true ELSE false END as is_homeroom_teacher,
+			CASE WHEN CAST(s.class_id AS INTEGER) = ANY($1::int[]) THEN true ELSE false END as is_quran_teacher
 		FROM students s
 		INNER JOIN classes c ON CAST(s.class_id AS INTEGER) = c.id
-		WHERE CAST(s.class_id AS INTEGER) = ANY($1::int[])
+		WHERE (
+			-- Student is in a class where this teacher is the active quran teacher
+			CAST(s.class_id AS INTEGER) = ANY($1::int[])
+			OR
+			-- Student is in a class where this teacher is the homeroom teacher
+			c.homeroom_teacher_id = $2
+		)
 		  AND s.is_active = true
 		  AND c.is_active = true
 		ORDER BY c.name, s.name
 	`
 
-	rows, err := s.db.QueryContext(ctx, query, pq.Array(classIDs))
+	rows, err := s.db.QueryContext(ctx, query, pq.Array(quranClassIDs), userID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"error": "Failed to retrieve students",
@@ -569,19 +596,23 @@ func (s *Server) getTeacherStudents(c *gin.Context) {
 	}
 	defer rows.Close()
 
-	students := []gin.H{}
+	students := []TeacherStudentResponse{}
 	for rows.Next() {
 		var id, name, classID, className, gradeLevel string
-		if err := rows.Scan(&id, &name, &classID, &className, &gradeLevel); err != nil {
+		var isHomeroom, isQuran bool
+
+		if err := rows.Scan(&id, &name, &classID, &className, &gradeLevel, &isHomeroom, &isQuran); err != nil {
 			continue
 		}
 
-		students = append(students, gin.H{
-			"id":          id,
-			"name":        name,
-			"class_id":    classID,
-			"class_name":  className,
-			"grade_level": gradeLevel,
+		students = append(students, TeacherStudentResponse{
+			ID:                id,
+			Name:              name,
+			ClassID:           classID,
+			ClassName:         className,
+			GradeLevel:        gradeLevel,
+			IsHomeroomTeacher: isHomeroom,
+			IsQuranTeacher:    isQuran,
 		})
 	}
 
@@ -619,22 +650,31 @@ func (s *Server) getTeacherClasses(c *gin.Context) {
 		return
 	}
 
-	// Get class IDs from assignments
-	classIDs := make([]int, len(assignments))
+	// Get class IDs from quran teacher assignments
+	quranClassIDs := make([]int, len(assignments))
 	for i, assignment := range assignments {
-		classIDs[i] = assignment.ClassID
+		quranClassIDs[i] = assignment.ClassID
 	}
 
 	// Get class details
 	query := `
-		SELECT c.id, c.name, c.grade_level
+		SELECT DISTINCT
+			c.id,
+			c.name,
+			c.grade_level,
+			CASE WHEN c.homeroom_teacher_id = $1 THEN true ELSE false END as is_homeroom_teacher,
+			CASE WHEN c.id = ANY($2::int[]) THEN true ELSE false END as is_quran_teacher
 		FROM classes c
-		WHERE c.id = ANY($1::int[])
-		  AND c.is_active = true
+		WHERE (
+			c.id = ANY($2::int[])
+			OR
+			c.homeroom_teacher_id = $1
+		)
+		AND c.is_active = true
 		ORDER BY c.name
 	`
 
-	rows, err := s.db.QueryContext(ctx, query, pq.Array(classIDs))
+	rows, err := s.db.QueryContext(ctx, query, userID, pq.Array(quranClassIDs))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"error": "Failed to retrieve classes",
@@ -644,18 +684,22 @@ func (s *Server) getTeacherClasses(c *gin.Context) {
 	}
 	defer rows.Close()
 
-	classes := []gin.H{}
+	classes := []TeacherClassResponse{}
 	for rows.Next() {
 		var id int
 		var name, gradeLevel string
-		if err := rows.Scan(&id, &name, &gradeLevel); err != nil {
+		var isHomeroom, isQuran bool
+
+		if err := rows.Scan(&id, &name, &gradeLevel, &isHomeroom, &isQuran); err != nil {
 			continue
 		}
 
-		classes = append(classes, gin.H{
-			"id":          fmt.Sprintf("%d", id),
-			"name":        name,
-			"grade_level": gradeLevel,
+		classes = append(classes, TeacherClassResponse{
+			ID:                fmt.Sprintf("%d", id),
+			Name:              name,
+			GradeLevel:        gradeLevel,
+			IsHomeroomTeacher: isHomeroom,
+			IsQuranTeacher:    isQuran,
 		})
 	}
 
