@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { Users, UserPlus, GraduationCap, FileText } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { dashboardApi } from '@/lib/api'
+import { useAuthStore } from '@/stores/authStore'
 
 interface DashboardStats {
   total_students: number
@@ -19,6 +20,7 @@ interface Activity {
 
 export function AdminOverviewPage() {
   const { t } = useTranslation()
+  const { isAuthenticated } = useAuthStore()
   const [stats, setStats] = useState<DashboardStats | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -50,8 +52,10 @@ export function AdminOverviewPage() {
   }, [stats])
 
   useEffect(() => {
-    fetchStats()
-  }, [])
+    if (isAuthenticated) {
+      fetchStats()
+    }
+  }, [isAuthenticated])
 
   const fetchStats = async () => {
     try {
