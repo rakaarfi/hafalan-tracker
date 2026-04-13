@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -38,6 +39,7 @@ interface ProfilePageProps {
 }
 
 export function ProfilePage({ embedded = false }: ProfilePageProps) {
+  const navigate = useNavigate()
   const { t } = useTranslation()
   const { toast } = useToast()
   const { user, updateUser } = useAuthStore()
@@ -134,7 +136,7 @@ export function ProfilePage({ embedded = false }: ProfilePageProps) {
           <div className="container mx-auto flex justify-between items-start max-w-7xl">
             <div className="flex-1">
               <button
-                onClick={() => window.location.href = getDashboardUrl()}
+                onClick={() => navigate(getDashboardUrl())}
                 className="text-sm text-gray-600 hover:text-gray-900 mb-2 flex items-center gap-2"
               >
                 <ArrowLeft size={16} />

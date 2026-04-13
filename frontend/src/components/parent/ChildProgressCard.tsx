@@ -1,5 +1,6 @@
 import { Badge } from '@/components/ui/badge'
 import { useTranslation } from 'react-i18next'
+import { useNavigate } from 'react-router-dom'
 import { Memorization } from '@/lib/api'
 
 interface ChildProgressCardProps {
@@ -17,6 +18,7 @@ interface ChildProgressCardProps {
 }
 
 export function ChildProgressCard({ child }: ChildProgressCardProps) {
+  const navigate = useNavigate()
   const { t } = useTranslation()
 
   const getStatusColor = (status: string) => {
@@ -34,7 +36,7 @@ export function ChildProgressCard({ child }: ChildProgressCardProps) {
 
   return (
     <button
-      onClick={() => window.location.href = `/parent/children/${child.student.id}`}
+      onClick={() => navigate(`/parent/children/${child.student.id}`)}
       className="text-left p-6 border-2 border-border bg-white hover:border-primary transition-colors"
     >
       {/* Header */}

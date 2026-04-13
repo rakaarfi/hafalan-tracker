@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { DismissableLayer } from '@radix-ui/react-dismissable-layer'
 import { LogOut, User as UserIcon, ChevronDown } from 'lucide-react'
 import { useAuthStore, User } from '@/stores/authStore'
@@ -10,6 +11,7 @@ interface UserDropdownProps {
 
 export function UserDropdown({ user }: UserDropdownProps) {
   const { logout } = useAuthStore()
+  const navigate = useNavigate()
   const [userMenuOpen, setUserMenuOpen] = useState(false)
   const [logoutDialogOpen, setLogoutDialogOpen] = useState(false)
   const [dropdownPosition, setDropdownPosition] = useState<'bottom' | 'top'>('bottom')
@@ -37,7 +39,7 @@ export function UserDropdown({ user }: UserDropdownProps) {
     e.stopPropagation()
     setUserMenuOpen(false)
     console.log('[UserDropdown] Navigating to /profile')
-    window.location.href = '/profile'
+    navigate('/profile')
   }
 
   const handleLogoutClick = (e: React.MouseEvent) => {

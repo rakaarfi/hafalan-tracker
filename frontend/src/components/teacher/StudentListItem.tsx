@@ -1,5 +1,6 @@
 import { Badge } from '@/components/ui/badge'
 import { useTranslation } from 'react-i18next'
+import { useNavigate } from 'react-router-dom'
 import { TeacherStudent } from '@/lib/api'
 
 interface StudentListItemProps {
@@ -7,6 +8,7 @@ interface StudentListItemProps {
 }
 
 export function StudentListItem({ student }: StudentListItemProps) {
+  const navigate = useNavigate()
   const { t } = useTranslation()
 
   const getRoleBadges = () => {
@@ -52,7 +54,7 @@ export function StudentListItem({ student }: StudentListItemProps) {
 
   return (
     <button
-      onClick={() => window.location.href = `/teacher/students/${student.id}`}
+      onClick={() => navigate(`/teacher/students/${student.id}`)}
       className="w-full text-left p-4 border-2 border-border hover:border-primary transition-colors min-h-[80px] flex items-center"
     >
       <div className="flex justify-between items-start w-full gap-4">
