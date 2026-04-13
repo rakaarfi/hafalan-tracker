@@ -39,10 +39,11 @@ export function ClassListPage() {
       setLoading(true)
       setError(null)
       const data = await classesApi.getAll(searchQuery)
-      setClasses(data)
+      setClasses(data || [])
     } catch (err: any) {
       console.error('Failed to fetch classes:', err)
       setError('Gagal memuat data kelas')
+      setClasses([])
     } finally {
       setLoading(false)
     }

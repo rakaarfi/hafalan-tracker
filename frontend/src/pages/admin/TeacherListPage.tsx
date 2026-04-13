@@ -50,9 +50,10 @@ export function TeacherListPage() {
     try {
       setLoadingClasses(true)
       const data = await classesApi.getAll()
-      setClasses(data)
+      setClasses(data || [])
     } catch (err: any) {
       console.error('Failed to fetch classes:', err)
+      setClasses([])
     } finally {
       setLoadingClasses(false)
     }
@@ -186,7 +187,7 @@ export function TeacherListPage() {
             className="w-full h-9 px-3 border-2 border-input bg-transparent rounded-none text-sm min-h-[44px] flex items-center"
           >
             <option value="">Semua Kelas</option>
-            {classes.map((cls) => (
+            {classes?.map((cls) => (
               <option key={cls.id} value={cls.id}>
                 {cls.name}
               </option>
