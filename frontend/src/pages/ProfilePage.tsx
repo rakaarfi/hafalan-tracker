@@ -4,7 +4,7 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { useTranslation } from 'react-i18next'
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft, AlertTriangle, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { PasswordInput } from '@/components/ui/password-input'
@@ -45,6 +45,7 @@ export function ProfilePage({ embedded = false }: ProfilePageProps) {
   const { toast } = useToast()
   const { user, updateUser } = useAuthStore()
   const [activeTab, setActiveTab] = useState<'profile' | 'password'>('profile')
+  const [showPasswordBanner, setShowPasswordBanner] = useState(true)
 
   // Check if navigation state contains activeTab
   useEffect(() => {
@@ -52,6 +53,11 @@ export function ProfilePage({ embedded = false }: ProfilePageProps) {
       setActiveTab(location.state.activeTab)
     }
   }, [location.state])
+
+  // Check if user is parent or teacher (show banner only for these roles)
+  const shouldShowPasswordBanner = showPasswordBanner &&
+    (user?.role === 'parent' || user?.role === 'teacher') &&
+    !embedded
 
   // Determine dashboard URL based on user role
   const getDashboardUrl = () => {
@@ -125,6 +131,9 @@ export function ProfilePage({ embedded = false }: ProfilePageProps) {
         description: "Password berhasil diubah",
       })
 
+      // Hide password banner after successful password change
+      setShowPasswordBanner(false)
+
       // Reset form using react-hook-form's reset
       resetPasswordForm()
     } catch (error: any) {
@@ -159,6 +168,39 @@ export function ProfilePage({ embedded = false }: ProfilePageProps) {
             </div>
           </div>
         </header>
+      )}
+
+      {/* Password Change Notification Banner - Only for Parent and Teacher */}
+      {shouldShowPasswordBanner && (
+        <div className="border-2 border-yellow-300 bg-yellow-50">
+          <div className="container mx-auto px-4 max-w-2xl py-3">
+            <div className="flex items-start gap-3">
+              <AlertTriangle size={20} className="text-yellow-700 flex-shrink-0 mt-0.5" />
+              <div className="flex-1">
+                <p className="text-sm text-yellow-800 font-medium">
+                  Penting: Ganti Password Anda
+                </p>
+                <p className="text-xs text-yellow-700 mt-1">
+                  Password Anda dibuat dari nomor HP. Untuk keamanan, silakan ganti password dengan password yang lebih kuat.
+                </p>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setActiveTab('password')}
+                  className="px-3 py-1.5 bg-yellow-600 text-white text-sm hover:bg-yellow-700 min-h-[36px] min-w-[36px] border-2 border-yellow-700"
+                >
+                  Ganti Password
+                </button>
+                <button
+                  onClick={() => setShowPasswordBanner(false)}
+                  className="p-1.5 text-yellow-700 hover:bg-yellow-200 min-h-[36px] min-w-[36px] border-2 border-yellow-300"
+                >
+                  <X size={16} />
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
       )}
 
       {/* Main Content */}
