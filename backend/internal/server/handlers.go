@@ -269,15 +269,10 @@ func (s *Server) createMemorization(c *gin.Context) {
 	// Set teacher ID to current user (convert back to string)
 	req.TeacherID = userID
 
-	// VALIDATION: Check if student is in teacher's assigned class
-	academicYear := "2025/2026"
-	assignments, err := s.classQuranTeacherRepo.GetActiveByTeacher(c.Request.Context(), teacherID, academicYear)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": "Failed to verify teacher assignment",
-		})
-		return
-	}
+	// VALIDATION: Check if teacher is authorized to input memorization for this student
+	// Teacher is authorized if they are:
+	// 1. Active Quran teacher for the student's class, OR
+	// 2. Homeroom teacher for the student's class
 
 	// Get student's class ID
 	student, err := s.studentRepo.GetByID(c.Request.Context(), req.StudentID)
@@ -300,18 +295,47 @@ func (s *Server) createMemorization(c *gin.Context) {
 		}
 	}
 
-	// Check if student's class is in teacher's assignments
-	isAssigned := false
+	// Get class details to check homeroom teacher
+	class, err := s.classRepo.GetByID(c.Request.Context(), student.ClassID)
+	if err != nil || class == nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Class not found",
+		})
+		return
+	}
+
+	// Check if teacher is homeroom teacher
+	isHomeroomTeacher := false
+	if class.HomeroomTeacherID != nil {
+		homeroomTeacherID := 0
+		_, err := fmt.Sscanf(*class.HomeroomTeacherID, "%d", &homeroomTeacherID)
+		if err == nil && homeroomTeacherID == teacherID {
+			isHomeroomTeacher = true
+		}
+	}
+
+	// Check if teacher is active Quran teacher for this class
+	academicYear := "2025/2026"
+	assignments, err := s.classQuranTeacherRepo.GetActiveByTeacher(c.Request.Context(), teacherID, academicYear)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Failed to verify teacher assignment",
+		})
+		return
+	}
+
+	isQuranTeacher := false
 	for _, assignment := range assignments {
 		if assignment.ClassID == studentClassID {
-			isAssigned = true
+			isQuranTeacher = true
 			break
 		}
 	}
 
-	if !isAssigned {
+	// Teacher must be either homeroom teacher OR active quran teacher
+	if !isHomeroomTeacher && !isQuranTeacher {
 		c.JSON(http.StatusForbidden, gin.H{
-			"error": "You are not authorized to input memorization for this student. This student is not in your assigned classes.",
+			"error": "You are not authorized to input memorization for this student. You must be either the homeroom teacher or an active Quran teacher for this student's class.",
 		})
 		return
 	}

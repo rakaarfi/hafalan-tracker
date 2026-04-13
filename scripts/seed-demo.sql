@@ -61,10 +61,24 @@ ON CONFLICT (user_id) DO NOTHING;
 -- ============================================
 
 INSERT INTO classes (id, name, grade_level, homeroom_teacher_id) VALUES
-(1, 'Kelas 1A', 'Grade 1', 2),
-(2, 'Kelas 1B', 'Grade 1', 2),
-(3, 'Kelas 6A', 'Grade 6', 3)
+(1, 'Kelas 1A', 'Grade 1', '2'),
+(2, 'Kelas 1B', 'Grade 1', '2'),
+(3, 'Kelas 6A', 'Grade 6', '3')
 ON CONFLICT (id) DO NOTHING;
+
+-- ============================================
+-- CLASS QURAN TEACHER ASSIGNMENTS
+-- ============================================
+
+-- Assign Quran teachers to classes for academic year 2025/2026
+-- Budi Santoso (user_id: 2) teaches Quran for Kelas 1A and Kelas 6A
+-- Siti Rahayu (user_id: 3) teaches Quran for Kelas 1B
+
+INSERT INTO class_quran_teachers (class_id, quran_teacher_id, academic_year, start_date, is_active, notes) VALUES
+(1, 2, '2025/2026', '2025-01-01', true, 'Initial assignment'),
+(2, 3, '2025/2026', '2025-01-01', true, 'Initial assignment'),
+(3, 2, '2025/2026', '2025-01-01', true, 'Initial assignment')
+ON CONFLICT (class_id, academic_year) WHERE is_active = true DO NOTHING;
 
 -- ============================================
 -- STUDENTS
