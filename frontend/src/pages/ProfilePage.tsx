@@ -173,7 +173,7 @@ export function ProfilePage({ embedded = false }: ProfilePageProps) {
       {/* Password Change Notification Banner - Only for Parent and Teacher */}
       {shouldShowPasswordBanner && (
         <div className="border-2 border-yellow-300 bg-yellow-50">
-          <div className="container mx-auto px-4 max-w-2xl py-3">
+          <div className="container mx-auto px-4 max-w-7xl py-3">
             <div className="flex items-start gap-3">
               <AlertTriangle size={20} className="text-yellow-700 flex-shrink-0 mt-0.5" />
               <div className="flex-1">
