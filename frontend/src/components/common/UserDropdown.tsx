@@ -72,7 +72,7 @@ export function UserDropdown({ user }: UserDropdownProps) {
               {user?.name?.charAt(0).toUpperCase() || user?.email?.charAt(0).toUpperCase() || 'U'}
             </div>
             <div className="text-left hidden sm:block">
-              <div className="text-sm font-medium">{user?.name || 'User'}</div>
+              <div className="text-sm font-medium">{user?.name || 'Pengguna'}</div>
               <div className="text-xs text-gray-600">{user?.email}</div>
             </div>
           </div>
@@ -100,7 +100,7 @@ export function UserDropdown({ user }: UserDropdownProps) {
                 className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 border-b border-border min-h-[48px] transition-colors cursor-pointer"
               >
                 <UserIcon size={18} />
-                <span className="text-sm">Profile</span>
+                <span className="text-sm">Profil</span>
               </a>
               <button
                 type="button"

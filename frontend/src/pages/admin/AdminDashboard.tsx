@@ -28,7 +28,7 @@ interface MenuItem {
 }
 
 const menuItems: MenuItem[] = [
-  { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, href: '/admin/dashboard' },
+  { id: 'dashboard', label: 'Dasbor', icon: LayoutDashboard, href: '/admin/dashboard' },
   { id: 'teachers', label: 'Data Guru', icon: GraduationCap, href: '/admin/teachers' },
   { id: 'classes', label: 'Data Kelas', icon: GraduationCap, href: '/admin/classes' },
   { id: 'parents', label: 'Data Orang Tua', icon: UserPlus, href: '/admin/parents' },
@@ -163,7 +163,7 @@ export function AdminDashboard() {
                     className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 border-b border-border min-h-[48px] transition-colors"
                   >
                     <User size={18} />
-                    <span className="text-sm">Profile</span>
+                    <span className="text-sm">Profil</span>
                   </Link>
                   <button
                     onClick={() => {

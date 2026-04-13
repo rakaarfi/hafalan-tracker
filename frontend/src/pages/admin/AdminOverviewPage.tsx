@@ -104,7 +104,7 @@ export function AdminOverviewPage() {
     <div>
       {/* Page Header */}
       <div className="mb-6">
-        <h1 className="text-2xl font-bold">Dashboard Overview</h1>
+        <h1 className="text-2xl font-bold">Ringkasan Dashboard</h1>
         <p className="text-gray-600">Selamat datang di panel admin</p>
       </div>
 
