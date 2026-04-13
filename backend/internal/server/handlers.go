@@ -26,13 +26,14 @@ type TeacherClassResponse struct {
 
 // TeacherStudentResponse represents a student with role information
 type TeacherStudentResponse struct {
-	ID                string `json:"id"`
-	Name              string `json:"name"`
-	ClassID           string `json:"class_id"`
-	ClassName         string `json:"class_name"`
-	GradeLevel        string `json:"grade_level"`
-	IsHomeroomTeacher bool   `json:"is_homeroom_teacher"`
-	IsQuranTeacher    bool   `json:"is_quran_teacher"`
+	ID                string  `json:"id"`
+	Name              string  `json:"name"`
+	ClassID           string  `json:"class_id"`
+	ClassName         string  `json:"class_name"`
+	GradeLevel        string  `json:"grade_level"`
+	IsHomeroomTeacher bool    `json:"is_homeroom_teacher"`
+	IsQuranTeacher    bool    `json:"is_quran_teacher"`
+	LastStatus        *string `json:"last_status,omitempty"`
 }
 
 // healthCheck returns the health status of the server
@@ -571,9 +572,18 @@ func (s *Server) getTeacherStudents(c *gin.Context) {
 			c.name as class_name,
 			c.grade_level,
 			CASE WHEN c.homeroom_teacher_id = $2 THEN true ELSE false END as is_homeroom_teacher,
-			CASE WHEN CAST(s.class_id AS INTEGER) = ANY($1::int[]) THEN true ELSE false END as is_quran_teacher
+			CASE WHEN CAST(s.class_id AS INTEGER) = ANY($1::int[]) THEN true ELSE false END as is_quran_teacher,
+			last_mem.status as last_status
 		FROM students s
 		INNER JOIN classes c ON CAST(s.class_id AS INTEGER) = c.id
+		LEFT JOIN LATERAL (
+			SELECT m.status
+			FROM memorization m
+			WHERE m.student_id = CAST(s.id AS INTEGER)
+			  AND m.is_active = true
+			ORDER BY m.test_date DESC, m.created_at DESC
+			LIMIT 1
+		) last_mem ON true
 		WHERE (
 			-- Student is in a class where this teacher is the active quran teacher
 			CAST(s.class_id AS INTEGER) = ANY($1::int[])
@@ -600,8 +610,9 @@ func (s *Server) getTeacherStudents(c *gin.Context) {
 	for rows.Next() {
 		var id, name, classID, className, gradeLevel string
 		var isHomeroom, isQuran bool
+		var lastStatus *string
 
-		if err := rows.Scan(&id, &name, &classID, &className, &gradeLevel, &isHomeroom, &isQuran); err != nil {
+		if err := rows.Scan(&id, &name, &classID, &className, &gradeLevel, &isHomeroom, &isQuran, &lastStatus); err != nil {
 			continue
 		}
 
@@ -613,6 +624,7 @@ func (s *Server) getTeacherStudents(c *gin.Context) {
 			GradeLevel:        gradeLevel,
 			IsHomeroomTeacher: isHomeroom,
 			IsQuranTeacher:    isQuran,
+			LastStatus:        lastStatus,
 		})
 	}
 
