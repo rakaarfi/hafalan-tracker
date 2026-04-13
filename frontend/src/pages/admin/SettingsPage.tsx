@@ -388,17 +388,50 @@ export function SettingsPage() {
                     </code>
                     <button
                       onClick={async () => {
+                        // Fallback copy function for non-secure contexts
+                        const fallbackCopy = (text: string) => {
+                          const textArea = document.createElement('textarea')
+                          textArea.value = text
+                          textArea.style.position = 'fixed'
+                          textArea.style.left = '-999999px'
+                          document.body.appendChild(textArea)
+                          textArea.focus()
+                          textArea.select()
+                          try {
+                            const successful = document.execCommand('copy')
+                            document.body.removeChild(textArea)
+                            return successful
+                          } catch (err) {
+                            document.body.removeChild(textArea)
+                            return false
+                          }
+                        }
+
                         try {
-                          await navigator.clipboard.writeText(resetPassword.generatedPassword)
-                          toast({
-                            title: "Disalin",
-                            description: "Password berhasil disalin ke clipboard"
-                          })
+                          // Try modern clipboard API first
+                          if (navigator.clipboard && window.isSecureContext) {
+                            await navigator.clipboard.writeText(resetPassword.generatedPassword)
+                            toast({
+                              title: "Disalin",
+                              description: "Password berhasil disalin ke clipboard"
+                            })
+                          } else {
+                            // Fallback for non-secure contexts
+                            const success = fallbackCopy(resetPassword.generatedPassword)
+                            if (success) {
+                              toast({
+                                title: "Disalin",
+                                description: "Password berhasil disalin ke clipboard"
+                              })
+                            } else {
+                              throw new Error('Fallback copy failed')
+                            }
+                          }
                         } catch (error) {
                           toast({
                             variant: "destructive",
                             title: "Gagal Menyalin",
-                            description: "Terjadi kesalahan saat menyalin password"
+                            description: "Silakan pilih dan copy password manual"
                           })
                         }
                       }}
