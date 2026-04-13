@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { useToast } from '@/hooks/use-toast'
 import { classesApi } from '@/lib/api'
+import { useAuthStore } from '@/stores/authStore'
 
 interface Class {
   id: string
@@ -29,10 +30,13 @@ export function ClassListPage() {
   const [pendingDeleteClass, setPendingDeleteClass] = useState<Class | null>(null)
 
   const { toast } = useToast()
+  const { isAuthenticated } = useAuthStore()
 
   useEffect(() => {
-    fetchClasses()
-  }, [])
+    if (isAuthenticated) {
+      fetchClasses()
+    }
+  }, [isAuthenticated])
 
   const fetchClasses = async (searchQuery?: string) => {
     try {

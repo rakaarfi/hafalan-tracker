@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { useToast } from '@/hooks/use-toast'
 import { teachersApi, classesApi } from '@/lib/api'
+import { useAuthStore } from '@/stores/authStore'
 
 interface Teacher {
   UserID: string
@@ -40,11 +41,14 @@ export function TeacherListPage() {
   const [loadingClasses, setLoadingClasses] = useState(true)
 
   const { toast } = useToast()
+  const { isAuthenticated } = useAuthStore()
 
   useEffect(() => {
-    fetchTeachers()
-    fetchClasses()
-  }, [])
+    if (isAuthenticated) {
+      fetchTeachers()
+      fetchClasses()
+    }
+  }, [isAuthenticated])
 
   const fetchClasses = async () => {
     try {

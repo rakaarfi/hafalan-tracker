@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { useToast } from '@/hooks/use-toast'
 import { parentsApi } from '@/lib/api'
+import { useAuthStore } from '@/stores/authStore'
 
 interface Parent {
   UserID: string
@@ -29,10 +30,13 @@ export function ParentListPage() {
   const [total, setTotal] = useState(0)
 
   const { toast } = useToast()
+  const { isAuthenticated } = useAuthStore()
 
   useEffect(() => {
-    fetchParents()
-  }, [])
+    if (isAuthenticated) {
+      fetchParents()
+    }
+  }, [isAuthenticated])
 
   const fetchParents = async (searchQuery?: string, pageNumber = 1) => {
     try {
