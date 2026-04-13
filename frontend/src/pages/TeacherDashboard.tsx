@@ -55,20 +55,23 @@ export function TeacherDashboard() {
 
     if (isHomeroom && isQuran) {
       badges.push(
-        <Badge key="both" variant="secondary" className="bg-purple-100 text-purple-800 text-xs">
-          📚 Wali & Guru Quran
+        <Badge key="both" variant="secondary" className="bg-purple-100 text-purple-800 text-xs flex items-center gap-1">
+          <GraduationCap size={12} />
+          Wali & Guru Quran
         </Badge>
       )
     } else if (isHomeroom) {
       badges.push(
-        <Badge key="homeroom" variant="secondary" className="bg-blue-100 text-blue-800 text-xs">
-          📚 Wali Kelas
+        <Badge key="homeroom" variant="secondary" className="bg-blue-100 text-blue-800 text-xs flex items-center gap-1">
+          <Users size={12} />
+          Wali Kelas
         </Badge>
       )
     } else if (isQuran) {
       badges.push(
-        <Badge key="quran" variant="secondary" className="bg-green-100 text-green-800 text-xs">
-          📖 Guru Quran
+        <Badge key="quran" variant="secondary" className="bg-green-100 text-green-800 text-xs flex items-center gap-1">
+          <GraduationCap size={12} />
+          Guru Quran
         </Badge>
       )
     }

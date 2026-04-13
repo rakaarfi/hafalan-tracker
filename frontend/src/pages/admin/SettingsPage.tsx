@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Save, Building, Mail, Phone, MapPin, Calendar, Upload, RefreshCw } from 'lucide-react'
+import { Save, Building, Mail, Phone, MapPin, Calendar, Upload, RefreshCw, Check, AlertTriangle, Copy } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -373,7 +373,10 @@ export function SettingsPage() {
             {/* Generated Password Display */}
             {resetPassword.generatedPassword && (
               <div className="border-2 border-green-200 bg-green-50 p-4">
-                <p className="text-sm text-green-800 font-medium mb-2">✅ Password Berhasil Direset!</p>
+                <div className="flex items-center gap-2 mb-2">
+                  <Check size={16} className="text-green-800" />
+                  <p className="text-sm text-green-800 font-medium">Password Berhasil Direset!</p>
+                </div>
                 <div className="space-y-2">
                   <p className="text-sm text-green-700">
                     User: <strong>{users.find(u => u.id === resetPassword.selectedUserId)?.name}</strong>
@@ -384,22 +387,33 @@ export function SettingsPage() {
                       {resetPassword.generatedPassword}
                     </code>
                     <button
-                      onClick={() => {
-                        navigator.clipboard.writeText(resetPassword.generatedPassword)
-                        toast({
-                          title: "Disalin",
-                          description: "Password berhasil disalin ke clipboard"
-                        })
+                      onClick={async () => {
+                        try {
+                          await navigator.clipboard.writeText(resetPassword.generatedPassword)
+                          toast({
+                            title: "Disalin",
+                            description: "Password berhasil disalin ke clipboard"
+                          })
+                        } catch (error) {
+                          toast({
+                            variant: "destructive",
+                            title: "Gagal Menyalin",
+                            description: "Terjadi kesalahan saat menyalin password"
+                          })
+                        }
                       }}
-                      className="p-2 bg-green-600 text-white rounded hover:bg-green-700 min-h-[32px] min-w-[32px]"
+                      className="p-2 bg-green-600 text-white rounded hover:bg-green-700 min-h-[32px] min-w-[32px] flex items-center justify-center"
                       title="Salin Password"
                     >
-                      📋
+                      <Copy size={16} />
                     </button>
                   </div>
-                  <p className="text-xs text-green-600 mt-2">
-                    ⚠️ Harap simpan password ini dengan aman dan beritahukan kepada user
-                  </p>
+                  <div className="flex items-start gap-2 mt-2">
+                    <AlertTriangle size={14} className="text-green-600 flex-shrink-0 mt-0.5" />
+                    <p className="text-xs text-green-600 flex-1">
+                      Harap simpan password ini dengan aman dan beritahukan kepada user
+                    </p>
+                  </div>
                 </div>
               </div>
             )}
