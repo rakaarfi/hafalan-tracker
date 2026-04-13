@@ -26,10 +26,10 @@ import { useAuthStore } from '@/stores/authStore'
 
 // Protected Route Component for Role-Based Access
 function ProtectedRoute({ children, allowedRoles }: { children: React.ReactNode; allowedRoles?: string[] }) {
-  const { isAuthenticated, user, isLoading } = useAuthStore()
+  const { isAuthenticated, user, isLoading, hasInitialized } = useAuthStore()
 
-  // Show loading spinner while checking authentication
-  if (isLoading) {
+  // Show loading spinner while checking authentication OR if initial check not complete
+  if (isLoading || !hasInitialized) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
@@ -87,14 +87,11 @@ function PublicRoute({ children }: { children: React.ReactNode }) {
 }
 
 function App() {
-  const { isAuthenticated, checkAuth, isLoading } = useAuthStore()
+  const { isAuthenticated, checkAuth } = useAuthStore()
 
   // Check authentication on app mount ONLY
   useEffect(() => {
-    const { isLoading: currentLoading } = useAuthStore.getState()
-    if (!currentLoading) {
-      checkAuth()
-    }
+    checkAuth()
   }, []) // Empty dependency array - run only once on mount
 
   return (

@@ -15,6 +15,7 @@ interface AuthState {
   token: string | null  // Kept for backward compatibility, always "cookie" when authenticated
   isAuthenticated: boolean
   isLoading: boolean
+  hasInitialized: boolean  // Track if initial auth check has been attempted
   error: string | null
   login: (email: string, password: string) => Promise<void>
   checkAuth: () => Promise<void>
@@ -29,7 +30,8 @@ export const useAuthStore = create<AuthState>()((set) => ({
   user: null,
   token: null, // Kept for compatibility but not used with httpOnly cookies
   isAuthenticated: false,
-  isLoading: true, // Start with true to show loading on initial mount
+  isLoading: false,
+  hasInitialized: false,  // Start with false - initial check not done yet
   error: null,
   login: async (email: string, password: string) => {
     set({ isLoading: true, error: null })
@@ -59,6 +61,7 @@ export const useAuthStore = create<AuthState>()((set) => ({
         token: null, // Token is in httpOnly cookie
         isAuthenticated: true,
         isLoading: false,
+        hasInitialized: true,  // Mark that initial check is complete
         error: null,
       })
     } catch (error: any) {
@@ -68,6 +71,7 @@ export const useAuthStore = create<AuthState>()((set) => ({
         token: null,
         isAuthenticated: false,
         isLoading: false,
+        hasInitialized: true,  // Mark that initial check is complete
         error: null,
       })
     }
