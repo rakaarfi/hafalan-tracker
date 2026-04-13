@@ -10,12 +10,14 @@ import { PasswordInput } from '@/components/ui/password-input'
 import { Label } from '@/components/ui/label'
 import { useToast } from '@/hooks/use-toast'
 import { teachersApi } from '@/lib/api'
+import PhoneInput from 'react-phone-number-input'
+import 'react-phone-number-input/style.css'
 
 const teacherSchema = z.object({
   name: z.string().min(1, 'Nama wajib diisi'),
   email: z.string().email('Format email tidak valid'),
-  phone: z.string().optional(),
-  password: z.string().min(6, 'Password minimal 6 karakter').optional(),
+  phone: z.string().min(10, 'No HP wajib diisi'),
+  password: z.string().optional(),
 })
 
 type TeacherFormData = z.infer<typeof teacherSchema>
@@ -27,8 +29,9 @@ export function TeacherFormPage() {
   const isEditing = !!teacherId
 
   const [isLoading, setIsLoading] = useState(false)
+  const [phone, setPhone] = useState<string>('')
 
-  const { register, handleSubmit, formState: { errors, isSubmitting }, reset } = useForm<TeacherFormData>({
+  const { register, handleSubmit, formState: { errors, isSubmitting }, reset, setValue } = useForm<TeacherFormData>({
     resolver: zodResolver(teacherSchema),
   })
 
@@ -45,6 +48,7 @@ export function TeacherFormPage() {
           email: teacher.Email,
           phone: teacher.Phone || '',
         })
+        setPhone(teacher.Phone || '')
       } catch (error) {
         toast({
           variant: "destructive",
@@ -73,7 +77,6 @@ export function TeacherFormPage() {
           name: data.name,
           email: data.email,
           phone: data.phone || '',
-          password: data.password || '',
         })
       }
 
@@ -146,29 +149,24 @@ export function TeacherFormPage() {
 
           {/* No HP */}
           <div>
-            <Label htmlFor="phone">No HP</Label>
-            <Input
+            <Label htmlFor="phone">No HP *</Label>
+            <PhoneInput
               id="phone"
-              type="tel"
-              placeholder="08xxxxxxxxxx"
-              className="border-2 min-h-[44px]"
-              {...register('phone')}
+              international
+              countryCallingCodeEditable={false}
+              defaultCountry="ID"
+              value={phone}
+              onChange={(value) => {
+                setPhone(value || '')
+                setValue('phone', value || '', { shouldValidate: true })
+              }}
+              className="flex border-2 border-input bg-transparent px-3 py-2 min-h-[44px]"
             />
+            {errors.phone && <p className="text-sm text-red-600 mt-1">{errors.phone.message}</p>}
+            <p className="text-xs text-gray-500 mt-1">
+              Password akan otomatis digenerate dari 6 digit terakhir nomor HP
+            </p>
           </div>
-
-          {/* Password (hanya create) */}
-          {!isEditing && (
-            <div>
-              <Label htmlFor="password">Password *</Label>
-              <PasswordInput
-                id="password"
-                placeholder="Minimal 6 karakter"
-                className="border-2 min-h-[44px]"
-                {...register('password')}
-              />
-              {errors.password && <p className="text-sm text-red-600 mt-1">{errors.password.message}</p>}
-            </div>
-          )}
 
           {/* Info */}
           <div className="border-2 border-blue-100 bg-blue-50 p-4">
@@ -176,9 +174,10 @@ export function TeacherFormPage() {
               <strong>Catatan:</strong>
             </p>
             <ul className="text-sm text-blue-700 list-disc list-inside mt-2 space-y-1">
+              <li>Password akan otomatis digenerate dari 6 digit terakhir nomor HP</li>
+              <li>Guru wajib mengganti password saat login pertama</li>
               <li>Guru yang ditambahkan akan otomatis mendapat role sebagai Guru</li>
               <li>Guru bisa ditugaskan sebagai wali kelas di menu Kelas</li>
-              <li>Default password akan dikirim ke email</li>
             </ul>
           </div>
 

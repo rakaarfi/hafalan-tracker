@@ -3,18 +3,21 @@ import { StudentList } from '@/components/teacher/StudentList'
 import { UserDropdown } from '@/components/common/UserDropdown'
 import { useAuthStore } from '@/stores/authStore'
 import { useTranslation } from 'react-i18next'
+import { useNavigate } from 'react-router-dom'
 import { teacherApi, TeacherClass, TeacherStudent } from '@/lib/api'
-import { GraduationCap, Users } from 'lucide-react'
+import { GraduationCap, Users, AlertTriangle, X } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 
 export function TeacherDashboard() {
   const { t } = useTranslation()
+  const navigate = useNavigate()
   const { user, isAuthenticated } = useAuthStore()
   const [students, setStudents] = useState<TeacherStudent[]>([])
   const [classes, setClasses] = useState<TeacherClass[]>([])
   const [selectedClass, setSelectedClass] = useState<string>('all')
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [showPasswordBanner, setShowPasswordBanner] = useState(true)
 
   useEffect(() => {
     // Only fetch data if user is authenticated
@@ -94,6 +97,39 @@ export function TeacherDashboard() {
           </div>
         </div>
       </header>
+
+      {/* Password Change Notification Banner */}
+      {showPasswordBanner && (
+        <div className="border-2 border-yellow-300 bg-yellow-50">
+          <div className="container mx-auto px-4 max-w-7xl py-3">
+            <div className="flex items-start gap-3">
+              <AlertTriangle size={20} className="text-yellow-700 flex-shrink-0 mt-0.5" />
+              <div className="flex-1">
+                <p className="text-sm text-yellow-800 font-medium">
+                  Penting: Ganti Password Anda
+                </p>
+                <p className="text-xs text-yellow-700 mt-1">
+                  Password Anda dibuat dari nomor HP. Untuk keamanan, silakan ganti password dengan password yang lebih kuat.
+                </p>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => navigate('/profile', { state: { activeTab: 'password' } })}
+                  className="px-3 py-1.5 bg-yellow-600 text-white text-sm hover:bg-yellow-700 min-h-[36px] min-w-[36px] border-2 border-yellow-700"
+                >
+                  Ganti Password
+                </button>
+                <button
+                  onClick={() => setShowPasswordBanner(false)}
+                  className="p-1.5 text-yellow-700 hover:bg-yellow-200 min-h-[36px] min-w-[36px] border-2 border-yellow-300"
+                >
+                  <X size={16} />
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Main content */}
       <main className="container mx-auto py-6 px-4 max-w-7xl">

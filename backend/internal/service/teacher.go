@@ -7,6 +7,7 @@ import (
 
 	"github.com/rakaarfi/hafalan-tracker/backend/internal/repository"
 	"github.com/rakaarfi/hafalan-tracker/backend/internal/auth"
+	"github.com/rakaarfi/hafalan-tracker/backend/internal/util"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -30,7 +31,7 @@ func NewTeacherService(teacherRepo *repository.TeacherRepository, userRepo *repo
 type CreateTeacherRequest struct {
 	Name     string `json:"name" binding:"required"`
 	Email    string `json:"email" binding:"required,email"`
-	Phone    string `json:"phone"`
+	Phone    string `json:"phone" binding:"required"`
 	Password string `json:"password"`
 }
 
@@ -53,8 +54,20 @@ func (s *TeacherService) Create(ctx context.Context, req *CreateTeacherRequest) 
 		return nil, errors.New("email already exists")
 	}
 
+	// Normalize phone number to format 628xxxxxxxxxx
+	normalizedPhone, err := util.NormalizePhoneNumber(req.Phone)
+	if err != nil {
+		return nil, fmt.Errorf("invalid phone number: %w", err)
+	}
+
+	// Generate password from phone if not provided
+	password := req.Password
+	if password == "" {
+		password = util.GeneratePasswordFromPhone(normalizedPhone)
+	}
+
 	// Hash password
-	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
 		return nil, fmt.Errorf("failed to hash password: %w", err)
 	}
@@ -71,11 +84,11 @@ func (s *TeacherService) Create(ctx context.Context, req *CreateTeacherRequest) 
 		return nil, fmt.Errorf("failed to create user: %w", err)
 	}
 
-	// Create teacher profile
+	// Create teacher profile with normalized phone
 	teacher := &repository.Teacher{
 		UserID:   user.ID,
 		FullName: req.Name,
-		Phone:    req.Phone,
+		Phone:    normalizedPhone,
 	}
 
 	err = s.teacherRepo.Create(ctx, teacher)
@@ -122,11 +135,17 @@ func (s *TeacherService) Update(ctx context.Context, req *UpdateTeacherRequest) 
 		}
 	}
 
+	// Normalize phone number to format 628xxxxxxxxxx
+	normalizedPhone, err := util.NormalizePhoneNumber(req.Phone)
+	if err != nil {
+		return nil, fmt.Errorf("invalid phone number: %w", err)
+	}
+
 	// Update teacher profile
 	teacher := &repository.Teacher{
 		UserID:   req.UserID,
 		FullName: req.Name,
-		Phone:    req.Phone,
+		Phone:    normalizedPhone,
 	}
 
 	err = s.teacherRepo.Update(ctx, req.UserID, teacher)

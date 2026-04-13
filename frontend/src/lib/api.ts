@@ -462,7 +462,7 @@ export const settingsApi = {
   },
 
   resetUserPassword: async (userId: string, password: string): Promise<void> => {
-    await api.post('/settings/reset-password', { user_id: userId, password })
+    await api.post('/admin/reset-password', { user_id: userId, password })
   },
 
   uploadLogo: async (file: File): Promise<{ logo_url: string }> => {
