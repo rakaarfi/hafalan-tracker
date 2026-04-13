@@ -194,3 +194,40 @@ func (r *MemorizationRepository) GetSurahIDByNumber(ctx context.Context, surahNu
 
 	return &surahID, nil
 }
+
+// GetAll retrieves all active memorizations
+func (r *MemorizationRepository) GetAll(ctx context.Context) ([]Memorization, error) {
+	query := `
+		SELECT id, student_id, teacher_id, surah_id, juz_id, unit_type,
+			page_start, page_end, status, notes, test_date,
+			is_active, created_at, updated_at
+		FROM memorization
+		WHERE is_active = true
+	`
+
+	var mems []Memorization
+	err := r.db.SelectContext(ctx, &mems, query)
+	if err != nil {
+		return nil, err
+	}
+
+	return mems, nil
+}
+
+// GetRecentCount counts memorizations from the last 7 days
+func (r *MemorizationRepository) GetRecentCount(ctx context.Context) (int, error) {
+	query := `
+		SELECT COUNT(*)
+		FROM memorization
+		WHERE is_active = true
+		AND test_date >= CURRENT_DATE - INTERVAL '7 days'
+	`
+
+	var count int
+	err := r.db.GetContext(ctx, &count, query)
+	if err != nil {
+		return 0, err
+	}
+
+	return count, nil
+}

@@ -29,6 +29,7 @@ type Server struct {
 	parentRepo              *repository.ParentRepository
 	classRepo               *repository.ClassRepository
 	classQuranTeacherRepo    *repository.ClassQuranTeacherRepository
+	memorizationRepo         *repository.MemorizationRepository
 }
 
 // New creates a new server instance
@@ -86,6 +87,7 @@ func New(cfg *config.Config, db *database.DB) *Server {
 		parentRepo:              parentRepo,
 		classRepo:               classRepo,
 		classQuranTeacherRepo:    classQuranTeacherRepo,
+		memorizationRepo:         memorizationRepo,
 	}
 
 	// Setup routes

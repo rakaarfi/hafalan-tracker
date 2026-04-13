@@ -756,16 +756,17 @@ func (s *Server) getStudentMemorizations(c *gin.Context) {
 
 // getDashboardStats retrieves dashboard statistics
 func (s *Server) getDashboardStats(c *gin.Context) {
-	// Get all stats
-	students, err := s.studentRepo.GetAll(c.Request.Context(), "")
+	ctx := c.Request.Context()
+
+	// Get student stats
+	students, err := s.studentRepo.GetAll(ctx, "")
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": "Failed to retrieve statistics",
+			"error": "Failed to retrieve student statistics",
 		})
 		return
 	}
 
-	// Count active students
 	totalStudents := len(students)
 	activeStudents := 0
 	for _, s := range students {
@@ -774,15 +775,52 @@ func (s *Server) getDashboardStats(c *gin.Context) {
 		}
 	}
 
-	// Get total memorizations
-	// For now, we'll return basic stats
+	// Get teacher count
+	teachers, err := s.teacherRepo.GetAll(ctx, "")
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Failed to retrieve teacher statistics",
+		})
+		return
+	}
+	totalTeachers := len(teachers)
+
+	// Get parent count
+	parents, err := s.parentRepo.GetAll(ctx, "")
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Failed to retrieve parent statistics",
+		})
+		return
+	}
+	totalParents := len(parents)
+
+	// Get memorization count
+	memorizations, err := s.memorizationRepo.GetAll(ctx)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Failed to retrieve memorization statistics",
+		})
+		return
+	}
+	totalMemorizations := len(memorizations)
+
+	// Get recent tests count (last 7 days)
+	recentTests, err := s.memorizationRepo.GetRecentCount(ctx)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Failed to retrieve recent test statistics",
+		})
+		return
+	}
+
 	stats := map[string]interface{}{
 		"total_students":      totalStudents,
 		"active_students":     activeStudents,
-		"total_teachers":      3, // From seed data
-		"total_parents":       5, // From seed data
-		"total_memorizations": 6, // From seed data
-		"recent_tests":        6,
+		"total_teachers":      totalTeachers,
+		"total_parents":       totalParents,
+		"total_memorizations": totalMemorizations,
+		"recent_tests":        recentTests,
 	}
 
 	c.JSON(http.StatusOK, stats)
