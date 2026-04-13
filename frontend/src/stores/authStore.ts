@@ -7,6 +7,7 @@ export interface User {
   role: string  // Backend returns loose string, not strict union type
   name?: string
   phone?: string
+  is_default_password?: boolean
 }
 
 interface AuthState {

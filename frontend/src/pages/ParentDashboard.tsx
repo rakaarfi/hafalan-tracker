@@ -27,7 +27,7 @@ export function ParentDashboard() {
   const [children, setChildren] = useState<Child[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [showPasswordBanner, setShowPasswordBanner] = useState(true)
+  const [showPasswordBanner, setShowPasswordBanner] = useState(user?.is_default_password || false)
 
   useEffect(() => {
     // Only fetch data if user is authenticated

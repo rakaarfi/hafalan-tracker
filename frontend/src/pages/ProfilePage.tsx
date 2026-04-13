@@ -45,7 +45,7 @@ export function ProfilePage({ embedded = false }: ProfilePageProps) {
   const { toast } = useToast()
   const { user, updateUser } = useAuthStore()
   const [activeTab, setActiveTab] = useState<'profile' | 'password'>('profile')
-  const [showPasswordBanner, setShowPasswordBanner] = useState(true)
+  const [showPasswordBanner, setShowPasswordBanner] = useState(user?.is_default_password || false)
 
   // Check if navigation state contains activeTab
   useEffect(() => {

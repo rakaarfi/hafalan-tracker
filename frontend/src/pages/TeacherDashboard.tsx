@@ -17,7 +17,7 @@ export function TeacherDashboard() {
   const [selectedClass, setSelectedClass] = useState<string>('all')
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [showPasswordBanner, setShowPasswordBanner] = useState(true)
+  const [showPasswordBanner, setShowPasswordBanner] = useState(user?.is_default_password || false)
 
   useEffect(() => {
     // Only fetch data if user is authenticated

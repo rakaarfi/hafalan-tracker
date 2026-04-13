@@ -23,12 +23,13 @@ func NewUserRepository(db *sqlx.DB, roleRepo *RoleRepository) *UserRepository {
 
 // User represents a user in the system
 type User struct {
-	ID        string `db:"id"`
-	Email     string `db:"email"`
-	Password  string `db:"password_hash"`
-	RoleID    string `db:"role_id"`
-	IsActive  bool   `db:"is_active"`
-	CreatedAt string `db:"created_at"`
+	ID                  string  `db:"id"`
+	Email               string  `db:"email"`
+	Password            string  `db:"password_hash"`
+	RoleID              string  `db:"role_id"`
+	IsActive            bool    `db:"is_active"`
+	PasswordChangedAt   *string `db:"password_changed_at"`
+	CreatedAt           string  `db:"created_at"`
 }
 
 // UserWithRole represents a user with role information
@@ -40,7 +41,7 @@ type UserWithRole struct {
 // GetByEmail retrieves a user by email
 func (r *UserRepository) GetByEmail(ctx context.Context, email string) (*UserWithRole, error) {
 	query := `
-		SELECT u.id, u.email, u.password_hash, u.role_id, u.is_active, u.created_at, r.name as role_name
+		SELECT u.id, u.email, u.password_hash, u.role_id, u.is_active, u.password_changed_at, u.created_at, r.name as role_name
 		FROM users u
 		JOIN roles r ON u.role_id = r.id
 		WHERE u.email = $1 AND u.is_active = true
@@ -61,7 +62,7 @@ func (r *UserRepository) GetByEmail(ctx context.Context, email string) (*UserWit
 // GetByID retrieves a user by ID
 func (r *UserRepository) GetByID(ctx context.Context, id string) (*UserWithRole, error) {
 	query := `
-		SELECT u.id, u.email, u.password_hash, u.role_id, u.is_active, u.created_at, r.name as role_name
+		SELECT u.id, u.email, u.password_hash, u.role_id, u.is_active, u.password_changed_at, u.created_at, r.name as role_name
 		FROM users u
 		JOIN roles r ON u.role_id = r.id
 		WHERE u.id = $1 AND u.is_active = true
@@ -127,7 +128,7 @@ func (r *UserRepository) DB() *sqlx.DB {
 
 // UpdatePassword updates a user's password
 func (r *UserRepository) UpdatePassword(ctx context.Context, userID, passwordHash string) error {
-	query := `UPDATE users SET password_hash = $1 WHERE id = $2`
+	query := `UPDATE users SET password_hash = $1, password_changed_at = CURRENT_TIMESTAMP WHERE id = $2`
 	_, err := r.db.ExecContext(ctx, query, passwordHash, userID)
 	return err
 }

@@ -1910,14 +1910,31 @@ func formatDatePtr(t *time.Time) *string {
 // getCurrentUser returns the currently authenticated user
 func (s *Server) getCurrentUser(c *gin.Context) {
 	userID := c.GetString("user_id")
-	role := c.GetString("role")
-	email := c.GetString("email")
+
+	// Fetch user from database to get complete data including password_changed_at
+	userWithRole, err := s.userRepo.GetByID(c.Request.Context(), userID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Failed to fetch user data",
+		})
+		return
+	}
+	if userWithRole == nil {
+		c.JSON(http.StatusNotFound, gin.H{
+			"error": "User not found",
+		})
+		return
+	}
+
+	// Check if password is still default (never changed)
+	isDefaultPassword := userWithRole.PasswordChangedAt == nil
 
 	c.JSON(http.StatusOK, gin.H{
 		"user": gin.H{
-			"id":     userID,
-			"email":   email,
-			"role":    role,
+			"id":                  userWithRole.ID,
+			"email":               userWithRole.Email,
+			"role":                userWithRole.RoleName,
+			"is_default_password": isDefaultPassword,
 		},
 	})
 }
