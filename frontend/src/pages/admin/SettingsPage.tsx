@@ -20,6 +20,7 @@ interface SchoolSettings {
 interface ResetPasswordState {
   selectedUserId: string
   newPassword: string
+  generatedPassword: string
   loading: boolean
 }
 
@@ -39,6 +40,7 @@ export function SettingsPage() {
   const [resetPassword, setResetPassword] = useState<ResetPasswordState>({
     selectedUserId: '',
     newPassword: '',
+    generatedPassword: '',
     loading: false
   })
 
@@ -141,18 +143,12 @@ export function SettingsPage() {
       return
     }
 
-    if (!resetPassword.newPassword || resetPassword.newPassword.length < 6) {
-      toast({
-        variant: "destructive",
-        title: "Gagal",
-        description: "Password minimal 6 karakter"
-      })
-      return
-    }
+    // Generate random password if not provided
+    const password = resetPassword.newPassword || Math.random().toString(36).slice(-8)
 
     setResetPassword(prev => ({ ...prev, loading: true }))
     try {
-      await settingsApi.resetUserPassword(resetPassword.selectedUserId)
+      await settingsApi.resetUserPassword(resetPassword.selectedUserId, password)
 
       const user = users.find(u => u.id === resetPassword.selectedUserId)
 
@@ -161,11 +157,13 @@ export function SettingsPage() {
         description: `Password ${user?.name || 'User'} berhasil direset`
       })
 
-      setResetPassword({
-        selectedUserId: '',
-        newPassword: '',
-        loading: false
-      })
+      // Store generated password and keep user selected for display
+      setResetPassword(prev => ({
+        ...prev,
+        generatedPassword: password,
+        loading: false,
+        newPassword: ''
+      }))
     } catch (error: any) {
       toast({
         variant: "destructive",
@@ -365,12 +363,46 @@ export function SettingsPage() {
             <div className="border-2 border-blue-100 bg-blue-50 p-4">
               <p className="text-sm text-blue-800 font-medium">Informasi:</p>
               <ul className="text-sm text-blue-700 list-disc list-inside mt-2 space-y-1">
-                <li>Password akan direset ke default: <strong>password123</strong></li>
-                <li>User akan mendapatkan email notifikasi</li>
+                <li>Password akan digenerate secara otomatis (random 8 karakter)</li>
+                <li>Password baru akan ditampilkan setelah reset berhasil</li>
+                <li>Admin harus memberitahukan password baru kepada user</li>
                 <li>User harus mengganti password pada login pertama</li>
-                <li>Reset password akan menghapus password lama</li>
               </ul>
             </div>
+
+            {/* Generated Password Display */}
+            {resetPassword.generatedPassword && (
+              <div className="border-2 border-green-200 bg-green-50 p-4">
+                <p className="text-sm text-green-800 font-medium mb-2">✅ Password Berhasil Direset!</p>
+                <div className="space-y-2">
+                  <p className="text-sm text-green-700">
+                    User: <strong>{users.find(u => u.id === resetPassword.selectedUserId)?.name}</strong>
+                  </p>
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm text-green-700">Password Baru:</span>
+                    <code className="px-3 py-1 bg-white border-2 border-green-300 rounded text-lg font-mono font-bold text-green-800 select-all">
+                      {resetPassword.generatedPassword}
+                    </code>
+                    <button
+                      onClick={() => {
+                        navigator.clipboard.writeText(resetPassword.generatedPassword)
+                        toast({
+                          title: "Disalin",
+                          description: "Password berhasil disalin ke clipboard"
+                        })
+                      }}
+                      className="p-2 bg-green-600 text-white rounded hover:bg-green-700 min-h-[32px] min-w-[32px]"
+                      title="Salin Password"
+                    >
+                      📋
+                    </button>
+                  </div>
+                  <p className="text-xs text-green-600 mt-2">
+                    ⚠️ Harap simpan password ini dengan aman dan beritahukan kepada user
+                  </p>
+                </div>
+              </div>
+            )}
 
             {/* Reset Button */}
             <div className="flex justify-end">

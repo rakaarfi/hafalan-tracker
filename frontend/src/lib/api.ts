@@ -461,8 +461,8 @@ export const settingsApi = {
     return response.data
   },
 
-  resetUserPassword: async (userId: string): Promise<void> => {
-    await api.post('/settings/reset-password', { user_id: userId })
+  resetUserPassword: async (userId: string, password: string): Promise<void> => {
+    await api.post('/settings/reset-password', { user_id: userId, password })
   },
 
   uploadLogo: async (file: File): Promise<{ logo_url: string }> => {

@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useState, useEffect } from 'react'
+import { useNavigate, useLocation } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -40,10 +40,18 @@ interface ProfilePageProps {
 
 export function ProfilePage({ embedded = false }: ProfilePageProps) {
   const navigate = useNavigate()
+  const location = useLocation()
   const { t } = useTranslation()
   const { toast } = useToast()
   const { user, updateUser } = useAuthStore()
   const [activeTab, setActiveTab] = useState<'profile' | 'password'>('profile')
+
+  // Check if navigation state contains activeTab
+  useEffect(() => {
+    if (location.state?.activeTab) {
+      setActiveTab(location.state.activeTab)
+    }
+  }, [location.state])
 
   // Determine dashboard URL based on user role
   const getDashboardUrl = () => {

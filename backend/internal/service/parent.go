@@ -9,6 +9,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 
 	"github.com/rakaarfi/hafalan-tracker/backend/internal/repository"
+	"github.com/rakaarfi/hafalan-tracker/backend/internal/util"
 )
 
 // ParentService handles parent business logic
@@ -175,7 +176,7 @@ func (s *ParentService) GetChildProgressByUserID(ctx context.Context, userID, st
 type CreateParentRequest struct {
 	Name     string `json:"name" binding:"required"`
 	Email    string `json:"email" binding:"required,email"`
-	Phone    string `json:"phone"`
+	Phone    string `json:"phone" binding:"required"`
 	Password string `json:"password"`
 	Gender   string `json:"gender" binding:"required,oneof=male female"`
 }
@@ -200,8 +201,20 @@ func (s *ParentService) Create(ctx context.Context, req *CreateParentRequest) (*
 		return nil, errors.New("email already exists")
 	}
 
+	// Normalize phone number to format 628xxxxxxxxxx
+	normalizedPhone, err := util.NormalizePhoneNumber(req.Phone)
+	if err != nil {
+		return nil, fmt.Errorf("invalid phone number: %w", err)
+	}
+
+	// Generate password from phone if not provided
+	password := req.Password
+	if password == "" {
+		password = util.GeneratePasswordFromPhone(normalizedPhone)
+	}
+
 	// Hash password
-	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
 		return nil, fmt.Errorf("failed to hash password: %w", err)
 	}
@@ -218,11 +231,11 @@ func (s *ParentService) Create(ctx context.Context, req *CreateParentRequest) (*
 		return nil, fmt.Errorf("failed to create user account: %w", err)
 	}
 
-	// Create parent profile
+	// Create parent profile with normalized phone
 	parent := &repository.Parent{
 		UserID:   user.ID,
 		FullName: req.Name,
-		Phone:    req.Phone,
+		Phone:    normalizedPhone,
 		Gender:   req.Gender,
 	}
 
@@ -268,10 +281,16 @@ func (s *ParentService) Update(ctx context.Context, req *UpdateParentRequest) (*
 		}
 	}
 
+	// Normalize phone number to format 628xxxxxxxxxx
+	normalizedPhone, err := util.NormalizePhoneNumber(req.Phone)
+	if err != nil {
+		return nil, fmt.Errorf("invalid phone number: %w", err)
+	}
+
 	// Update parent profile
 	updateReq := &repository.Parent{
 		FullName: req.Name,
-		Phone:    req.Phone,
+		Phone:    normalizedPhone,
 		Gender:   req.Gender,
 	}
 
