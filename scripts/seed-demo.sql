@@ -70,13 +70,13 @@ ON CONFLICT (id) DO NOTHING;
 -- STUDENTS
 -- ============================================
 
-INSERT INTO students (id, name, class_id, is_active, birth_date) VALUES
-(1, 'Ahmad Fauzi', 1, true, '2017-05-15'),
-(2, 'Siti Aminah', 1, true, '2017-08-20'),
-(3, 'Muhammad Rizki', 2, true, '2017-03-10'),
-(4, 'Fatimah Zahra', 2, true, '2017-07-25'),
-(5, 'Abdullah Rahman', 3, true, '2012-09-12'),
-(6, 'Aisyah Humaira', 3, true, '2012-11-30')
+INSERT INTO students (id, name, class_id, enrollment_year, semester, is_active, birth_date) VALUES
+(1, 'Ahmad Fauzi', 1, 2025, 1, true, '2017-05-15'),
+(2, 'Siti Aminah', 1, 2025, 1, true, '2017-08-20'),
+(3, 'Muhammad Rizki', 2, 2025, 1, true, '2017-03-10'),
+(4, 'Fatimah Zahra', 2, 2025, 1, true, '2017-07-25'),
+(5, 'Abdullah Rahman', 3, 2025, 1, true, '2012-09-12'),
+(6, 'Aisyah Humaira', 3, 2025, 1, true, '2012-11-30')
 ON CONFLICT (id) DO NOTHING;
 
 -- ============================================
