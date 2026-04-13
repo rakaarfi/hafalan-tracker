@@ -55,18 +55,9 @@ function ProtectedRoute({ children, allowedRoles }: { children: React.ReactNode;
   return <>{children}</>
 }
 
-// Profile Redirect Component - Redirects to role-appropriate profile page
+// Profile Redirect Component - Redirects admin to admin profile page
 function ProfileRedirect() {
-  const { user, isLoading } = useAuthStore()
-
-  // Show loading while checking authentication
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
-      </div>
-    )
-  }
+  const { user } = useAuthStore()
 
   // Admin goes to admin profile (with sidebar)
   if (user?.role === 'admin') {
@@ -96,12 +87,12 @@ function PublicRoute({ children }: { children: React.ReactNode }) {
 }
 
 function App() {
-  const { isAuthenticated, checkAuth } = useAuthStore()
+  const { isAuthenticated, checkAuth, isLoading } = useAuthStore()
 
   // Check authentication on app mount ONLY
   useEffect(() => {
-    const { isLoading } = useAuthStore.getState()
-    if (!isLoading) {
+    const { isLoading: currentLoading } = useAuthStore.getState()
+    if (!currentLoading) {
       checkAuth()
     }
   }, []) // Empty dependency array - run only once on mount

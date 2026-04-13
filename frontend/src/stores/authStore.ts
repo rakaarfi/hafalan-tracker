@@ -29,7 +29,7 @@ export const useAuthStore = create<AuthState>()((set) => ({
   user: null,
   token: null, // Kept for compatibility but not used with httpOnly cookies
   isAuthenticated: false,
-  isLoading: false,
+  isLoading: true, // Start with true to show loading on initial mount
   error: null,
   login: async (email: string, password: string) => {
     set({ isLoading: true, error: null })
