@@ -91,7 +91,10 @@ function App() {
 
   // Check authentication on app mount ONLY
   useEffect(() => {
-    checkAuth()
+    const { isLoading } = useAuthStore.getState()
+    if (!isLoading) {
+      checkAuth()
+    }
   }, []) // Empty dependency array - run only once on mount
 
   return (
