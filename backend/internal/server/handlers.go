@@ -1342,14 +1342,14 @@ func (s *Server) addChildToParent(c *gin.Context) {
 	// Validate: max 1 father and 1 mother
 	if relationshipType == "father" && student.Parent1ID != "" {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "Murid sudah punya ayah. Silakan hapus ayah yang sudah ada terlebih dahulu.",
+			"error": "Student already has a father. Please remove the existing father first.",
 		})
 		return
 	}
 
 	if relationshipType == "mother" && student.Parent2ID != "" {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "Murid sudah punya ibu. Silakan hapus ibu yang sudah ada terlebih dahulu.",
+			"error": "Student already has a mother. Please remove the existing mother first.",
 		})
 		return
 	}
@@ -1413,7 +1413,7 @@ func (s *Server) removeChildFromParent(c *gin.Context) {
 
 	if !isLinked {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "Orang tua ini tidak terhubung dengan murid tersebut",
+			"error": "This parent is not linked to the student",
 		})
 		return
 	}

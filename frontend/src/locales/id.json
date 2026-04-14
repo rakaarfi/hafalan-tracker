@@ -62,12 +62,10 @@
     "unauthorized": "Anda tidak memiliki akses",
     "serverError": "Terjadi kesalahan pada server",
     "networkError": "Gagal terhubung ke server",
-    "parentAlreadyHasFather": "Murid sudah punya ayah. Hapus ayah yang lama terlebih dahulu",
-    "parentAlreadyHasMother": "Murid sudah punya ibu. Hapus ibu yang lama terlebih dahulu",
-    "failedToLoadChildren": "Gagal memuat data anak",
-    "failedToAddChild": "Gagal menambahkan anak",
-    "failedToRemoveChild": "Gagal menghapus anak",
-    "childNotLinkedToParent": "Orang tua ini tidak terhubung dengan murid tersebut",
+    "invalidEmailOrPassword": "Email atau kata sandi salah",
+    "studentAlreadyHasFather": "Murid sudah punya ayah. Hapus ayah yang lama terlebih dahulu",
+    "studentAlreadyHasMother": "Murid sudah punya ibu. Hapus ibu yang lama terlebih dahulu",
+    "parentNotLinkedToStudent": "Orang tua ini tidak terhubung dengan murid tersebut",
     "selectStudent": "Pilih murid terlebih dahulu"
   }
 }

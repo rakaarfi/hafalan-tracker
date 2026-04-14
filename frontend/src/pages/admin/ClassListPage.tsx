@@ -154,7 +154,7 @@ export function ClassListPage() {
 
       {/* Classes Grid */}
       {loading ? (
-        <div className="text-center py-12">Loading...</div>
+        <div className="text-center py-12">Memuat data...</div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
           {filteredClasses.length === 0 ? (

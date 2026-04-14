@@ -28,7 +28,7 @@ interface MenuItem {
 }
 
 const menuItems: MenuItem[] = [
-  { id: 'dashboard', label: 'Dasbor', icon: LayoutDashboard, href: '/admin/dashboard' },
+  { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, href: '/admin/dashboard' },
   { id: 'teachers', label: 'Data Guru', icon: GraduationCap, href: '/admin/teachers' },
   { id: 'classes', label: 'Data Kelas', icon: GraduationCap, href: '/admin/classes' },
   { id: 'parents', label: 'Data Orang Tua', icon: UserPlus, href: '/admin/parents' },

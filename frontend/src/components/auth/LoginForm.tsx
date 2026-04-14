@@ -11,7 +11,7 @@ import { useAuthStore } from '@/stores/authStore'
 
 const loginSchema = z.object({
   email: z.string().email('Format email tidak valid'),
-  password: z.string().min(6, 'Password minimal 6 karakter')
+  password: z.string().min(6, 'Kata sandi minimal 6 karakter')
 })
 
 type LoginFormData = z.infer<typeof loginSchema>

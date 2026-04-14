@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import { authApi } from '@/lib/api'
+import { translateBackendError } from '@/lib/errorTranslation'
 
 export interface User {
   id: string
@@ -45,9 +46,12 @@ export const useAuthStore = create<AuthState>()((set) => ({
         error: null,
       })
     } catch (error: any) {
+      const backendError = error.response?.data?.error
+      const translatedError = backendError ? translateBackendError(backendError) : 'Terjadi kesalahan saat login'
+
       set({
         isLoading: false,
-        error: error.response?.data?.error || 'Login failed. Please check your credentials.',
+        error: translatedError,
       })
       throw error
     }

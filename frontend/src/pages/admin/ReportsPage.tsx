@@ -442,7 +442,7 @@ export function ReportsPage() {
           className="min-h-[44px] min-w-[44px]"
         >
           <Download size={20} className="mr-2" />
-          {loading ? 'Generating...' : 'Export PDF'}
+          {loading ? 'Memproses...' : 'Ekspor PDF'}
         </Button>
         <Button
           onClick={exportExcel}
@@ -451,7 +451,7 @@ export function ReportsPage() {
           className="min-h-[44px] min-w-[44px]"
         >
           <Download size={20} className="mr-2" />
-          {loading ? 'Generating...' : 'Export Excel'}
+          {loading ? 'Memproses...' : 'Ekspor Excel'}
         </Button>
       </div>
 

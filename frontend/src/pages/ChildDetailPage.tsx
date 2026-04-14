@@ -124,7 +124,7 @@ export function ChildDetailPage() {
             </div>
           ) : child ? (
             <>
-              <h1 className="text-2xl font-bold">Detail Progress</h1>
+              <h1 className="text-2xl font-bold">Detail Progress Hafalan</h1>
               <p className="text-sm text-gray-600">
                 {child.student.name} - {child.student.class_name}
               </p>

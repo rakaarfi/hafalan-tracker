@@ -120,7 +120,7 @@ export function HafalanInputForm({ studentId, onSuccess }: HafalanInputFormProps
               const fieldName = fieldLabels[field] || field
               const errorMessage = error.message && error.message.startsWith('validation.')
                 ? t(error.message)
-                : error.message || 'Unknown error'
+                : error.message || 'Error tidak diketahui'
 
               return (
                 <li key={field}>

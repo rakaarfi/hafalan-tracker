@@ -263,7 +263,7 @@ export function StudentListPage() {
               disabled={page <= 1 || loading}
               className="min-h-[36px] min-w-[36px]"
             >
-              Previous
+              Sebelumnya
             </Button>
             <div className="flex items-center gap-1">
               {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
@@ -297,7 +297,7 @@ export function StudentListPage() {
               disabled={page >= totalPages || loading}
               className="min-h-[36px] min-w-[36px]"
             >
-              Next
+              Selanjutnya
             </Button>
           </div>
         </div>
