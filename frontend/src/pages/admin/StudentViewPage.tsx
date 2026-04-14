@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { useToast } from '@/hooks/use-toast'
 import { studentsApi, memorizationsApi, parentsApi, Student, Memorization, Parent } from '@/lib/api'
+import { translateBackendError } from '@/lib/errorTranslation'
 
 export function StudentViewPage() {
   const { studentId } = useParams<{ studentId: string }>()

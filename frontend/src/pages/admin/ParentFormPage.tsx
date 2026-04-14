@@ -12,6 +12,7 @@ import { Label } from '@/components/ui/label'
 import { useToast } from '@/hooks/use-toast'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { parentsApi, studentsApi, Student } from '@/lib/api'
+import { translateBackendError } from '@/lib/errorTranslation'
 import PhoneInput from 'react-phone-number-input'
 import 'react-phone-number-input/style.css'
 

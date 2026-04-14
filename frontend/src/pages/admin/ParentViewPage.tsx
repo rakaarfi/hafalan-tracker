@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { useToast } from '@/hooks/use-toast'
 import { parentsApi, studentsApi, memorizationsApi, Student, Memorization } from '@/lib/api'
+import { translateBackendError } from '@/lib/errorTranslation'
 
 export function ParentViewPage() {
   const { parentId } = useParams<{ parentId: string }>()

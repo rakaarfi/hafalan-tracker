@@ -12,6 +12,7 @@ import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { useToast } from '@/hooks/use-toast'
 import { classesApi, teachersApi, QuranTeacherAssignment } from '@/lib/api'
+import { translateBackendError } from '@/lib/errorTranslation'
 
 const classSchema = z.object({
   name: z.string().min(1, 'Nama kelas wajib diisi'),

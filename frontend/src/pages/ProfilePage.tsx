@@ -15,6 +15,7 @@ import { UserDropdown } from '@/components/common/UserDropdown'
 import { useToast } from '@/hooks/use-toast'
 import { useAuthStore } from '@/stores/authStore'
 import api from '@/lib/api'
+import { translateBackendError } from '@/lib/errorTranslation'
 
 const profileSchema = z.object({
   name: z.string().min(1, 'Nama wajib diisi'),

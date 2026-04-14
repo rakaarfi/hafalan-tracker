@@ -9,6 +9,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { useToast } from '@/hooks/use-toast'
 import { useAuthStore } from '@/stores/authStore'
 import api from '@/lib/api'
+import { translateBackendError } from '@/lib/errorTranslation'
 
 const hafalanSchema = z.object({
   unit_type: z.enum(['surah', 'page', 'juz']),

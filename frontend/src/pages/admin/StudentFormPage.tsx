@@ -10,6 +10,7 @@ import { Label } from '@/components/ui/label'
 import { useToast } from '@/hooks/use-toast'
 import { ArrowLeft } from 'lucide-react'
 import { studentsApi, classesApi, parentsApi } from '@/lib/api'
+import { translateBackendError } from '@/lib/errorTranslation'
 
 const studentSchema = z.object({
   name: z.string().min(1, 'Nama wajib diisi'),

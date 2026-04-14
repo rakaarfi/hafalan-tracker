@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { useToast } from '@/hooks/use-toast'
 import { teachersApi, classesApi } from '@/lib/api'
+import { translateBackendError } from '@/lib/errorTranslation'
 import { useAuthStore } from '@/stores/authStore'
 
 interface Teacher {

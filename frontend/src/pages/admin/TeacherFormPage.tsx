@@ -10,6 +10,7 @@ import { PasswordInput } from '@/components/ui/password-input'
 import { Label } from '@/components/ui/label'
 import { useToast } from '@/hooks/use-toast'
 import { teachersApi } from '@/lib/api'
+import { translateBackendError } from '@/lib/errorTranslation'
 import PhoneInput from 'react-phone-number-input'
 import 'react-phone-number-input/style.css'
 

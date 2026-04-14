@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useToast } from '@/hooks/use-toast'
 import { settingsApi, usersApi } from '@/lib/api'
+import { translateBackendError } from '@/lib/errorTranslation'
 import { UserCombobox } from '@/components/admin/UserCombobox'
 
 interface SchoolSettings {
