@@ -71,8 +71,8 @@ export function StudentFormPage() {
     } catch (err: any) {
       toast({
         variant: "destructive",
-        title: "Gagal",
-        description: "Gagal memuat data form"
+        title: t('common.status.failed'),
+        description: t('errors.failedToLoad')
       })
     } finally {
       setLoadingData(false)
@@ -107,10 +107,10 @@ export function StudentFormPage() {
     try {
       if (isEditing) {
         await studentsApi.update(studentId!, data)
-        toast({ title: "Berhasil", description: "Data murid berhasil diupdate" })
+        toast({ title: t('common.status.success'), description: t('messages.success.updated') })
       } else {
         await studentsApi.create(data)
-        toast({ title: "Berhasil", description: "Murid baru berhasil ditambahkan" })
+        toast({ title: t('common.status.success'), description: t('messages.success.added') })
       }
 
       setTimeout(() => {
@@ -119,8 +119,8 @@ export function StudentFormPage() {
     } catch (error: any) {
       toast({
         variant: "destructive",
-        title: "Gagal",
-        description: error.response?.data?.error || "Gagal menyimpan data murid",
+        title: t('common.status.failed'),
+        description: error.response?.data?.error || t('errors.failedToSave'),
       })
     }
   }
@@ -142,10 +142,10 @@ export function StudentFormPage() {
           className="text-sm text-gray-600 hover:text-gray-900 mb-2 flex items-center gap-2"
         >
           <ArrowLeft size={16} />
-          Kembali
+          {t('common.actions.back')}
         </button>
         <h1 className="text-xl md:text-2xl font-bold">
-          {isEditing ? 'Edit Murid' : 'Tambah Murid Baru'}
+          {isEditing ? t('pages.admin.students.edit') : t('pages.admin.students.add')}
         </h1>
       </div>
 
@@ -154,10 +154,10 @@ export function StudentFormPage() {
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 md:space-y-6">
           {/* Nama */}
           <div>
-            <Label htmlFor="name">Nama Lengkap *</Label>
+            <Label htmlFor="name">{t('forms.labels.fullName')} *</Label>
             <Input
               id="name"
-              placeholder="Masukkan nama lengkap murid"
+              placeholder={t('forms.placeholders.enterName')}
               className="border-2 min-h-[44px]"
               {...register('name')}
             />
@@ -166,13 +166,13 @@ export function StudentFormPage() {
 
           {/* Kelas */}
           <div>
-            <Label htmlFor="class_id">Kelas</Label>
+            <Label htmlFor="class_id">{t('dataTable.headers.class')}</Label>
             <select
               id="class_id"
               className="flex h-9 w-full rounded-none border-2 border-input bg-transparent px-3 py-1 text-base min-h-[44px]"
               {...register('class_id')}
             >
-              <option value="">Pilih Kelas</option>
+              <option value="">{t('forms.placeholders.selectClass')}</option>
               {classes.map((cls) => (
                 <option key={cls.id} value={cls.id}>{cls.name}</option>
               ))}
@@ -181,13 +181,13 @@ export function StudentFormPage() {
 
           {/* Parent 1 (Ayah) */}
           <div>
-            <Label htmlFor="parent_id_1">Ayah *</Label>
+            <Label htmlFor="parent_id_1">{t('roles.homeroom').replace('Wali Kelas', 'Ayah')} *</Label>
             <select
               id="parent_id_1"
               className="flex h-9 w-full rounded-none border-2 border-input bg-transparent px-3 py-1 text-base min-h-[44px]"
               {...register('parent_id_1')}
             >
-              <option value="">Pilih Ayah</option>
+              <option value="">{t('forms.placeholders.selectParent')}</option>
               {parents.filter(p => p.Gender === 'male').map((parent) => (
                 <option key={parent.UserID} value={parent.UserID}>{parent.FullName} ({parent.Email})</option>
               ))}
@@ -197,13 +197,13 @@ export function StudentFormPage() {
 
           {/* Parent 2 (Ibu) */}
           <div>
-            <Label htmlFor="parent_id_2">Ibu</Label>
+            <Label htmlFor="parent_id_2">{t('roles.homeroom').replace('Wali Kelas', 'Ibu')}</Label>
             <select
               id="parent_id_2"
               className="flex h-9 w-full rounded-none border-2 border-input bg-transparent px-3 py-1 text-base min-h-[44px]"
               {...register('parent_id_2')}
             >
-              <option value="">Pilih Ibu</option>
+              <option value="">{t('forms.placeholders.selectParent')}</option>
               {parents.filter(p => p.Gender === 'female').map((parent) => (
                 <option key={parent.UserID} value={parent.UserID}>{parent.FullName} ({parent.Email})</option>
               ))}
@@ -212,7 +212,7 @@ export function StudentFormPage() {
 
           {/* Tanggal Lahir */}
           <div>
-            <Label htmlFor="birth_date">Tanggal Lahir</Label>
+            <Label htmlFor="birth_date">{t('forms.labels.birthDate')}</Label>
             <Input
               id="birth_date"
               type="date"
@@ -229,14 +229,14 @@ export function StudentFormPage() {
               onClick={() => navigate(-1)}
               className="min-h-[44px] flex-1"
             >
-              Batal
+              {t('common.actions.cancel')}
             </Button>
             <Button
               type="submit"
               disabled={isSubmitting}
               className="min-h-[44px] flex-1"
             >
-              {isSubmitting ? 'Menyimpan...' : 'Simpan'}
+              {isSubmitting ? t('common.status.processing') : t('common.actions.save')}
             </Button>
           </div>
         </form>

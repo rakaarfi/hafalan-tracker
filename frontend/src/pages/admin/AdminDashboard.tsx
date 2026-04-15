@@ -27,19 +27,20 @@ interface MenuItem {
   badge?: string
 }
 
-const menuItems: MenuItem[] = [
-  { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, href: '/admin/dashboard' },
-  { id: 'teachers', label: 'Data Guru', icon: GraduationCap, href: '/admin/teachers' },
-  { id: 'classes', label: 'Data Kelas', icon: GraduationCap, href: '/admin/classes' },
-  { id: 'parents', label: 'Data Orang Tua', icon: UserPlus, href: '/admin/parents' },
-  { id: 'students', label: 'Data Murid', icon: Users, href: '/admin/students' },
-  { id: 'reports', label: 'Laporan', icon: FileText, href: '/admin/reports' },
-  { id: 'settings', label: 'Pengaturan', icon: Settings, href: '/admin/settings' },
+const getMenuItems = (t: any): MenuItem[] => [
+  { id: 'dashboard', label: t('pages.admin.dashboard.title'), icon: LayoutDashboard, href: '/admin/dashboard' },
+  { id: 'teachers', label: t('pages.admin.teachers.title'), icon: GraduationCap, href: '/admin/teachers' },
+  { id: 'classes', label: t('pages.admin.classes.title'), icon: GraduationCap, href: '/admin/classes' },
+  { id: 'parents', label: t('pages.admin.parents.title'), icon: UserPlus, href: '/admin/parents' },
+  { id: 'students', label: t('pages.admin.students.title'), icon: Users, href: '/admin/students' },
+  { id: 'reports', label: t('pages.admin.reports.title'), icon: FileText, href: '/admin/reports' },
+  { id: 'settings', label: t('pages.admin.settings.title'), icon: Settings, href: '/admin/settings' },
 ]
 
 export function AdminDashboard() {
   const { t } = useTranslation()
   const { user, logout } = useAuthStore()
+  const menuItems = getMenuItems(t)
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [userMenuOpen, setUserMenuOpen] = useState(false)
   const [logoutDialogOpen, setLogoutDialogOpen] = useState(false)
@@ -91,7 +92,7 @@ export function AdminDashboard() {
       `}>
         {/* Logo */}
         <div className="p-4 border-b-2 border-border flex items-center justify-between h-[72px]">
-          <h1 className="font-bold text-lg">Admin Panel</h1>
+          <h1 className="font-bold text-lg">{t('pages.admin.dashboard.panelTitle')}</h1>
           <button
             onClick={() => setSidebarOpen(false)}
             className="lg:hidden p-2 border-2 border-border hover:bg-gray-50 min-h-[44px] min-w-[44px]"
@@ -163,7 +164,7 @@ export function AdminDashboard() {
                     className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 border-b border-border min-h-[48px] transition-colors"
                   >
                     <User size={18} />
-                    <span className="text-sm">Profil</span>
+                    <span className="text-sm">{t('pages.profile.title')}</span>
                   </Link>
                   <button
                     onClick={() => {
@@ -173,7 +174,7 @@ export function AdminDashboard() {
                     className="w-full flex items-center gap-3 px-4 py-3 hover:bg-red-50 text-red-600 min-h-[48px] transition-colors"
                   >
                     <LogOut size={18} />
-                    <span className="text-sm">Keluar</span>
+                    <span className="text-sm">{t('auth.logout')}</span>
                   </button>
                 </div>
               </>
@@ -185,10 +186,9 @@ export function AdminDashboard() {
         <ConfirmDialog
           open={logoutDialogOpen}
           onOpenChange={setLogoutDialogOpen}
-          title="Keluar dari Akun?"
-          description="Apakah Anda yakin ingin keluar? Anda perlu login kembali untuk mengakses sistem."
-          confirmLabel="Ya, Keluar"
-          cancelLabel="Batal"
+          title={t('messages.confirm.logout')}
+          description={t('messages.confirm.logoutDescription')}
+          confirmLabel={t('auth.logout')}
           variant="danger"
           onConfirm={handleLogout}
         />

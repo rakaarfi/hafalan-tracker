@@ -99,14 +99,14 @@ export function StudentListPage() {
       await studentsApi.delete(pendingDeleteStudent.id)
       setStudents(students.filter(s => s.id !== pendingDeleteStudent.id))
       toast({
-        title: "Berhasil",
-        description: "Murid berhasil dihapus",
+        title: t('common.status.success'),
+        description: t('messages.success.deleted'),
       })
     } catch (error: any) {
       toast({
         variant: "destructive",
-        title: "Gagal",
-        description: error.response?.data?.error || error.message || "Gagal menghapus murid",
+        title: t('common.status.failed'),
+        description: error.response?.data?.error || error.message || t('errors.failedToDelete'),
       })
     } finally {
       setDeleting(null)
@@ -129,15 +129,15 @@ export function StudentListPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
         <div>
-          <h1 className="text-xl md:text-2xl font-bold">Data Murid</h1>
-          <p className="text-gray-600">Kelola data murid sekolah</p>
+          <h1 className="text-xl md:text-2xl font-bold">{t('pages.admin.students.title')}</h1>
+          <p className="text-gray-600">{t('pages.admin.students.description')}</p>
         </div>
         <Link to="/admin/students/new">
           <Button
             className="min-h-[44px] min-w-[44px] w-full sm:w-auto"
           >
             <Plus size={20} className="mr-2 inline" />
-            Tambah Murid
+            {t('pages.admin.students.add')}
           </Button>
         </Link>
       </div>
@@ -188,17 +188,17 @@ export function StudentListPage() {
         <table className="w-full min-w-[600px]">
           <thead className="bg-gray-50 border-b-2 border-border">
             <tr>
-              <th className="text-left p-2 md:p-4 border-r-2 border-border text-sm md:text-base">Nama</th>
-              <th className="text-left p-2 md:p-4 border-r-2 border-border text-sm md:text-base">Kelas</th>
-              <th className="text-left p-2 md:p-4 border-r-2 border-border text-sm md:text-base">Orang Tua</th>
-              <th className="text-center p-2 md:p-4 text-sm md:text-base">Aksi</th>
+              <th className="text-left p-2 md:p-4 border-r-2 border-border text-sm md:text-base">{t('dataTable.headers.name')}</th>
+              <th className="text-left p-2 md:p-4 border-r-2 border-border text-sm md:text-base">{t('dataTable.headers.class')}</th>
+              <th className="text-left p-2 md:p-4 border-r-2 border-border text-sm md:text-base">{t('dataTable.headers.parent')}</th>
+              <th className="text-center p-2 md:p-4 text-sm md:text-base">{t('dataTable.headers.actions')}</th>
             </tr>
           </thead>
           <tbody className="divide-y-2 divide-border">
             {!students || students.length === 0 ? (
               <tr>
                 <td colSpan={4} className="p-8 text-center text-gray-500">
-                  {search ? 'Tidak ada murid ditemukan' : 'Belum ada data murid'}
+                  {search ? t('dataTable.noResults') : t('pages.admin.students.empty')}
                 </td>
               </tr>
             ) : (
@@ -220,7 +220,7 @@ export function StudentListPage() {
                       <Link to={`/admin/students/${student.id}`} className="inline-block">
                         <button
                           className="p-1.5 md:p-2 border-2 border-blue-200 hover:bg-blue-50 min-h-[36px] min-w-[36px]"
-                          title="Lihat Detail"
+                          title={t('common.buttons.viewDetail')}
                         >
                           <Eye size={14} className="md:size-[16px]" />
                         </button>
@@ -228,7 +228,7 @@ export function StudentListPage() {
                       <Link to={`/admin/students/${student.id}/edit`} className="inline-block">
                         <button
                           className="p-1.5 md:p-2 border-2 border-yellow-200 hover:bg-yellow-50 min-h-[36px] min-w-[36px]"
-                          title="Edit"
+                          title={t('common.actions.edit')}
                         >
                           <Edit size={14} className="md:size-[16px]" />
                         </button>
@@ -237,7 +237,7 @@ export function StudentListPage() {
                         onClick={() => handleDelete(student)}
                         disabled={deleting === student.id}
                         className="p-1.5 md:p-2 border-2 border-red-200 hover:bg-red-50 min-h-[36px] min-w-[36px] disabled:opacity-50"
-                        title="Hapus"
+                        title={t('common.actions.delete')}
                       >
                         <Trash2 size={14} className="md:size-[16px]" />
                       </button>
@@ -254,7 +254,10 @@ export function StudentListPage() {
       {totalPages > 1 && (
         <div className="mt-4 flex flex-col sm:flex-row justify-between items-center gap-4">
           <div className="text-sm text-gray-600">
-            Menampilkan {(page - 1) * 10 + 1} - {Math.min(page * 10, total)} dari {total} murid
+            {t('pagination.showing', {
+              start: (page - 1) * 10 + 1,
+              end: Math.min(page * 10, total)
+            })} {t('pagination.of', { total })} {t('pagination.results')}
           </div>
           <div className="flex gap-2">
             <Button
@@ -263,7 +266,7 @@ export function StudentListPage() {
               disabled={page <= 1 || loading}
               className="min-h-[36px] min-w-[36px]"
             >
-              Sebelumnya
+              {t('pagination.previous')}
             </Button>
             <div className="flex items-center gap-1">
               {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
@@ -297,7 +300,7 @@ export function StudentListPage() {
               disabled={page >= totalPages || loading}
               className="min-h-[36px] min-w-[36px]"
             >
-              Selanjutnya
+              {t('pagination.next')}
             </Button>
           </div>
         </div>
@@ -315,14 +318,14 @@ export function StudentListPage() {
       <ConfirmDialog
         open={deleteDialogOpen}
         onOpenChange={setDeleteDialogOpen}
-        title="Hapus Murid?"
+        title={`${t('pages.admin.students.delete')}?`}
         description={
           pendingDeleteStudent
-            ? `Apakah Anda yakin ingin menghapus murid ${pendingDeleteStudent.name}?\n\nSemua data hafalan juga akan dihapus.`
-            : 'Hapus murid?'
+            ? `${t('messages.confirm.delete')} ${pendingDeleteStudent.name}?\n\nSemua data hafalan juga akan dihapus.`
+            : t('messages.confirm.delete')
         }
-        confirmLabel="Ya, Hapus"
-        cancelLabel="Batal"
+        confirmLabel={`${t('common.actions.confirm')}, ${t('common.actions.delete')}`}
+        cancelLabel={t('common.actions.cancel')}
         variant="danger"
         onConfirm={executeDelete}
         isLoading={deleting !== null}

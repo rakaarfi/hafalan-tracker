@@ -3,6 +3,7 @@ import { Search, Check } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
+import { useTranslation } from 'react-i18next'
 
 interface User {
   id: string
@@ -18,7 +19,8 @@ interface UserComboboxProps {
   placeholder?: string
 }
 
-export function UserCombobox({ users, value, onChange, placeholder = 'Pilih User...' }: UserComboboxProps) {
+export function UserCombobox({ users, value, onChange, placeholder }: UserComboboxProps) {
+  const { t } = useTranslation()
   const [open, setOpen] = useState(false)
   const [search, setSearch] = useState('')
 
@@ -60,7 +62,7 @@ export function UserCombobox({ users, value, onChange, placeholder = 'Pilih User
         className="w-full justify-between border-2 min-h-[44px] text-left px-3"
       >
         <span className="truncate flex-1">
-          {displayValue || placeholder}
+          {displayValue || placeholder || t('common.buttons.select')}
         </span>
         <span className="ml-2 text-xs flex-shrink-0">{open ? '▲' : '▼'}</span>
       </Button>
@@ -81,7 +83,7 @@ export function UserCombobox({ users, value, onChange, placeholder = 'Pilih User
               <div className="relative">
                 <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-500" />
                 <Input
-                  placeholder="Cari nama, email, atau role..."
+                  placeholder={t('forms.placeholders.searchUser')}
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   className="pl-9 border-2 focus-visible:ring-0 min-h-[44px]"
@@ -95,8 +97,8 @@ export function UserCombobox({ users, value, onChange, placeholder = 'Pilih User
               {filteredUsers.length === 0 ? (
                 <div className="p-6 text-center text-sm text-gray-500">
                   <Search className="mx-auto h-8 w-8 mb-2 text-gray-400" />
-                  <p>Tidak ada user ditemukan</p>
-                  <p className="text-xs text-gray-400 mt-1">Coba kata kunci lain</p>
+                  <p>{t('dataTable.noResults')}</p>
+                  <p className="text-xs text-gray-400 mt-1">{t('messages.info.tryDifferentKeyword')}</p>
                 </div>
               ) : (
                 filteredUsers.map((user) => {
@@ -138,7 +140,7 @@ export function UserCombobox({ users, value, onChange, placeholder = 'Pilih User
             {/* Footer */}
             {filteredUsers.length > 0 && (
               <div className="p-2 border-t-2 border-border bg-gray-50 text-xs text-gray-600 text-center">
-                {filteredUsers.length} user ditemukan
+                {t('messages.info.userFound', { count: filteredUsers.length })}
               </div>
             )}
           </div>

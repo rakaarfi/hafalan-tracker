@@ -9,6 +9,7 @@ import { useToast } from '@/hooks/use-toast'
 import { parentsApi } from '@/lib/api'
 import { translateBackendError } from '@/lib/errorTranslation'
 import { useAuthStore } from '@/stores/authStore'
+import { useTranslation } from 'react-i18next'
 
 interface Parent {
   UserID: string
@@ -31,6 +32,7 @@ export function ParentListPage() {
   const [total, setTotal] = useState(0)
 
   const { toast } = useToast()
+  const { t } = useTranslation()
   const { isAuthenticated } = useAuthStore()
   const hasFetchedInitially = useRef(false)
 
@@ -84,14 +86,14 @@ export function ParentListPage() {
       await parentsApi.delete(pendingDeleteParent.UserID)
       setParents(parents.filter(p => p.UserID !== pendingDeleteParent.UserID))
       toast({
-        title: "Berhasil",
-        description: "Orang tua berhasil dihapus",
+        title: t('common.status.success'),
+        description: t('messages.success.deleted'),
       })
     } catch (error: any) {
       toast({
         variant: "destructive",
-        title: "Gagal",
-        description: error.response?.data?.error || error.message || "Gagal menghapus orang tua",
+        title: t('common.status.failed'),
+        description: error.response?.data?.error || error.message || t('errors.failedToDelete'),
       })
     } finally {
       setDeleting(null)
@@ -114,15 +116,15 @@ export function ParentListPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
         <div>
-          <h1 className="text-xl md:text-2xl font-bold">Data Orang Tua</h1>
-          <p className="text-gray-600">Kelola data orang tua murid</p>
+          <h1 className="text-xl md:text-2xl font-bold">{t('pages.admin.parents.title')}</h1>
+          <p className="text-gray-600">{t('pages.admin.parents.description')}</p>
         </div>
         <Link to="/admin/parents/new">
           <Button
             className="min-h-[44px] min-w-[44px] w-full sm:w-auto"
           >
             <Plus size={20} className="mr-2 inline" />
-            Tambah Orang Tua
+            {t('pages.admin.parents.add')}
           </Button>
         </Link>
       </div>
@@ -158,17 +160,17 @@ export function ParentListPage() {
         <table className="w-full min-w-[600px]">
           <thead className="bg-gray-50 border-b-2 border-border">
             <tr>
-              <th className="text-left p-2 md:p-4 border-r-2 border-border text-sm md:text-base">Nama</th>
-              <th className="text-left p-2 md:p-4 border-r-2 border-border text-sm md:text-base">Email</th>
-              <th className="text-left p-2 md:p-4 border-r-2 border-border text-sm md:text-base">No HP</th>
-              <th className="text-center p-2 md:p-4 text-sm md:text-base">Aksi</th>
+              <th className="text-left p-2 md:p-4 border-r-2 border-border text-sm md:text-base">{t('dataTable.headers.name')}</th>
+              <th className="text-left p-2 md:p-4 border-r-2 border-border text-sm md:text-base">{t('dataTable.headers.email')}</th>
+              <th className="text-left p-2 md:p-4 border-r-2 border-border text-sm md:text-base">{t('dataTable.headers.phone')}</th>
+              <th className="text-center p-2 md:p-4 text-sm md:text-base">{t('dataTable.headers.actions')}</th>
             </tr>
           </thead>
           <tbody className="divide-y-2 divide-border">
             {!parents || parents.length === 0 ? (
               <tr>
                 <td colSpan={4} className="p-8 text-center text-gray-500">
-                  {search ? 'Tidak ada orang tua ditemukan' : 'Belum ada data orang tua'}
+                  {search ? t('dataTable.noResults') : t('pages.admin.parents.empty')}
                 </td>
               </tr>
             ) : (
@@ -226,7 +228,10 @@ export function ParentListPage() {
       {totalPages > 1 && (
         <div className="mt-4 flex flex-col sm:flex-row justify-between items-center gap-4">
           <div className="text-sm text-gray-600">
-            Menampilkan {(page - 1) * 10 + 1} - {Math.min(page * 10, total)} dari {total} orang tua
+            {t('pagination.showing', {
+              start: (page - 1) * 10 + 1,
+              end: Math.min(page * 10, total)
+            })} {t('pagination.of', { total })} {t('pagination.results')}
           </div>
           <div className="flex gap-2">
             <Button
@@ -235,7 +240,7 @@ export function ParentListPage() {
               disabled={page <= 1 || loading}
               className="min-h-[36px] min-w-[36px]"
             >
-              Sebelumnya
+              {t('pagination.previous')}
             </Button>
             <div className="flex items-center gap-1">
               {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
@@ -269,7 +274,7 @@ export function ParentListPage() {
               disabled={page >= totalPages || loading}
               className="min-h-[36px] min-w-[36px]"
             >
-              Selanjutnya
+              {t('pagination.next')}
             </Button>
           </div>
         </div>
@@ -287,14 +292,14 @@ export function ParentListPage() {
       <ConfirmDialog
         open={deleteDialogOpen}
         onOpenChange={setDeleteDialogOpen}
-        title="Hapus Orang Tua?"
+        title={`${t('pages.admin.parents.delete')}?`}
         description={
           pendingDeleteParent
-            ? `Apakah Anda yakin ingin menghapus orang tua ${pendingDeleteParent.FullName}?`
-            : 'Hapus orang tua?'
+            ? `${t('messages.confirm.delete')} ${pendingDeleteParent.FullName}?`
+            : t('messages.confirm.delete')
         }
-        confirmLabel="Ya, Hapus"
-        cancelLabel="Batal"
+        confirmLabel={`${t('common.actions.confirm')}, ${t('common.actions.delete')}`}
+        cancelLabel={t('common.actions.cancel')}
         variant="danger"
         onConfirm={executeDelete}
         isLoading={deleting !== null}

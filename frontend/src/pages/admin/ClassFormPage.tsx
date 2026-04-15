@@ -13,6 +13,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { useToast } from '@/hooks/use-toast'
 import { classesApi, teachersApi, QuranTeacherAssignment } from '@/lib/api'
 import { translateBackendError } from '@/lib/errorTranslation'
+import { useTranslation } from 'react-i18next'
 
 const classSchema = z.object({
   name: z.string().min(1, 'Nama kelas wajib diisi'),
@@ -24,6 +25,7 @@ type ClassFormData = z.infer<typeof classSchema>
 
 export function ClassFormPage() {
   const { toast } = useToast()
+  const { t } = useTranslation()
   const { classId } = useParams<{ classId?: string }>()
   const navigate = useNavigate()
   const isEditing = !!classId
@@ -286,11 +288,11 @@ export function ClassFormPage() {
             className="text-sm text-gray-600 hover:text-gray-900 mb-2 flex items-center gap-2"
           >
             <ArrowLeft size={16} />
-            Kembali
+            {t('common.actions.back')}
           </button>
         </Link>
         <h1 className="text-xl md:text-2xl font-bold">
-          {isEditing ? 'Edit Kelas' : 'Tambah Kelas Baru'}
+          {isEditing ? t('pages.admin.classes.edit') : t('pages.admin.classes.add')}
         </h1>
       </div>
 
@@ -306,7 +308,7 @@ export function ClassFormPage() {
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 md:space-y-6">
             {/* Nama Kelas */}
             <div>
-              <Label htmlFor="name">Nama Kelas *</Label>
+              <Label htmlFor="name">{t('forms.labels.fullName')} *</Label>
               <Input
                 id="name"
                 placeholder="Contoh: Kelas 1A"
@@ -318,7 +320,7 @@ export function ClassFormPage() {
 
             {/* Tingkat Kelas */}
             <div>
-              <Label htmlFor="grade_level">Tingkat Kelas *</Label>
+              <Label htmlFor="grade_level">{t('pages.admin.classes.description')}</Label>
               <select
                 id="grade_level"
                 className="flex h-9 w-full rounded-none border-2 border-input bg-transparent px-3 py-1 text-base min-h-[44px]"
@@ -337,13 +339,13 @@ export function ClassFormPage() {
 
             {/* Wali Kelas */}
             <div>
-              <Label htmlFor="homeroom_teacher_id">Wali Kelas</Label>
+              <Label htmlFor="homeroom_teacher_id">{t('roles.homeroom')}</Label>
               <select
                 id="homeroom_teacher_id"
                 className="flex h-9 w-full rounded-none border-2 border-input bg-transparent px-3 py-1 text-base min-h-[44px]"
                 {...register('homeroom_teacher_id')}
               >
-                <option value="">Pilih Wali Kelas</option>
+                <option value="">{t('forms.placeholders.selectTeacher')}</option>
                 {teachers.map((teacher) => (
                   <option key={teacher.UserID} value={teacher.UserID}>{teacher.FullName}</option>
                 ))}
@@ -373,7 +375,7 @@ export function ClassFormPage() {
                   variant="outline"
                   className="min-h-[44px] w-full"
                 >
-                  Batal
+                  {t('common.actions.cancel')}
                 </Button>
               </Link>
               <Button
@@ -381,7 +383,7 @@ export function ClassFormPage() {
                 disabled={isSubmitting}
                 className="min-h-[44px] flex-1"
               >
-                {isSubmitting ? 'Menyimpan...' : 'Simpan'}
+                {isSubmitting ? t('common.status.processing') : t('common.actions.save')}
               </Button>
             </div>
           </form>

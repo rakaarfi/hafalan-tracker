@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { useToast } from '@/hooks/use-toast'
+import { useTranslation } from 'react-i18next'
 import { studentsApi, memorizationsApi, parentsApi, Student, Memorization, Parent } from '@/lib/api'
 import { translateBackendError } from '@/lib/errorTranslation'
 
@@ -12,6 +13,7 @@ export function StudentViewPage() {
   const { studentId } = useParams<{ studentId: string }>()
   const navigate = useNavigate()
   const { toast } = useToast()
+  const { t } = useTranslation()
 
   const [student, setStudent] = useState<Student | null>(null)
   const [parents, setParents] = useState<{father?: Parent, mother?: Parent}>({})
@@ -70,7 +72,7 @@ export function StudentViewPage() {
       setError(errorMsg)
       toast({
         variant: "destructive",
-        title: "Gagal memuat data",
+        title: t('common.status.failed'),
         description: errorMsg,
       })
     } finally {
@@ -128,15 +130,15 @@ export function StudentViewPage() {
     try {
       await studentsApi.delete(student.id)
       toast({
-        title: "Berhasil",
-        description: "Murid berhasil dihapus",
+        title: t('common.status.success'),
+        description: t('messages.success.deleted'),
       })
       navigate('/admin/students')
     } catch (error: any) {
       toast({
         variant: "destructive",
-        title: "Gagal",
-        description: error.response?.data?.error || error.message || "Gagal menghapus murid",
+        title: t('common.status.failed'),
+        description: error.response?.data?.error || error.message || t('errors.failedToDelete'),
       })
     } finally {
       setDeleteDialogOpen(false)
@@ -373,10 +375,10 @@ export function StudentViewPage() {
       <ConfirmDialog
         open={deleteDialogOpen}
         onOpenChange={setDeleteDialogOpen}
-        title="Hapus Murid?"
-        description={`Apakah Anda yakin ingin menghapus murid ${student.name}?\n\nSemua data hafalan juga akan dihapus.`}
-        confirmLabel="Ya, Hapus"
-        cancelLabel="Batal"
+        title={`${t('pages.admin.students.delete')}?`}
+        description={`${t('messages.confirm.delete')} ${student.name}?\n\nSemua data hafalan juga akan dihapus.`}
+        confirmLabel={`${t('common.actions.confirm')}, ${t('common.actions.delete')}`}
+        cancelLabel={t('common.actions.cancel')}
         variant="danger"
         onConfirm={executeDelete}
       />

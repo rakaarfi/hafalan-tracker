@@ -17,18 +17,18 @@ import { useAuthStore } from '@/stores/authStore'
 import api from '@/lib/api'
 import { translateBackendError } from '@/lib/errorTranslation'
 
-const profileSchema = z.object({
-  name: z.string().min(1, 'Nama wajib diisi'),
-  email: z.string().email('Format email tidak valid'),
+const getProfileSchema = (t: any) => z.object({
+  name: z.string().min(1, t('validation.required')),
+  email: z.string().email(t('validation.invalidEmail')),
   phone: z.string().optional(),
 })
 
-const passwordSchema = z.object({
-  current_password: z.string().min(1, 'Password saat ini wajib diisi'),
-  new_password: z.string().min(6, 'Password baru minimal 6 karakter'),
-  confirm_password: z.string().min(6, 'Konfirmasi password wajib diisi'),
+const getPasswordSchema = (t: any) => z.object({
+  current_password: z.string().min(1, t('pages.profile.validation.currentPasswordRequired')),
+  new_password: z.string().min(6, t('pages.profile.validation.newPasswordMin')),
+  confirm_password: z.string().min(6, t('pages.profile.validation.confirmPasswordRequired')),
 }).refine((data) => data.new_password === data.confirm_password, {
-  message: "Konfirmasi password tidak cocok",
+  message: t('pages.profile.validation.passwordMismatch'),
   path: ["confirm_password"],
 })
 
@@ -47,6 +47,10 @@ export function ProfilePage({ embedded = false }: ProfilePageProps) {
   const { user, updateUser } = useAuthStore()
   const [activeTab, setActiveTab] = useState<'profile' | 'password'>('profile')
   const [showPasswordBanner, setShowPasswordBanner] = useState(user?.is_default_password || false)
+
+  // Create schemas with translation function
+  const profileSchema = getProfileSchema(t)
+  const passwordSchema = getPasswordSchema(t)
 
   // Check if navigation state contains activeTab
   useEffect(() => {
@@ -77,9 +81,9 @@ export function ProfilePage({ embedded = false }: ProfilePageProps) {
   const getDashboardTitle = () => {
     switch (user?.role) {
       case 'teacher':
-        return 'Dashboard Guru'
+        return t('teacher.dashboard')
       case 'parent':
-        return 'Dashboard Orang Tua'
+        return t('parent.dashboard')
       case 'admin':
         return 'Dashboard Admin'
       default:
@@ -87,7 +91,7 @@ export function ProfilePage({ embedded = false }: ProfilePageProps) {
     }
   }
 
-  const { register: registerProfile, handleSubmit: handleProfileSubmit, formState: profileFormState } = useForm<ProfileFormData>({
+  const { register: registerProfile, handleSubmit: handleProfileSubmit, formState: profileFormState, reset: resetProfileForm } = useForm<ProfileFormData>({
     resolver: zodResolver(profileSchema),
     defaultValues: {
       name: user?.name || '',
@@ -100,6 +104,17 @@ export function ProfilePage({ embedded = false }: ProfilePageProps) {
     resolver: zodResolver(passwordSchema),
   })
 
+  // Update form when user data changes
+  useEffect(() => {
+    if (user) {
+      resetProfileForm({
+        name: user.name || '',
+        email: user.email || '',
+        phone: user.phone || '',
+      })
+    }
+  }, [user, resetProfileForm])
+
   const onProfileSubmit = async (data: ProfileFormData) => {
     try {
       await api.put('/profile', data)
@@ -108,14 +123,14 @@ export function ProfilePage({ embedded = false }: ProfilePageProps) {
       updateUser({ name: data.name, email: data.email, phone: data.phone })
 
       toast({
-        title: "Berhasil",
-        description: "Profile berhasil diupdate",
+        title: t('common.status.success'),
+        description: t('messages.success.updated'),
       })
     } catch (error: any) {
       toast({
         variant: "destructive",
-        title: "Gagal",
-        description: error.response?.data?.error || "Gagal update profile",
+        title: t('common.status.failed'),
+        description: error.response?.data?.error || t('errors.failedToUpdate'),
       })
     }
   }
@@ -128,8 +143,8 @@ export function ProfilePage({ embedded = false }: ProfilePageProps) {
       })
 
       toast({
-        title: "Berhasil",
-        description: "Password berhasil diubah",
+        title: t('common.status.success'),
+        description: t('pages.profile.changePassword') + " " + t('messages.success.updated').toLowerCase(),
       })
 
       // Hide password banner after successful password change
@@ -140,8 +155,8 @@ export function ProfilePage({ embedded = false }: ProfilePageProps) {
     } catch (error: any) {
       toast({
         variant: "destructive",
-        title: "Gagal",
-        description: error.response?.data?.error || "Gagal mengubah password",
+        title: t('common.status.failed'),
+        description: error.response?.data?.error || t('errors.failedToUpdate'),
       })
     }
   }
@@ -158,10 +173,10 @@ export function ProfilePage({ embedded = false }: ProfilePageProps) {
                 className="text-sm text-gray-600 hover:text-gray-900 mb-2 flex items-center gap-2"
               >
                 <ArrowLeft size={16} />
-                Kembali ke Dashboard
+                {t('common.actions.back')} ke {getDashboardTitle()}
               </button>
-              <h1 className="text-2xl font-bold">Profil</h1>
-              <p className="text-sm text-gray-600">Kelola akun Anda</p>
+              <h1 className="text-2xl font-bold">{t('pages.profile.title')}</h1>
+              <p className="text-sm text-gray-600">{t('pages.profile.manageAccount')}</p>
             </div>
             <div className="flex items-center gap-2">
               {/* User dropdown */}
@@ -179,10 +194,10 @@ export function ProfilePage({ embedded = false }: ProfilePageProps) {
               <AlertTriangle size={20} className="text-yellow-700 flex-shrink-0 mt-0.5" />
               <div className="flex-1">
                 <p className="text-sm text-yellow-800 font-medium">
-                  Penting: Ganti Password Anda
+                  {t('pages.profile.passwordBanner.title')}
                 </p>
                 <p className="text-xs text-yellow-700 mt-1 whitespace-nowrap">
-                  Password Anda dibuat dari nomor HP. Untuk keamanan, silakan ganti password dengan password yang lebih kuat.
+                  {t('pages.profile.passwordBanner.message')}
                 </p>
               </div>
               <div className="flex items-center gap-2">
@@ -190,7 +205,7 @@ export function ProfilePage({ embedded = false }: ProfilePageProps) {
                   onClick={() => setActiveTab('password')}
                   className="px-3 py-1.5 bg-yellow-600 text-white text-sm hover:bg-yellow-700 min-h-[36px] min-w-[36px] border-2 border-yellow-700"
                 >
-                  Ganti Password
+                  {t('pages.profile.changePassword')}
                 </button>
                 <button
                   onClick={() => setShowPasswordBanner(false)}
@@ -213,10 +228,10 @@ export function ProfilePage({ embedded = false }: ProfilePageProps) {
         <div className="border-2 border-border bg-white">
           <TabsList className="grid w-full grid-cols-2 border-b-2 border-border h-13 p-2 min-h-[60px]">
             <TabsTrigger value="profile" className="min-h-[44px] text-center">
-              Profile
+              {t('pages.profile.title')}
             </TabsTrigger>
             <TabsTrigger value="password" className="min-h-[44px] text-center">
-              Ganti Password
+              {t('pages.profile.changePassword')}
             </TabsTrigger>
           </TabsList>
 
@@ -232,9 +247,9 @@ export function ProfilePage({ embedded = false }: ProfilePageProps) {
                 <h3 className="font-semibold text-lg">{user?.name || user?.email}</h3>
                 <p className="text-sm text-gray-600">{user?.email}</p>
                 <Badge className="mt-1">
-                  {user?.role === 'admin' && 'Administrator'}
-                  {user?.role === 'teacher' && 'Guru'}
-                  {user?.role === 'parent' && 'Orang Tua'}
+                  {user?.role === 'admin' && t('roles.admin')}
+                  {user?.role === 'teacher' && t('roles.teacher')}
+                  {user?.role === 'parent' && t('roles.parent')}
                 </Badge>
               </div>
             </div>
@@ -243,7 +258,7 @@ export function ProfilePage({ embedded = false }: ProfilePageProps) {
           {/* Form Fields */}
           <form onSubmit={handleProfileSubmit(onProfileSubmit)} className="space-y-4">
             <div>
-              <Label htmlFor="name">Nama Lengkap</Label>
+              <Label htmlFor="name">{t('forms.labels.fullName')}</Label>
               <Input
                 id="name"
                 className="border-2 min-h-[44px]"
@@ -255,7 +270,7 @@ export function ProfilePage({ embedded = false }: ProfilePageProps) {
             </div>
 
             <div>
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">{t('forms.labels.email')}</Label>
               <Input
                 id="email"
                 type="email"
@@ -268,11 +283,11 @@ export function ProfilePage({ embedded = false }: ProfilePageProps) {
             </div>
 
             <div>
-              <Label htmlFor="phone">No HP</Label>
+              <Label htmlFor="phone">{t('forms.labels.phone')}</Label>
               <Input
                 id="phone"
                 type="tel"
-                placeholder="08xxxxxxxxxx"
+                placeholder={t('pages.profile.phonePlaceholder')}
                 className="border-2 min-h-[44px]"
                 {...registerProfile('phone')}
               />
@@ -285,7 +300,7 @@ export function ProfilePage({ embedded = false }: ProfilePageProps) {
                 disabled={profileFormState.isSubmitting}
                 className="w-full min-h-[44px]"
               >
-                {profileFormState.isSubmitting ? 'Menyimpan...' : 'Simpan Profile'}
+                {profileFormState.isSubmitting ? t('common.status.processing') : t('pages.profile.saveProfile')}
               </Button>
             </div>
           </form>
@@ -295,7 +310,7 @@ export function ProfilePage({ embedded = false }: ProfilePageProps) {
         <TabsContent value="password" className="p-6">
           <form id="password-form" onSubmit={handlePasswordSubmit(onPasswordSubmit)} className="space-y-4">
             <div>
-              <Label htmlFor="current_password">Password Saat Ini *</Label>
+              <Label htmlFor="current_password">{t('pages.profile.currentPassword')} *</Label>
               <PasswordInput
                 id="current_password"
                 className="border-2 min-h-[44px]"
@@ -307,10 +322,10 @@ export function ProfilePage({ embedded = false }: ProfilePageProps) {
             </div>
 
             <div>
-              <Label htmlFor="new_password">Password Baru *</Label>
+              <Label htmlFor="new_password">{t('pages.profile.newPassword')} *</Label>
               <PasswordInput
                 id="new_password"
-                placeholder="Minimal 6 karakter"
+                placeholder={t('pages.profile.passwordPlaceholder')}
                 className="border-2 min-h-[44px]"
                 {...registerPassword('new_password')}
               />
@@ -320,10 +335,10 @@ export function ProfilePage({ embedded = false }: ProfilePageProps) {
             </div>
 
             <div>
-              <Label htmlFor="confirm_password">Konfirmasi Password Baru *</Label>
+              <Label htmlFor="confirm_password">{t('pages.profile.confirmPassword')} *</Label>
               <PasswordInput
                 id="confirm_password"
-                placeholder="Ketik ulang password baru"
+                placeholder={t('pages.profile.confirmPasswordPlaceholder')}
                 className="border-2 min-h-[44px]"
                 {...registerPassword('confirm_password')}
               />
@@ -335,12 +350,12 @@ export function ProfilePage({ embedded = false }: ProfilePageProps) {
             {/* Info */}
             <div className="border-2 border-yellow-100 bg-yellow-50 p-4">
               <p className="text-sm text-yellow-800">
-                <strong>Tips:</strong>
+                <strong>{t('pages.profile.tips.title')}:</strong>
               </p>
               <ul className="text-sm text-yellow-700 list-disc list-inside mt-2 space-y-1">
-                <li>Gunakan minimal 6 karakter</li>
-                <li>Gabungkan huruf, angka, dan simbol</li>
-                <li>Jangan gunakan password yang sama dengan akun lain</li>
+                <li>{t('pages.profile.tips.minLength')}</li>
+                <li>{t('pages.profile.tips.complexity')}</li>
+                <li>{t('pages.profile.tips.unique')}</li>
               </ul>
             </div>
 
@@ -351,7 +366,7 @@ export function ProfilePage({ embedded = false }: ProfilePageProps) {
                 disabled={passwordFormState.isSubmitting}
                 className="w-full min-h-[44px]"
               >
-                {passwordFormState.isSubmitting ? 'Mengubah...' : 'Ganti Password'}
+                {passwordFormState.isSubmitting ? t('common.status.processing') : t('pages.profile.changePassword')}
               </Button>
             </div>
           </form>

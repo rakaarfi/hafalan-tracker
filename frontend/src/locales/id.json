@@ -40,7 +40,12 @@
     "overallProgress": "Progress Total",
     "recentTests": "Tes Terakhir",
     "children": "Anak-Anak",
-    "tapForDetail": "Ketuk untuk detail →"
+    "tapForDetail": "Ketuk untuk detail →",
+    "totalChildren": "Total Anak",
+    "averageTests": "Rata-rata Total Tes",
+    "totalTestsAll": "Total Tes Semua Anak",
+    "noChildren": "Belum ada data anak",
+    "contactAdmin": "Silakan hubungi admin untuk penambahan data anak"
   },
   "validation": {
     "pageStart": "Halaman awal",
@@ -48,7 +53,8 @@
     "pageMin": "Halaman harus minimal 1",
     "pageMax": "Halaman maksimal adalah 604",
     "required": "Field ini wajib diisi",
-    "invalidDate": "Format tanggal tidak valid"
+    "invalidDate": "Format tanggal tidak valid",
+    "invalidEmail": "Format email tidak valid"
   },
   "errors": {
     "failedToLoad": "Gagal memuat data",
@@ -66,6 +72,245 @@
     "studentAlreadyHasFather": "Murid sudah punya ayah. Hapus ayah yang lama terlebih dahulu",
     "studentAlreadyHasMother": "Murid sudah punya ibu. Hapus ibu yang lama terlebih dahulu",
     "parentNotLinkedToStudent": "Orang tua ini tidak terhubung dengan murid tersebut",
-    "selectStudent": "Pilih murid terlebih dahulu"
+    "selectStudent": "Pilih murid terlebih dahulu",
+    "unknownError": "Error tidak diketahui"
+  },
+  "common": {
+    "actions": {
+      "add": "Tambah",
+      "edit": "Edit",
+      "delete": "Hapus",
+      "save": "Simpan",
+      "cancel": "Batal",
+      "back": "Kembali",
+      "confirm": "Konfirmasi",
+      "close": "Tutup",
+      "search": "Cari",
+      "filter": "Filter",
+      "refresh": "Refresh",
+      "reset": "Reset",
+      "submit": "Submit"
+    },
+    "user": "Pengguna",
+    "optional": "Opsional",
+    "status": {
+      "loading": "Memuat...",
+      "processing": "Memproses...",
+      "success": "Berhasil",
+      "failed": "Gagal",
+      "error": "Error",
+      "warning": "Peringatan",
+      "info": "Informasi"
+    },
+    "buttons": {
+      "tryAgain": "Coba Lagi",
+      "viewDetail": "Lihat Detail",
+      "select": "Pilih",
+      "clear": "Hapus",
+      "browse": "Jelajah"
+    }
+  },
+  "pagination": {
+    "previous": "Sebelumnya",
+    "next": "Selanjutnya",
+    "first": "Pertama",
+    "last": "Terakhir",
+    "showing": "Menampilkan {{start}} - {{end}}",
+    "of": "dari {{total}}",
+    "results": "hasil",
+    "perPage": "per halaman"
+  },
+  "dataTable": {
+    "headers": {
+      "name": "Nama",
+      "email": "Email",
+      "phone": "No HP",
+      "class": "Kelas",
+      "actions": "Aksi",
+      "status": "Status",
+      "date": "Tanggal",
+      "parent": "Orang Tua"
+    },
+    "empty": {
+      "title": "Tidak ada data",
+      "message": "Belum ada data yang tersedia"
+    },
+    "noResults": "Tidak ada hasil ditemukan"
+  },
+  "forms": {
+    "labels": {
+      "fullName": "Nama Lengkap",
+      "firstName": "Nama Depan",
+      "lastName": "Nama Belakang",
+      "email": "Email",
+      "phone": "No HP",
+      "address": "Alamat",
+      "birthDate": "Tanggal Lahir",
+      "password": "Kata Sandi",
+      "confirmPassword": "Konfirmasi Kata Sandi",
+      "currentPassword": "Kata Sandi Saat Ini",
+      "gender": "Jenis Kelamin",
+      "role": "Peran",
+      "notes": "Catatan"
+    },
+    "placeholders": {
+      "enterName": "Masukkan nama",
+      "enterEmail": "Masukkan email",
+      "searchPlaceholder": "Cari...",
+      "searchUser": "Cari nama, email, atau role...",
+      "selectClass": "Pilih Kelas",
+      "selectTeacher": "Pilih Guru",
+      "selectParent": "Pilih Orang Tua"
+    },
+    "required": "wajib diisi"
+  },
+  "pages": {
+    "admin": {
+      "dashboard": {
+        "title": "Dashboard",
+        "panelTitle": "Panel Admin",
+        "description": "Ringkasan statistik dan aktivitas terbaru"
+      },
+      "students": {
+        "title": "Data Murid",
+        "description": "Kelola data murid sekolah",
+        "add": "Tambah Murid",
+        "edit": "Edit Murid",
+        "delete": "Hapus Murid",
+        "empty": "Belum ada data murid"
+      },
+      "teachers": {
+        "title": "Data Guru",
+        "description": "Kelola data guru dan wali kelas",
+        "add": "Tambah Guru",
+        "edit": "Edit Guru",
+        "delete": "Hapus Guru",
+        "empty": "Belum ada data guru"
+      },
+      "classes": {
+        "title": "Data Kelas",
+        "description": "Kelola kelas dan wali kelas",
+        "add": "Tambah Kelas",
+        "edit": "Edit Kelas",
+        "delete": "Hapus Kelas",
+        "empty": "Belum ada data kelas"
+      },
+      "parents": {
+        "title": "Data Orang Tua",
+        "description": "Kelola data orang tua murid",
+        "add": "Tambah Orang Tua",
+        "edit": "Edit Orang Tua",
+        "delete": "Hapus Orang Tua",
+        "empty": "Belum ada data orang tua"
+      },
+      "reports": {
+        "title": "Laporan & Export",
+        "description": "Generate laporan dalam format PDF dan Excel",
+        "studentReport": "Laporan Per Murid",
+        "classReport": "Laporan Per Kelas",
+        "periodReport": "Laporan Per Periode",
+        "preview": "Preview",
+        "exportPDF": "Ekspor PDF",
+        "exportExcel": "Ekspor Excel",
+        "pdfTitle": "Laporan Hafalan Quran",
+        "date": "Tanggal",
+        "father": "Ayah",
+        "mother": "Ibu",
+        "memorizationProgress": "Progress Hafalan",
+        "type": "Tipe",
+        "studentName": "Nama Murid",
+        "classStatistics": "Statistik Kelas",
+        "totalStudents": "Total Murid",
+        "avgProgress": "Rata-rata Progress",
+        "totalMemorizations": "Total Setoran",
+        "pdfSuccess": "PDF berhasil didownload:",
+        "pdfError": "Gagal generate PDF:",
+        "excelSuccess": "Excel berhasil didownload:",
+        "excelError": "Gagal generate Excel:",
+        "exportInfo": {
+          "title": "Informasi Export",
+          "pdfDesc": "Format resmi untuk presentasi, bisa diprint, include logo sekolah",
+          "excelDesc": "Untuk data processing, bisa diedit lagi, semua data lengkap",
+          "downloadInfo": "Laporan akan di-download langsung ke browser",
+          "logoInfo": "Logo sekolah akan ditambahkan di halaman settings"
+        }
+      },
+      "settings": {
+        "title": "Pengaturan",
+        "description": "Konfigurasi sistem dan sekolah"
+      }
+    },
+    "profile": {
+      "title": "Profil",
+      "update": "Update Profil",
+      "changePassword": "Ganti Kata Sandi",
+      "manageAccount": "Kelola akun Anda",
+      "saveProfile": "Simpan Profil",
+      "currentPassword": "Kata Sandi Saat Ini",
+      "newPassword": "Kata Sandi Baru",
+      "confirmPassword": "Konfirmasi Kata Sandi Baru",
+      "passwordPlaceholder": "Minimal 6 karakter",
+      "confirmPasswordPlaceholder": "Ketik ulang kata sandi baru",
+      "phonePlaceholder": "08xxxxxxxxxx",
+      "passwordBanner": {
+        "title": "Penting: Ganti Kata Sandi Anda",
+        "message": "Kata sandi Anda dibuat dari nomor HP. Untuk keamanan, silakan ganti kata sandi dengan kata sandi yang lebih kuat."
+      },
+      "tips": {
+        "title": "Tips",
+        "minLength": "Gunakan minimal 6 karakter",
+        "complexity": "Gabungkan huruf, angka, dan simbol",
+        "unique": "Jangan gunakan kata sandi yang sama dengan akun lain"
+      },
+      "validation": {
+        "currentPasswordRequired": "Kata sandi saat ini wajib diisi",
+        "newPasswordMin": "Kata sandi baru minimal 6 karakter",
+        "confirmPasswordRequired": "Konfirmasi kata sandi wajib diisi",
+        "passwordMismatch": "Konfirmasi kata sandi tidak cocok"
+      }
+    },
+    "childDetail": {
+      "title": "Detail Progress Hafalan",
+      "dateNotAvailable": "Tanggal tidak tersedia",
+      "totalTests": "Total Tes",
+      "latestTest": "Tes Terakhir",
+      "history": "Riwayat Hafalan"
+    },
+    "studentDetail": {
+      "studentInfo": "Informasi Murid",
+      "recentHistory": "Riwayat Hafalan Terakhir",
+      "inputNew": "Input Hafalan Baru"
+    },
+    "hafalanInput": {
+      "validationErrors": "Mohon perbaiki kesalahan berikut:",
+      "unitType": "Tipe unit",
+      "notesPlaceholder": "Catatan tambahan...",
+      "characters": "karakter"
+    }
+  },
+  "messages": {
+    "success": {
+      "saved": "Data berhasil disimpan",
+      "deleted": "Data berhasil dihapus",
+      "updated": "Data berhasil diupdate",
+      "added": "Data baru berhasil ditambahkan"
+    },
+    "confirm": {
+      "delete": "Apakah Anda yakin ingin menghapus data ini?",
+      "unsaved": "Perubahan yang belum disimpan akan hilang. Lanjutkan?",
+      "logout": "Keluar dari Akun?",
+      "logoutDescription": "Apakah Anda yakin ingin keluar? Anda perlu login kembali untuk mengakses sistem."
+    },
+    "info": {
+      "tryDifferentKeyword": "Coba kata kunci lain",
+      "userFound": "{{count}} user ditemukan"
+    }
+  },
+  "roles": {
+    "admin": "Admin",
+    "teacher": "Guru",
+    "parent": "Orang Tua",
+    "homeroom": "Wali Kelas",
+    "quranTeacher": "Guru Quran"
   }
 }

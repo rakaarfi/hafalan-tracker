@@ -31,7 +31,7 @@ export function LoginForm() {
 
       toast({
         title: t('auth.loginSuccess'),
-        description: "Login berhasil!",
+        description: t('common.status.success'),
       })
 
       // Redirect based on role
@@ -92,7 +92,7 @@ export function LoginForm() {
         className="w-full min-h-[44px]"
         disabled={isSubmitting}
       >
-        {isSubmitting ? 'Memproses...' : t('auth.login')}
+        {isSubmitting ? t('common.status.processing') : t('auth.login')}
       </Button>
 
       {error && (

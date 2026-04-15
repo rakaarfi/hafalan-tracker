@@ -120,14 +120,14 @@ export function SettingsPage() {
       })
 
       toast({
-        title: "Berhasil",
-        description: "Pengaturan sekolah berhasil disimpan"
+        title: t('common.status.success'),
+        description: t('messages.success.saved')
       })
     } catch (error: any) {
       toast({
         variant: "destructive",
-        title: "Gagal",
-        description: error.response?.data?.error || error.message || "Gagal menyimpan pengaturan"
+        title: t('common.status.failed'),
+        description: error.response?.data?.error || error.message || t('errors.failedToSave')
       })
     } finally {
       setSaving(false)
@@ -138,8 +138,8 @@ export function SettingsPage() {
     if (!resetPassword.selectedUserId) {
       toast({
         variant: "destructive",
-        title: "Gagal",
-        description: "Pilih user terlebih dahulu"
+        title: t('common.status.failed'),
+        description: t('errors.selectUser')
       })
       return
     }
@@ -168,8 +168,8 @@ export function SettingsPage() {
     } catch (error: any) {
       toast({
         variant: "destructive",
-        title: "Gagal",
-        description: error.response?.data?.error || error.message || "Gagal mereset password"
+        title: t('common.status.failed'),
+        description: error.response?.data?.error || error.message || t('errors.failedToUpdate')
       })
       setResetPassword(prev => ({ ...prev, loading: false }))
     }
@@ -186,8 +186,8 @@ export function SettingsPage() {
     <div>
       {/* Header */}
       <div className="mb-6">
-        <h1 className="text-2xl font-bold">Pengaturan</h1>
-        <p className="text-gray-600">Konfigurasi sistem dan sekolah</p>
+        <h1 className="text-2xl font-bold">{t('pages.admin.settings.title')}</h1>
+        <p className="text-gray-600">{t('pages.admin.settings.description')}</p>
       </div>
 
       <div className="space-y-6">
@@ -313,7 +313,7 @@ export function SettingsPage() {
                 className="min-h-[44px] min-w-[44px]"
               >
                 <Save size={20} className="mr-2" />
-                {saving ? 'Menyimpan...' : 'Simpan Pengaturan'}
+                {saving ? t('common.status.processing') : `${t('common.actions.save')} ${t('pages.admin.settings.title')}`}
               </Button>
             </div>
           </div>

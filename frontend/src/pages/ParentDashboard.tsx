@@ -47,7 +47,7 @@ export function ParentDashboard() {
     } catch (err: any) {
       // Don't show error if it's a 401 (user will be redirected to login)
       if (err.response?.status !== 401) {
-        setError('Gagal memuat data anak')
+        setError(t('errors.failedToLoad'))
       }
     } finally {
       setLoading(false)
@@ -80,10 +80,10 @@ export function ParentDashboard() {
               <AlertTriangle size={20} className="text-yellow-700 flex-shrink-0 mt-0.5" />
               <div className="flex-1">
                 <p className="text-sm text-yellow-800 font-medium">
-                  Penting: Ganti Password Anda
+                  {t('pages.profile.passwordBanner.title')}
                 </p>
                 <p className="text-xs text-yellow-700 mt-1">
-                  Password Anda dibuat dari nomor HP. Untuk keamanan, silakan ganti password dengan password yang lebih kuat.
+                  {t('pages.profile.passwordBanner.message')}
                 </p>
               </div>
               <div className="flex items-center gap-2">
@@ -91,7 +91,7 @@ export function ParentDashboard() {
                   onClick={() => navigate('/profile', { state: { activeTab: 'password' } })}
                   className="px-3 py-1.5 bg-yellow-600 text-white text-sm hover:bg-yellow-700 min-h-[36px] min-w-[36px] border-2 border-yellow-700"
                 >
-                  Ganti Password
+                  {t('pages.profile.changePassword')}
                 </button>
                 <button
                   onClick={() => setShowPasswordBanner(false)}
@@ -116,7 +116,7 @@ export function ParentDashboard() {
               </div>
               <div>
                 <div className="text-2xl font-bold">{children.length}</div>
-                <div className="text-sm text-gray-600">Total Anak</div>
+                <div className="text-sm text-gray-600">{t('parent.totalChildren')}</div>
               </div>
             </div>
           </div>
@@ -132,7 +132,7 @@ export function ParentDashboard() {
                     ? Math.round(children.reduce((sum, child) => sum + (child.total_tests || 0), 0) / children.length)
                     : 0}
                 </div>
-                <div className="text-sm text-gray-600">Rata-rata Total Tes</div>
+                <div className="text-sm text-gray-600">{t('parent.averageTests')}</div>
               </div>
             </div>
           </div>
@@ -146,7 +146,7 @@ export function ParentDashboard() {
                 <div className="text-2xl font-bold">
                   {children.reduce((sum, child) => sum + (child.total_tests || 0), 0)}
                 </div>
-                <div className="text-sm text-gray-600">Total Tes Semua Anak</div>
+                <div className="text-sm text-gray-600">{t('parent.totalTestsAll')}</div>
               </div>
             </div>
           </div>
@@ -156,7 +156,7 @@ export function ParentDashboard() {
         {loading ? (
           <div className="text-center py-12">
             <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-gray-300 border-t-primary"></div>
-            <p className="mt-4 text-gray-600">Memuat data...</p>
+            <p className="mt-4 text-gray-600">{t('common.status.loading')}</p>
           </div>
         ) : error ? (
           <div className="border-2 border-red-200 bg-red-50 p-6 text-center">
@@ -165,14 +165,14 @@ export function ParentDashboard() {
               onClick={fetchChildren}
               className="mt-4 px-4 py-2 border-2 border-red-300 text-red-700 hover:bg-red-100 min-h-[44px] min-w-[44px]"
             >
-              Coba Lagi
+              {t('common.buttons.tryAgain')}
             </button>
           </div>
         ) : children.length === 0 ? (
           <div className="border-2 border-border bg-white p-6 text-center">
             <Baby size={48} className="mx-auto text-gray-400 mb-4" />
-            <p className="text-gray-500">Belum ada data anak</p>
-            <p className="text-sm text-gray-400 mt-2">Silakan hubungi admin untuk penambahan data anak</p>
+            <p className="text-gray-500">{t('parent.noChildren')}</p>
+            <p className="text-sm text-gray-400 mt-2">{t('parent.contactAdmin')}</p>
           </div>
         ) : (
           <div className="flex flex-col space-y-4">

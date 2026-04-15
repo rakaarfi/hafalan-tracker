@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { useToast } from '@/hooks/use-toast'
+import { useTranslation } from 'react-i18next'
 import { parentsApi, studentsApi, memorizationsApi, Student, Memorization } from '@/lib/api'
 import { translateBackendError } from '@/lib/errorTranslation'
 
@@ -12,6 +13,7 @@ export function ParentViewPage() {
   const { parentId } = useParams<{ parentId: string }>()
   const navigate = useNavigate()
   const { toast } = useToast()
+  const { t } = useTranslation()
 
   const [parent, setParent] = useState<any>(null)
   const [children, setChildren] = useState<Student[]>([])
@@ -138,15 +140,15 @@ export function ParentViewPage() {
     try {
       await parentsApi.delete(parent.UserID)
       toast({
-        title: "Berhasil",
-        description: "Orang tua berhasil dihapus",
+        title: t('common.status.success'),
+        description: t('messages.success.deleted'),
       })
       navigate('/admin/parents')
     } catch (error: any) {
       toast({
         variant: "destructive",
-        title: "Gagal",
-        description: error.response?.data?.error || error.message || "Gagal menghapus orang tua",
+        title: t('common.status.failed'),
+        description: error.response?.data?.error || error.message || t('errors.failedToDelete'),
       })
     } finally {
       setDeleteDialogOpen(false)
@@ -332,10 +334,10 @@ export function ParentViewPage() {
       <ConfirmDialog
         open={deleteDialogOpen}
         onOpenChange={setDeleteDialogOpen}
-        title="Hapus Orang Tua?"
-        description={`Apakah Anda yakin ingin menghapus orang tua ${parent.FullName}?`}
-        confirmLabel="Ya, Hapus"
-        cancelLabel="Batal"
+        title={`${t('pages.admin.parents.delete')}?`}
+        description={`${t('messages.confirm.delete')} ${parent.FullName}?`}
+        confirmLabel={`${t('common.actions.confirm')}, ${t('common.actions.delete')}`}
+        cancelLabel={t('common.actions.cancel')}
         variant="danger"
         onConfirm={executeDelete}
       />

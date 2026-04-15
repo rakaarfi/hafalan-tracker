@@ -40,7 +40,12 @@
     "overallProgress": "Overall Progress",
     "recentTests": "Recent Tests",
     "children": "Children",
-    "tapForDetail": "Tap for detail →"
+    "tapForDetail": "Tap for detail →",
+    "totalChildren": "Total Children",
+    "averageTests": "Average Total Tests",
+    "totalTestsAll": "Total Tests All Children",
+    "noChildren": "No child data yet",
+    "contactAdmin": "Please contact admin for child data addition"
   },
   "validation": {
     "pageStart": "Page start",
@@ -48,6 +53,264 @@
     "pageMin": "Page must be at least 1",
     "pageMax": "Page maximum is 604",
     "required": "This field is required",
-    "invalidDate": "Invalid date format"
+    "invalidDate": "Invalid date format",
+    "invalidEmail": "Invalid email format"
+  },
+  "errors": {
+    "failedToLoad": "Failed to load data",
+    "failedToSave": "Failed to save data",
+    "failedToDelete": "Failed to delete data",
+    "failedToCreate": "Failed to create data",
+    "failedToUpdate": "Failed to update data",
+    "notFound": "Data not found",
+    "alreadyExists": "Data already exists",
+    "invalidRequest": "Invalid request format",
+    "unauthorized": "You don't have access",
+    "serverError": "Server error occurred",
+    "networkError": "Failed to connect to server",
+    "invalidEmailOrPassword": "Invalid email or password",
+    "studentAlreadyHasFather": "Student already has a father. Delete the existing father first",
+    "studentAlreadyHasMother": "Student already has a mother. Delete the existing mother first",
+    "parentNotLinkedToStudent": "This parent is not linked to that student",
+    "selectStudent": "Please select a student first",
+    "unknownError": "Unknown error"
+  },
+  "common": {
+    "actions": {
+      "add": "Add",
+      "edit": "Edit",
+      "delete": "Delete",
+      "save": "Save",
+      "cancel": "Cancel",
+      "back": "Back",
+      "confirm": "Confirm",
+      "close": "Close",
+      "search": "Search",
+      "filter": "Filter",
+      "refresh": "Refresh",
+      "reset": "Reset",
+      "submit": "Submit"
+    },
+    "user": "User",
+    "optional": "Optional",
+    "status": {
+      "loading": "Loading...",
+      "processing": "Processing...",
+      "success": "Success",
+      "failed": "Failed",
+      "error": "Error",
+      "warning": "Warning",
+      "info": "Information"
+    },
+    "buttons": {
+      "tryAgain": "Try Again",
+      "viewDetail": "View Detail",
+      "select": "Select",
+      "clear": "Clear",
+      "browse": "Browse"
+    }
+  },
+  "pagination": {
+    "previous": "Previous",
+    "next": "Next",
+    "first": "First",
+    "last": "Last",
+    "showing": "Showing {{start}} - {{end}}",
+    "of": "of {{total}}",
+    "results": "results",
+    "perPage": "per page"
+  },
+  "dataTable": {
+    "headers": {
+      "name": "Name",
+      "email": "Email",
+      "phone": "Phone",
+      "class": "Class",
+      "actions": "Actions",
+      "status": "Status",
+      "date": "Date",
+      "parent": "Parent"
+    },
+    "empty": {
+      "title": "No Data",
+      "message": "No data available yet"
+    },
+    "noResults": "No results found"
+  },
+  "forms": {
+    "labels": {
+      "fullName": "Full Name",
+      "firstName": "First Name",
+      "lastName": "Last Name",
+      "email": "Email",
+      "phone": "Phone",
+      "address": "Address",
+      "birthDate": "Birth Date",
+      "password": "Password",
+      "confirmPassword": "Confirm Password",
+      "currentPassword": "Current Password",
+      "gender": "Gender",
+      "role": "Role",
+      "notes": "Notes"
+    },
+    "placeholders": {
+      "enterName": "Enter name",
+      "enterEmail": "Enter email",
+      "searchPlaceholder": "Search...",
+      "searchUser": "Search name, email, or role...",
+      "selectClass": "Select Class",
+      "selectTeacher": "Select Teacher",
+      "selectParent": "Select Parent"
+    },
+    "required": "required"
+  },
+  "pages": {
+    "admin": {
+      "dashboard": {
+        "title": "Dashboard",
+        "panelTitle": "Admin Panel",
+        "description": "Summary of statistics and recent activities"
+      },
+      "students": {
+        "title": "Student Data",
+        "description": "Manage school student data",
+        "add": "Add Student",
+        "edit": "Edit Student",
+        "delete": "Delete Student",
+        "empty": "No student data yet"
+      },
+      "teachers": {
+        "title": "Teacher Data",
+        "description": "Manage teacher and homeroom data",
+        "add": "Add Teacher",
+        "edit": "Edit Teacher",
+        "delete": "Delete Teacher",
+        "empty": "No teacher data yet"
+      },
+      "classes": {
+        "title": "Class Data",
+        "description": "Manage classes and homeroom teachers",
+        "add": "Add Class",
+        "edit": "Edit Class",
+        "delete": "Delete Class",
+        "empty": "No class data yet"
+      },
+      "parents": {
+        "title": "Parent Data",
+        "description": "Manage student parent data",
+        "add": "Add Parent",
+        "edit": "Edit Parent",
+        "delete": "Delete Parent",
+        "empty": "No parent data yet"
+      },
+      "reports": {
+        "title": "Reports & Export",
+        "description": "Generate reports in PDF and Excel format",
+        "studentReport": "Student Report",
+        "classReport": "Class Report",
+        "periodReport": "Period Report",
+        "preview": "Preview",
+        "exportPDF": "Export PDF",
+        "exportExcel": "Export Excel",
+        "pdfTitle": "Quran Memorization Report",
+        "date": "Date",
+        "father": "Father",
+        "mother": "Mother",
+        "memorizationProgress": "Memorization Progress",
+        "type": "Type",
+        "studentName": "Student Name",
+        "classStatistics": "Class Statistics",
+        "totalStudents": "Total Students",
+        "avgProgress": "Average Progress",
+        "totalMemorizations": "Total Memorizations",
+        "pdfSuccess": "PDF successfully downloaded:",
+        "pdfError": "Failed to generate PDF:",
+        "excelSuccess": "Excel successfully downloaded:",
+        "excelError": "Failed to generate Excel:",
+        "exportInfo": {
+          "title": "Export Information",
+          "pdfDesc": "Official format for presentations, printable, includes school logo",
+          "excelDesc": "For data processing, can be edited, complete data",
+          "downloadInfo": "Report will be downloaded directly to browser",
+          "logoInfo": "School logo will be added in settings page"
+        }
+      },
+      "settings": {
+        "title": "Settings",
+        "description": "System and school configuration"
+      }
+    },
+    "profile": {
+      "title": "Profile",
+      "update": "Update Profile",
+      "changePassword": "Change Password",
+      "manageAccount": "Manage your account",
+      "saveProfile": "Save Profile",
+      "currentPassword": "Current Password",
+      "newPassword": "New Password",
+      "confirmPassword": "Confirm New Password",
+      "passwordPlaceholder": "Minimum 6 characters",
+      "confirmPasswordPlaceholder": "Retype new password",
+      "phonePlaceholder": "08xxxxxxxxxx",
+      "passwordBanner": {
+        "title": "Important: Change Your Password",
+        "message": "Your password was created from your phone number. For security, please change it to a stronger password."
+      },
+      "tips": {
+        "title": "Tips",
+        "minLength": "Use at least 6 characters",
+        "complexity": "Combine letters, numbers, and symbols",
+        "unique": "Don't use the same password as other accounts"
+      },
+      "validation": {
+        "currentPasswordRequired": "Current password is required",
+        "newPasswordMin": "New password must be at least 6 characters",
+        "confirmPasswordRequired": "Password confirmation is required",
+        "passwordMismatch": "Password confirmation does not match"
+      }
+    },
+    "childDetail": {
+      "title": "Memorization Progress Detail",
+      "dateNotAvailable": "Date not available",
+      "totalTests": "Total Tests",
+      "latestTest": "Latest Test",
+      "history": "Memorization History"
+    },
+    "studentDetail": {
+      "studentInfo": "Student Information",
+      "recentHistory": "Recent Memorization History",
+      "inputNew": "Input New Memorization"
+    },
+    "hafalanInput": {
+      "validationErrors": "Please fix the following errors:",
+      "unitType": "Unit type",
+      "notesPlaceholder": "Additional notes...",
+      "characters": "characters"
+    }
+  },
+  "messages": {
+    "success": {
+      "saved": "Data saved successfully",
+      "deleted": "Data deleted successfully",
+      "updated": "Data updated successfully",
+      "added": "New data added successfully"
+    },
+    "confirm": {
+      "delete": "Are you sure you want to delete this data?",
+      "unsaved": "Unsaved changes will be lost. Continue?",
+      "logout": "Logout from Account?",
+      "logoutDescription": "Are you sure you want to logout? You will need to login again to access the system."
+    },
+    "info": {
+      "tryDifferentKeyword": "Try a different keyword",
+      "userFound": "{{count}} user found"
+    }
+  },
+  "roles": {
+    "admin": "Admin",
+    "teacher": "Teacher",
+    "parent": "Parent",
+    "homeroom": "Homeroom Teacher",
+    "quranTeacher": "Quran Teacher"
   }
 }

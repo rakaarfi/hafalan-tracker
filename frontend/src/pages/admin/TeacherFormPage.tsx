@@ -13,6 +13,7 @@ import { teachersApi } from '@/lib/api'
 import { translateBackendError } from '@/lib/errorTranslation'
 import PhoneInput from 'react-phone-number-input'
 import 'react-phone-number-input/style.css'
+import { useTranslation } from 'react-i18next'
 
 const teacherSchema = z.object({
   name: z.string().min(1, 'Nama wajib diisi'),
@@ -25,6 +26,7 @@ type TeacherFormData = z.infer<typeof teacherSchema>
 
 export function TeacherFormPage() {
   const { toast } = useToast()
+  const { t } = useTranslation()
   const { teacherId } = useParams<{ teacherId?: string }>()
   const navigate = useNavigate()
   const isEditing = !!teacherId
@@ -53,8 +55,8 @@ export function TeacherFormPage() {
       } catch (error) {
         toast({
           variant: "destructive",
-          title: "Error",
-          description: "Gagal memuat data guru",
+          title: t('common.status.error'),
+          description: t('errors.failedToLoad'),
         })
         navigate('/admin/teachers')
       } finally {
@@ -82,8 +84,8 @@ export function TeacherFormPage() {
       }
 
       toast({
-        title: "Berhasil",
-        description: isEditing ? "Data guru berhasil diupdate" : "Guru baru berhasil ditambahkan"
+        title: t('common.status.success'),
+        description: isEditing ? t('messages.success.updated') : t('messages.success.added')
       })
 
       setTimeout(() => {
@@ -92,8 +94,8 @@ export function TeacherFormPage() {
     } catch (error: any) {
       toast({
         variant: "destructive",
-        title: "Gagal",
-        description: error.response?.data?.error || error.message || "Gagal menyimpan data guru",
+        title: t('common.status.failed'),
+        description: error.response?.data?.error || error.message || t('errors.failedToSave'),
       })
     }
   }
@@ -107,10 +109,10 @@ export function TeacherFormPage() {
           className="text-sm text-gray-600 hover:text-gray-900 mb-2 flex items-center gap-2"
         >
           <ArrowLeft size={16} />
-          Kembali
+          {t('common.actions.back')}
         </button>
         <h1 className="text-xl md:text-2xl font-bold">
-          {isEditing ? 'Edit Guru' : 'Tambah Guru Baru'}
+          {isEditing ? t('pages.admin.teachers.edit') : t('pages.admin.teachers.add')}
         </h1>
       </div>
 
@@ -125,10 +127,10 @@ export function TeacherFormPage() {
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 md:space-y-6">
           {/* Nama */}
           <div>
-            <Label htmlFor="name">Nama Lengkap *</Label>
+            <Label htmlFor="name">{t('forms.labels.fullName')} *</Label>
             <Input
               id="name"
-              placeholder="Masukkan nama lengkap guru"
+              placeholder={t('forms.placeholders.enterName')}
               className="border-2 min-h-[44px]"
               {...register('name')}
             />
@@ -137,11 +139,11 @@ export function TeacherFormPage() {
 
           {/* Email */}
           <div>
-            <Label htmlFor="email">Email *</Label>
+            <Label htmlFor="email">{t('forms.labels.email')} *</Label>
             <Input
               id="email"
               type="email"
-              placeholder="guru@sekolah.sch.id"
+              placeholder={t('forms.placeholders.enterEmail')}
               className="border-2 min-h-[44px]"
               {...register('email')}
             />
@@ -150,7 +152,7 @@ export function TeacherFormPage() {
 
           {/* No HP */}
           <div>
-            <Label htmlFor="phone">No HP *</Label>
+            <Label htmlFor="phone">{t('forms.labels.phone')} *</Label>
             <PhoneInput
               id="phone"
               international
@@ -190,14 +192,14 @@ export function TeacherFormPage() {
               onClick={() => navigate(-1)}
               className="min-h-[44px] flex-1"
             >
-              Batal
+              {t('common.actions.cancel')}
             </Button>
             <Button
               type="submit"
               disabled={isSubmitting}
               className="min-h-[44px] flex-1"
             >
-              {isSubmitting ? 'Menyimpan...' : 'Simpan'}
+              {isSubmitting ? t('common.status.processing') : t('common.actions.save')}
             </Button>
           </div>
         </form>

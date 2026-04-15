@@ -9,6 +9,7 @@ import { useToast } from '@/hooks/use-toast'
 import { classesApi } from '@/lib/api'
 import { translateBackendError } from '@/lib/errorTranslation'
 import { useAuthStore } from '@/stores/authStore'
+import { useTranslation } from 'react-i18next'
 
 interface Class {
   id: string
@@ -31,6 +32,7 @@ export function ClassListPage() {
   const [pendingDeleteClass, setPendingDeleteClass] = useState<Class | null>(null)
 
   const { toast } = useToast()
+  const { t } = useTranslation()
   const { isAuthenticated } = useAuthStore()
   const hasFetchedInitially = useRef(false)
 
@@ -84,14 +86,14 @@ export function ClassListPage() {
       await classesApi.delete(pendingDeleteClass.id)
       setClasses(classes.filter(c => c.id !== pendingDeleteClass.id))
       toast({
-        title: "Berhasil",
-        description: "Kelas berhasil dihapus",
+        title: t('common.status.success'),
+        description: t('messages.success.deleted'),
       })
     } catch (error: any) {
       toast({
         variant: "destructive",
-        title: "Gagal",
-        description: error.response?.data?.error || error.message || "Gagal menghapus kelas",
+        title: t('common.status.failed'),
+        description: error.response?.data?.error || error.message || t('errors.failedToDelete'),
       })
     } finally {
       setDeleting(null)
@@ -114,15 +116,15 @@ export function ClassListPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
         <div>
-          <h1 className="text-xl md:text-2xl font-bold">Data Kelas</h1>
-          <p className="text-gray-600">Kelola kelas dan wali kelas</p>
+          <h1 className="text-xl md:text-2xl font-bold">{t('pages.admin.classes.title')}</h1>
+          <p className="text-gray-600">{t('pages.admin.classes.description')}</p>
         </div>
         <Link to="/admin/classes/new">
           <Button
             className="min-h-[44px] min-w-[44px] w-full sm:w-auto"
           >
             <Plus size={20} className="mr-2 inline" />
-            Tambah Kelas
+            {t('pages.admin.classes.add')}
           </Button>
         </Link>
       </div>
@@ -161,7 +163,7 @@ export function ClassListPage() {
           {filteredClasses.length === 0 ? (
             <div className="col-span-full text-center py-12 border-2 border-border bg-white">
               <GraduationCap size={48} className="mx-auto text-gray-400 mb-4" />
-              <p className="text-gray-500">{search ? 'Tidak ada kelas ditemukan' : 'Belum ada data kelas'}</p>
+              <p className="text-gray-500">{search ? t('dataTable.noResults') : t('pages.admin.classes.empty')}</p>
             </div>
           ) : (
             filteredClasses.map((cls) => (
@@ -234,14 +236,14 @@ export function ClassListPage() {
       <ConfirmDialog
         open={deleteDialogOpen}
         onOpenChange={setDeleteDialogOpen}
-        title="Hapus Kelas?"
+        title={`${t('pages.admin.classes.delete')}?`}
         description={
           pendingDeleteClass
-            ? `Apakah Anda yakin ingin menghapus kelas ${pendingDeleteClass.name}?`
-            : 'Hapus kelas?'
+            ? `${t('messages.confirm.delete')} ${pendingDeleteClass.name}?`
+            : t('messages.confirm.delete')
         }
-        confirmLabel="Ya, Hapus"
-        cancelLabel="Batal"
+        confirmLabel={`${t('common.actions.confirm')}, ${t('common.actions.delete')}`}
+        cancelLabel={t('common.actions.cancel')}
         variant="danger"
         onConfirm={executeDelete}
         isLoading={deleting !== null}

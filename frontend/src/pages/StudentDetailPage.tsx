@@ -39,7 +39,7 @@ export function StudentDetailPage() {
       const memData = await memorizationsApi.getByStudent(studentId)
       setMemorizations(memData || [])
     } catch (err: any) {
-      setError('Gagal memuat data murid')
+      setError(t('errors.failedToLoad'))
     } finally {
       setLoading(false)
     }
@@ -56,9 +56,9 @@ export function StudentDetailPage() {
 
   const getStatusText = (status: string) => {
     switch (status) {
-      case 'fluent': return 'Lancar'
-      case 'good': return 'Cukup'
-      case 'needs_improvement': return 'Perlu Perbaikan'
+      case 'fluent': return t('teacher.status.fluent')
+      case 'good': return t('teacher.status.good')
+      case 'needs_improvement': return t('teacher.status.needs_improvement')
       default: return status
     }
   }
@@ -68,10 +68,10 @@ export function StudentDetailPage() {
       return mem.surah_name
     }
     if (mem.unit_type === 'juz' && mem.juz_number) {
-      return `Juz ${mem.juz_number}`
+      return `${t('teacher.juz')} ${mem.juz_number}`
     }
     if (mem.unit_type === 'page' && mem.page_start && mem.page_end) {
-      return `Halaman ${mem.page_start} - ${mem.page_end}`
+      return `${t('teacher.page')} ${mem.page_start} - ${mem.page_end}`
     }
     return mem.unit_type
   }
@@ -87,13 +87,13 @@ export function StudentDetailPage() {
               className="text-sm text-gray-600 hover:text-gray-900 mb-2 flex items-center gap-2"
             >
               <ArrowLeft size={16} />
-              Kembali ke Dashboard
+              {t('common.actions.back')} {t('teacher.dashboard')}
             </button>
           {loading ? (
             <div className="h-8 bg-gray-200 animate-pulse rounded"></div>
           ) : error ? (
             <div>
-              <h1 className="text-2xl font-bold text-red-600">Error</h1>
+              <h1 className="text-2xl font-bold text-red-600">{t('common.status.error')}</h1>
             </div>
           ) : student ? (
             <>
@@ -113,7 +113,7 @@ export function StudentDetailPage() {
         {loading ? (
           <div className="text-center py-12">
             <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-gray-300 border-t-primary"></div>
-            <p className="mt-4 text-gray-600">Memuat data...</p>
+            <p className="mt-4 text-gray-600">{t('common.status.loading')}</p>
           </div>
         ) : error ? (
           <div className="border-2 border-red-200 bg-red-50 p-6 text-center">
@@ -122,21 +122,21 @@ export function StudentDetailPage() {
               onClick={fetchData}
               className="mt-4 px-4 py-2 border-2 border-red-300 text-red-700 hover:bg-red-100 min-h-[44px] min-w-[44px]"
             >
-              Coba Lagi
+              {t('common.buttons.tryAgain')}
             </button>
           </div>
         ) : student ? (
           <div className="max-w-4xl mx-auto space-y-6">
             {/* Student Info Card */}
             <div className="border-2 border-border bg-white p-6">
-              <h2 className="text-lg font-semibold mb-4">Informasi Murid</h2>
+              <h2 className="text-lg font-semibold mb-4">{t('pages.studentDetail.studentInfo')}</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <p className="text-sm text-gray-600">Nama Lengkap</p>
+                  <p className="text-sm text-gray-600">{t('forms.labels.fullName')}</p>
                   <p className="font-semibold">{student.name}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-600">Kelas</p>
+                  <p className="text-sm text-gray-600">{t('dataTable.headers.class')}</p>
                   <p className="font-semibold">{student.class_name || '-'}</p>
                 </div>
               </div>
@@ -145,7 +145,7 @@ export function StudentDetailPage() {
             {/* Recent Memorizations */}
             {memorizations && memorizations.length > 0 && (
               <div className="border-2 border-border bg-white p-6">
-                <h2 className="text-lg font-semibold mb-4">Riwayat Hafalan Terakhir</h2>
+                <h2 className="text-lg font-semibold mb-4">{t('pages.studentDetail.recentHistory')}</h2>
                 <div className="space-y-3">
                   {memorizations.slice(0, 5).map((mem) => (
                     <div key={mem.id} className="border-2 border-gray-100 p-3">
@@ -172,7 +172,7 @@ export function StudentDetailPage() {
 
             {/* Input Form */}
             <div className="border-2 border-border bg-white p-6">
-              <h2 className="text-lg font-semibold mb-4">Input Hafalan Baru</h2>
+              <h2 className="text-lg font-semibold mb-4">{t('pages.studentDetail.inputNew')}</h2>
               <HafalanInputForm studentId={student.id} onSuccess={fetchData} />
             </div>
           </div>

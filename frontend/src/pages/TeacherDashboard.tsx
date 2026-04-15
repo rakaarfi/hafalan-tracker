@@ -41,7 +41,7 @@ export function TeacherDashboard() {
     } catch (err: any) {
       // Don't show error if it's a 401 (user will be redirected to login)
       if (err.response?.status !== 401) {
-        setError('Gagal memuat data')
+        setError(t('errors.failedToLoad'))
       }
     } finally {
       setLoading(false)
@@ -56,21 +56,21 @@ export function TeacherDashboard() {
       badges.push(
         <Badge key="both" variant="secondary" className="bg-purple-100 text-purple-800 text-xs flex items-center gap-1">
           <GraduationCap size={12} />
-          Wali & Guru Quran
+          {t('roles.homeroom')} & {t('roles.quranTeacher')}
         </Badge>
       )
     } else if (isHomeroom) {
       badges.push(
         <Badge key="homeroom" variant="secondary" className="bg-blue-100 text-blue-800 text-xs flex items-center gap-1">
           <Users size={12} />
-          Wali Kelas
+          {t('roles.homeroom')}
         </Badge>
       )
     } else if (isQuran) {
       badges.push(
         <Badge key="quran" variant="secondary" className="bg-green-100 text-green-800 text-xs flex items-center gap-1">
           <GraduationCap size={12} />
-          Guru Quran
+          {t('roles.quranTeacher')}
         </Badge>
       )
     }

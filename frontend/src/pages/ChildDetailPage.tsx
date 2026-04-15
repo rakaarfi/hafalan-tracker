@@ -54,9 +54,9 @@ export function ChildDetailPage() {
       setChild(data as unknown as Child)  // Type assertion: API returns Student & memorizations but component expects Child
     } catch (err: any) {
       if (err.response?.status === 403) {
-        setError('Anda tidak memiliki akses untuk melihat data anak ini')
+        setError(t('errors.unauthorized'))
       } else {
-        setError('Gagal memuat data anak')
+        setError(t('errors.failedToLoad'))
       }
     } finally {
       setLoading(false)
@@ -74,32 +74,32 @@ export function ChildDetailPage() {
 
   const getStatusLabel = (status: string) => {
     switch (status) {
-      case 'fluent': return 'Lancar'
-      case 'good': return 'Cukup'
-      case 'needs_improvement': return 'Perlu Perbaikan'
+      case 'fluent': return t('teacher.status.fluent')
+      case 'good': return t('teacher.status.good')
+      case 'needs_improvement': return t('teacher.status.needs_improvement')
       default: return status
     }
   }
 
   const formatDate = (dateString: string | undefined | null) => {
-    if (!dateString) return 'Tanggal tidak tersedia'
+    if (!dateString) return t('pages.childDetail.dateNotAvailable')
     try {
       const date = new Date(dateString)
-      if (isNaN(date.getTime())) return 'Format tanggal invalid'
+      if (isNaN(date.getTime())) return t('errors.invalidDate')
       return date.toLocaleDateString('id-ID', {
         year: 'numeric',
         month: 'long',
         day: 'numeric'
       })
     } catch {
-      return 'Format tanggal invalid'
+      return t('errors.invalidDate')
     }
   }
 
   const getUnitDisplay = (test: any) => {
     if (test.surah_name) return test.surah_name
-    if (test.juz_number) return `Juz ${test.juz_number}`
-    if (test.page_start && test.page_end) return `Halaman ${test.page_start} - ${test.page_end}`
+    if (test.juz_number) return `${t('teacher.juz')} ${test.juz_number}`
+    if (test.page_start && test.page_end) return `${t('teacher.page')} ${test.page_start} - ${test.page_end}`
     return test.unit_type || 'Unknown'
   }
 
@@ -114,17 +114,17 @@ export function ChildDetailPage() {
               className="text-sm text-gray-600 hover:text-gray-900 mb-2 flex items-center gap-2"
             >
               <ArrowLeft size={16} />
-              Kembali ke Dashboard
+              {t('common.actions.back')} {t('parent.dashboard')}
             </button>
           {loading ? (
             <div className="h-8 bg-gray-200 animate-pulse rounded"></div>
           ) : error ? (
             <div>
-              <h1 className="text-2xl font-bold text-red-600">Error</h1>
+              <h1 className="text-2xl font-bold text-red-600">{t('common.status.error')}</h1>
             </div>
           ) : child ? (
             <>
-              <h1 className="text-2xl font-bold">Detail Progress Hafalan</h1>
+              <h1 className="text-2xl font-bold">{t('pages.childDetail.title')}</h1>
               <p className="text-sm text-gray-600">
                 {child.student.name} - {child.student.class_name}
               </p>
@@ -140,7 +140,7 @@ export function ChildDetailPage() {
         {loading ? (
           <div className="text-center py-12">
             <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-gray-300 border-t-primary"></div>
-            <p className="mt-4 text-gray-600">Memuat data...</p>
+            <p className="mt-4 text-gray-600">{t('common.status.loading')}</p>
           </div>
         ) : error ? (
           <div className="border-2 border-red-200 bg-red-50 p-6 text-center">
@@ -149,7 +149,7 @@ export function ChildDetailPage() {
               onClick={fetchChildData}
               className="mt-4 px-4 py-2 border-2 border-red-300 text-red-700 hover:bg-red-100 min-h-[44px] min-w-[44px]"
             >
-              Coba Lagi
+              {t('common.buttons.tryAgain')}
             </button>
           </div>
         ) : child ? (
@@ -157,12 +157,12 @@ export function ChildDetailPage() {
             {/* Stats */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="border-2 border-border bg-white p-6">
-                <h2 className="text-lg font-semibold mb-2">Total Tests</h2>
+                <h2 className="text-lg font-semibold mb-2">{t('pages.childDetail.totalTests')}</h2>
                 <div className="text-3xl font-bold">{child.total_tests}</div>
               </div>
               {child.latest_test && (
                 <div className="border-2 border-border bg-white p-6">
-                  <h2 className="text-lg font-semibold mb-2">Latest Test</h2>
+                  <h2 className="text-lg font-semibold mb-2">{t('pages.childDetail.latestTest')}</h2>
                   <div className="text-lg">
                     {getUnitDisplay(child.latest_test)}
                   </div>
@@ -176,7 +176,7 @@ export function ChildDetailPage() {
             {/* Recent Tests */}
             {child.recent_tests && child.recent_tests.length > 0 && (
               <div className="border-2 border-border bg-white p-6">
-                <h2 className="text-lg font-semibold mb-4">Riwayat Hafalan</h2>
+                <h2 className="text-lg font-semibold mb-4">{t('pages.childDetail.history')}</h2>
                 <div className="space-y-4">
                   {child.recent_tests.map((test) => (
                     <div key={test.id} className="border-2 border-border p-4">
@@ -191,7 +191,7 @@ export function ChildDetailPage() {
                           </div>
                           {test.teacher_name && (
                             <div className="text-xs text-gray-500 mt-1">
-                              Guru: {test.teacher_name}
+                              {t('roles.teacher')}: {test.teacher_name}
                             </div>
                           )}
                         </div>
@@ -201,7 +201,7 @@ export function ChildDetailPage() {
                       </div>
                       {test.notes && (
                         <div className="mt-2 text-sm text-gray-700 bg-gray-50 p-2 border-2 border-gray-200">
-                          <span className="font-medium">Catatan:</span> {test.notes}
+                          <span className="font-medium">{t('teacher.notes')}:</span> {test.notes}
                         </div>
                       )}
                     </div>
@@ -217,19 +217,19 @@ export function ChildDetailPage() {
                   <div className="text-2xl font-bold text-green-600">
                     {child.recent_tests.filter(t => t.status === 'fluent').length}
                   </div>
-                  <div className="text-sm text-gray-600">Lancar</div>
+                  <div className="text-sm text-gray-600">{t('teacher.status.fluent')}</div>
                 </div>
                 <div className="border-2 border-border bg-white p-4 text-center">
                   <div className="text-2xl font-bold text-yellow-600">
                     {child.recent_tests.filter(t => t.status === 'good').length}
                   </div>
-                  <div className="text-sm text-gray-600">Cukup</div>
+                  <div className="text-sm text-gray-600">{t('teacher.status.good')}</div>
                 </div>
                 <div className="border-2 border-border bg-white p-4 text-center">
                   <div className="text-2xl font-bold text-red-600">
                     {child.recent_tests.filter(t => t.status === 'needs_improvement').length}
                   </div>
-                  <div className="text-sm text-gray-600">Perlu Perbaikan</div>
+                  <div className="text-sm text-gray-600">{t('teacher.status.needs_improvement')}</div>
                 </div>
               </div>
             )}

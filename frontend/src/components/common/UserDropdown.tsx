@@ -4,6 +4,7 @@ import { DismissableLayer } from '@radix-ui/react-dismissable-layer'
 import { LogOut, User as UserIcon, ChevronDown } from 'lucide-react'
 import { useAuthStore, User } from '@/stores/authStore'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
+import { useTranslation } from 'react-i18next'
 
 interface UserDropdownProps {
   user?: User | null
@@ -12,6 +13,7 @@ interface UserDropdownProps {
 export function UserDropdown({ user }: UserDropdownProps) {
   const { logout } = useAuthStore()
   const navigate = useNavigate()
+  const { t } = useTranslation()
   const [userMenuOpen, setUserMenuOpen] = useState(false)
   const [logoutDialogOpen, setLogoutDialogOpen] = useState(false)
   const [dropdownPosition, setDropdownPosition] = useState<'bottom' | 'top'>('bottom')
@@ -72,7 +74,7 @@ export function UserDropdown({ user }: UserDropdownProps) {
               {user?.name?.charAt(0).toUpperCase() || user?.email?.charAt(0).toUpperCase() || 'U'}
             </div>
             <div className="text-left hidden sm:block">
-              <div className="text-sm font-medium">{user?.name || 'Pengguna'}</div>
+              <div className="text-sm font-medium">{user?.name || t('common.user')}</div>
               <div className="text-xs text-gray-600">{user?.email}</div>
             </div>
           </div>
@@ -100,7 +102,7 @@ export function UserDropdown({ user }: UserDropdownProps) {
                 className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 border-b border-border min-h-[48px] transition-colors cursor-pointer"
               >
                 <UserIcon size={18} />
-                <span className="text-sm">Profil</span>
+                <span className="text-sm">{t('pages.profile.title')}</span>
               </a>
               <button
                 type="button"
@@ -108,7 +110,7 @@ export function UserDropdown({ user }: UserDropdownProps) {
                 className="w-full flex items-center gap-3 px-4 py-3 hover:bg-red-50 text-red-600 min-h-[48px] transition-colors cursor-pointer"
               >
                 <LogOut size={18} />
-                <span className="text-sm">Keluar</span>
+                <span className="text-sm">{t('auth.logout')}</span>
               </button>
             </div>
           </DismissableLayer>
@@ -119,10 +121,9 @@ export function UserDropdown({ user }: UserDropdownProps) {
       <ConfirmDialog
         open={logoutDialogOpen}
         onOpenChange={setLogoutDialogOpen}
-        title="Keluar dari Akun?"
-        description="Apakah Anda yakin ingin keluar? Anda perlu login kembali untuk mengakses sistem."
-        confirmLabel="Ya, Keluar"
-        cancelLabel="Batal"
+        title={t('messages.confirm.logout')}
+        description={t('messages.confirm.logoutDescription')}
+        confirmLabel={t('auth.logout')}
         variant="danger"
         onConfirm={handleLogout}
       />

@@ -68,8 +68,8 @@ export function ParentFormPage() {
       } catch (error) {
         toast({
           variant: "destructive",
-          title: t('errors.failedToLoad'),
-          description: "Gagal memuat data orang tua",
+          title: t('common.status.failed'),
+          description: t('errors.failedToLoad'),
         })
         navigate('/admin/parents')
       } finally {
@@ -95,8 +95,8 @@ export function ParentFormPage() {
     } catch (error) {
       toast({
         variant: "destructive",
-        title: t('errors.failedToLoadChildren'),
-        description: "Gagal memuat data anak",
+        title: t('common.status.failed'),
+        description: t('errors.failedToLoad'),
       })
     } finally {
       setLoadingChildren(false)
@@ -119,7 +119,7 @@ export function ParentFormPage() {
     if (!parentId || !selectedStudentId) {
       toast({
         variant: "destructive",
-        title: t('errors.failedToAddChild'),
+        title: t('common.status.failed'),
         description: t('errors.selectStudent'),
       })
       return
@@ -136,22 +136,22 @@ export function ParentFormPage() {
       setShowAddChildModal(false)
 
       toast({
-        title: "Berhasil",
-        description: "Anak berhasil ditambahkan",
+        title: t('common.status.success'),
+        description: t('messages.success.added'),
       })
     } catch (error: any) {
-      let errorMessage = error.response?.data?.error || error.message || "Gagal menambahkan anak"
+      let errorMessage = error.response?.data?.error || error.message || t('errors.failedToSave')
 
       // Translate specific backend error messages
       if (errorMessage.includes('already has a father')) {
-        errorMessage = t('errors.parentAlreadyHasFather')
+        errorMessage = t('errors.studentAlreadyHasFather')
       } else if (errorMessage.includes('already has a mother')) {
-        errorMessage = t('errors.parentAlreadyHasMother')
+        errorMessage = t('errors.studentAlreadyHasMother')
       }
 
       toast({
         variant: "destructive",
-        title: t('errors.failedToAddChild'),
+        title: t('common.status.failed'),
         description: errorMessage,
       })
     }
@@ -166,21 +166,21 @@ export function ParentFormPage() {
         fetchChildren(parentId)
 
         toast({
-          title: "Berhasil",
-          description: "Anak berhasil dihapus",
+          title: t('common.status.success'),
+          description: t('messages.success.deleted'),
         })
       })
       .catch((error: any) => {
-        let errorMessage = error.response?.data?.error || error.message || "Gagal menghapus anak"
+        let errorMessage = error.response?.data?.error || error.message || t('errors.failedToDelete')
 
         // Translate specific backend error messages
         if (errorMessage.includes('not linked to this student')) {
-          errorMessage = t('errors.childNotLinkedToParent')
+          errorMessage = t('errors.parentNotLinkedToStudent')
         }
 
         toast({
           variant: "destructive",
-          title: t('errors.failedToRemoveChild'),
+          title: t('common.status.failed'),
           description: errorMessage,
         })
       })
@@ -210,8 +210,8 @@ export function ParentFormPage() {
       }
 
       toast({
-        title: "Berhasil",
-        description: isEditing ? "Data orang tua berhasil diupdate" : "Orang tua baru berhasil ditambahkan"
+        title: t('common.status.success'),
+        description: isEditing ? t('messages.success.updated') : t('messages.success.added')
       })
 
       setTimeout(() => {
@@ -220,8 +220,8 @@ export function ParentFormPage() {
     } catch (error: any) {
       toast({
         variant: "destructive",
-        title: "Gagal",
-        description: error.response?.data?.error || error.message || "Gagal menyimpan data",
+        title: t('common.status.failed'),
+        description: error.response?.data?.error || error.message || t('errors.failedToSave'),
       })
     }
   }
@@ -235,10 +235,10 @@ export function ParentFormPage() {
           className="text-sm text-gray-600 hover:text-gray-900 mb-2 flex items-center gap-2"
         >
           <ArrowLeft size={16} />
-          Kembali
+          {t('common.actions.back')}
         </button>
         <h1 className="text-xl md:text-2xl font-bold">
-          {isEditing ? 'Edit Orang Tua' : 'Tambah Orang Tua Baru'}
+          {isEditing ? t('pages.admin.parents.edit') : t('pages.admin.parents.add')}
         </h1>
       </div>
 
@@ -253,10 +253,10 @@ export function ParentFormPage() {
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 md:space-y-6">
           {/* Nama */}
           <div>
-            <Label htmlFor="name">Nama Lengkap *</Label>
+            <Label htmlFor="name">{t('forms.labels.fullName')} *</Label>
             <Input
               id="name"
-              placeholder="Masukkan nama lengkap"
+              placeholder={t('forms.placeholders.enterName')}
               className="border-2 min-h-[44px]"
               {...register('name')}
             />
@@ -265,11 +265,11 @@ export function ParentFormPage() {
 
           {/* Email */}
           <div>
-            <Label htmlFor="email">Email *</Label>
+            <Label htmlFor="email">{t('forms.labels.email')} *</Label>
             <Input
               id="email"
               type="email"
-              placeholder="contoh@email.com"
+              placeholder={t('forms.placeholders.enterEmail')}
               className="border-2 min-h-[44px]"
               {...register('email')}
             />
@@ -278,7 +278,7 @@ export function ParentFormPage() {
 
           {/* No HP */}
           <div>
-            <Label htmlFor="phone">No HP *</Label>
+            <Label htmlFor="phone">{t('forms.labels.phone')} *</Label>
             <PhoneInput
               id="phone"
               international
@@ -299,7 +299,7 @@ export function ParentFormPage() {
 
           {/* Gender */}
           <div>
-            <Label htmlFor="gender">Jenis Kelamin *</Label>
+            <Label htmlFor="gender">{t('forms.labels.gender')} *</Label>
             <select
               id="gender"
               className="flex h-9 w-full rounded-none border-2 border-input bg-transparent px-3 py-1 text-base min-h-[44px]"
@@ -333,14 +333,14 @@ export function ParentFormPage() {
               onClick={() => navigate(-1)}
               className="min-h-[44px] flex-1"
             >
-              Batal
+              {t('common.actions.cancel')}
             </Button>
             <Button
               type="submit"
               disabled={isSubmitting}
               className="min-h-[44px] flex-1"
             >
-              {isSubmitting ? 'Menyimpan...' : 'Simpan'}
+              {isSubmitting ? t('common.status.processing') : t('common.actions.save')}
             </Button>
           </div>
         </form>

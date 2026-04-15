@@ -1,6 +1,7 @@
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { AlertTriangle } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 
 interface ConfirmDialogProps {
   open: boolean
@@ -19,12 +20,14 @@ export function ConfirmDialog({
   onOpenChange,
   title,
   description,
-  confirmLabel = 'Ya',
-  cancelLabel = 'Batal',
+  confirmLabel,
+  cancelLabel,
   variant = 'danger',
   onConfirm,
   isLoading = false,
 }: ConfirmDialogProps) {
+  const { t } = useTranslation()
+
   const handleConfirm = () => {
     onConfirm()
     // Don't close dialog here - let the calling code handle it after async operation
@@ -66,7 +69,7 @@ export function ConfirmDialog({
             disabled={isLoading}
             className="min-h-[40px] sm:min-h-[44px] text-sm sm:text-base flex-1 px-2 sm:px-4"
           >
-            {cancelLabel}
+            {cancelLabel || t('common.actions.cancel')}
           </Button>
           <Button
             type="button"
@@ -80,7 +83,7 @@ export function ConfirmDialog({
                 : 'bg-blue-600 hover:bg-blue-700 text-white'
             }`}
           >
-            {isLoading ? 'Memproses...' : confirmLabel}
+            {isLoading ? t('common.status.processing') : (confirmLabel || t('common.actions.confirm'))}
           </Button>
         </DialogFooter>
       </DialogContent>

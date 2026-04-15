@@ -40,6 +40,13 @@ export function HafalanInputForm({ studentId, onSuccess }: HafalanInputFormProps
   const { toast } = useToast()
   const { user } = useAuthStore()
 
+  const translations = {
+    toastSuccess: t('common.status.success'),
+    toastSaved: t('messages.success.saved'),
+    toastFailed: t('common.status.failed'),
+    toastError: t('errors.failedToSave')
+  }
+
   const { register, handleSubmit, formState: { errors, isSubmitting }, watch, setValue, reset, trigger } = useForm<HafalanFormData>({
     resolver: zodResolver(hafalanSchema),
     mode: "onTouched", // Validate on blur (when user leaves the field)
@@ -78,8 +85,8 @@ export function HafalanInputForm({ studentId, onSuccess }: HafalanInputFormProps
       await api.post('/memorizations', payload)
 
       toast({
-        title: "Berhasil",
-        description: "Data hafalan berhasil disimpan",
+        title: translations.toastSuccess,
+        description: translations.toastSaved,
       })
 
       // Reset form
@@ -93,8 +100,8 @@ export function HafalanInputForm({ studentId, onSuccess }: HafalanInputFormProps
     } catch (error: any) {
       toast({
         variant: "destructive",
-        title: "Gagal",
-        description: error.response?.data?.error || "Gagal menyimpan data",
+        title: translations.toastFailed,
+        description: error.response?.data?.error || translations.toastError,
       })
     }
   }
@@ -104,24 +111,24 @@ export function HafalanInputForm({ studentId, onSuccess }: HafalanInputFormProps
       {/* Validation errors */}
       {Object.keys(errors).length > 0 && (
         <div className="p-4 border-2 border-red-200 bg-red-50 text-red-800">
-          <p className="font-semibold mb-2">Mohon perbaiki kesalahan berikut:</p>
+          <p className="font-semibold mb-2">{t('pages.hafalanInput.validationErrors')}</p>
           <ul className="list-disc list-inside text-sm">
             {Object.entries(errors).map(([field, error]) => {
               // Map field names to user-friendly labels
               const fieldLabels: Record<string, string> = {
-                page_start: 'Halaman awal',
-                page_end: 'Halaman akhir',
-                unit_type: 'Tipe unit',
-                surah_id: 'Surah',
-                juz_id: 'Juz',
-                status: 'Status',
-                test_date: 'Tanggal tes',
-                notes: 'Catatan'
+                page_start: t('validation.pageStart'),
+                page_end: t('validation.pageEnd'),
+                unit_type: t('pages.hafalanInput.unitType'),
+                surah_id: t('teacher.surah'),
+                juz_id: t('teacher.juz'),
+                status: t('teacher.statusLabel'),
+                test_date: t('teacher.testDate'),
+                notes: t('teacher.notes')
               }
               const fieldName = fieldLabels[field] || field
               const errorMessage = error.message && error.message.startsWith('validation.')
                 ? t(error.message)
-                : error.message || 'Error tidak diketahui'
+                : error.message || t('errors.unknownError')
 
               return (
                 <li key={field}>
@@ -186,7 +193,7 @@ export function HafalanInputForm({ studentId, onSuccess }: HafalanInputFormProps
       {watchedUnitType === 'page' && (
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <Label htmlFor="page_start">Halaman Awal</Label>
+            <Label htmlFor="page_start">{t('validation.pageStart')}</Label>
             <input
               id="page_start"
               type="number"
@@ -207,7 +214,7 @@ export function HafalanInputForm({ studentId, onSuccess }: HafalanInputFormProps
             )}
           </div>
           <div>
-            <Label htmlFor="page_end">Halaman Akhir</Label>
+            <Label htmlFor="page_end">{t('validation.pageEnd')}</Label>
             <input
               id="page_end"
               type="number"
@@ -260,17 +267,17 @@ export function HafalanInputForm({ studentId, onSuccess }: HafalanInputFormProps
 
       {/* Notes */}
       <div>
-        <Label htmlFor="notes">{t('teacher.notes')} (Opsional)</Label>
+        <Label htmlFor="notes">{t('teacher.notes')} ({t('common.optional')})</Label>
         <Textarea
           id="notes"
-          placeholder="Catatan tambahan..."
+          placeholder={t('pages.hafalanInput.notesPlaceholder')}
           rows={3}
           maxLength={500}
           {...register('notes')}
           className="border-2 mt-2"
         />
         <p className="text-xs text-gray-500 mt-1">
-          {watch('notes')?.length || 0} / 500 karakter
+          {watch('notes')?.length || 0} / 500 {t('pages.hafalanInput.characters')}
         </p>
       </div>
 
@@ -298,7 +305,7 @@ export function HafalanInputForm({ studentId, onSuccess }: HafalanInputFormProps
         className="w-full min-h-[44px]"
         disabled={isSubmitting}
       >
-        {isSubmitting ? 'Menyimpan...' : t('teacher.submit')}
+        {isSubmitting ? t('common.status.processing') : t('teacher.submit')}
       </Button>
     </form>
   )

@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { useToast } from '@/hooks/use-toast'
+import { useTranslation } from 'react-i18next'
 import { teachersApi, classesApi } from '@/lib/api'
 import { translateBackendError } from '@/lib/errorTranslation'
 import { useAuthStore } from '@/stores/authStore'
@@ -42,6 +43,7 @@ export function TeacherListPage() {
   const [loadingClasses, setLoadingClasses] = useState(true)
 
   const { toast } = useToast()
+  const { t } = useTranslation()
   const { isAuthenticated } = useAuthStore()
   const hasFetchedInitially = useRef(false)
 
@@ -109,14 +111,14 @@ export function TeacherListPage() {
       await teachersApi.delete(pendingDeleteTeacher.UserID)
       setTeachers(teachers.filter(t => t.UserID !== pendingDeleteTeacher.UserID))
       toast({
-        title: "Berhasil",
-        description: "Guru berhasil dihapus",
+        title: t('common.status.success'),
+        description: t('messages.success.deleted'),
       })
     } catch (error: any) {
       toast({
         variant: "destructive",
-        title: "Gagal",
-        description: error.response?.data?.error || error.message || "Gagal menghapus guru",
+        title: t('common.status.failed'),
+        description: error.response?.data?.error || error.message || t('errors.failedToDelete'),
       })
     } finally {
       setDeleting(null)
@@ -139,15 +141,15 @@ export function TeacherListPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
         <div>
-          <h1 className="text-xl md:text-2xl font-bold">Data Guru</h1>
-          <p className="text-gray-600">Kelola data guru dan wali kelas</p>
+          <h1 className="text-xl md:text-2xl font-bold">{t('pages.admin.teachers.title')}</h1>
+          <p className="text-gray-600">{t('pages.admin.teachers.description')}</p>
         </div>
         <Link to="/admin/teachers/new">
           <Button
             className="min-h-[44px] min-w-[44px] w-full sm:w-auto"
           >
             <Plus size={20} className="mr-2 inline" />
-            Tambah Guru
+            {t('pages.admin.teachers.add')}
           </Button>
         </Link>
       </div>
@@ -212,20 +214,20 @@ export function TeacherListPage() {
               <th className="text-left p-2 md:p-4 border-r-2 border-border text-sm md:text-base">
                 <div className="flex items-center gap-2">
                   <GraduationCap size={16} className="md:size-[18px]" />
-                  Nama
+                  {t('dataTable.headers.name')}
                 </div>
               </th>
-              <th className="text-left p-2 md:p-4 border-r-2 border-border text-sm md:text-base">Email</th>
-              <th className="text-left p-2 md:p-4 border-r-2 border-border text-sm md:text-base">No HP</th>
-              <th className="text-left p-2 md:p-4 border-r-2 border-border text-sm md:text-base">Kelas</th>
-              <th className="text-center p-2 md:p-4 text-sm md:text-base">Aksi</th>
+              <th className="text-left p-2 md:p-4 border-r-2 border-border text-sm md:text-base">{t('dataTable.headers.email')}</th>
+              <th className="text-left p-2 md:p-4 border-r-2 border-border text-sm md:text-base">{t('dataTable.headers.phone')}</th>
+              <th className="text-left p-2 md:p-4 border-r-2 border-border text-sm md:text-base">{t('dataTable.headers.class')}</th>
+              <th className="text-center p-2 md:p-4 text-sm md:text-base">{t('dataTable.headers.actions')}</th>
             </tr>
           </thead>
           <tbody className="divide-y-2 divide-border">
             {!teachers || teachers.length === 0 ? (
               <tr>
                 <td colSpan={5} className="p-8 text-center text-gray-500">
-                  {search ? 'Tidak ada guru ditemukan' : 'Belum ada data guru'}
+                  {search ? t('dataTable.noResults') : t('pages.admin.teachers.empty')}
                 </td>
               </tr>
             ) : (
@@ -310,7 +312,10 @@ export function TeacherListPage() {
       {totalPages > 1 && (
         <div className="mt-4 flex flex-col sm:flex-row justify-between items-center gap-4">
           <div className="text-sm text-gray-600">
-            Menampilkan {(page - 1) * 10 + 1} - {Math.min(page * 10, total)} dari {total} guru
+            {t('pagination.showing', {
+              start: (page - 1) * 10 + 1,
+              end: Math.min(page * 10, total)
+            })} {t('pagination.of', { total })} {t('pagination.results')}
           </div>
           <div className="flex gap-2">
             <Button
@@ -319,7 +324,7 @@ export function TeacherListPage() {
               disabled={page <= 1 || loading}
               className="min-h-[36px] min-w-[36px]"
             >
-              Sebelumnya
+              {t('pagination.previous')}
             </Button>
             <div className="flex items-center gap-1">
               {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
@@ -353,7 +358,7 @@ export function TeacherListPage() {
               disabled={page >= totalPages || loading}
               className="min-h-[36px] min-w-[36px]"
             >
-              Selanjutnya
+              {t('pagination.next')}
             </Button>
           </div>
         </div>
@@ -371,14 +376,14 @@ export function TeacherListPage() {
       <ConfirmDialog
         open={deleteDialogOpen}
         onOpenChange={setDeleteDialogOpen}
-        title="Hapus Guru?"
+        title={`${t('pages.admin.teachers.delete')}?`}
         description={
           pendingDeleteTeacher
-            ? `Apakah Anda yakin ingin menghapus guru ${pendingDeleteTeacher.FullName}?`
-            : 'Hapus guru?'
+            ? `${t('messages.confirm.delete')} ${pendingDeleteTeacher.FullName}?`
+            : t('messages.confirm.delete')
         }
-        confirmLabel="Ya, Hapus"
-        cancelLabel="Batal"
+        confirmLabel={`${t('common.actions.confirm')}, ${t('common.actions.delete')}`}
+        cancelLabel={t('common.actions.cancel')}
         variant="danger"
         onConfirm={executeDelete}
         isLoading={deleting !== null}
