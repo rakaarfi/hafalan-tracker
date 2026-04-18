@@ -32,8 +32,8 @@ const getPasswordSchema = (t: any) => z.object({
   path: ["confirm_password"],
 })
 
-type ProfileFormData = z.infer<typeof profileSchema>
-type PasswordFormData = z.infer<typeof passwordSchema>
+type ProfileFormData = z.infer<ReturnType<typeof getProfileSchema>>
+type PasswordFormData = z.infer<ReturnType<typeof getPasswordSchema>>
 
 interface ProfilePageProps {
   embedded?: boolean
