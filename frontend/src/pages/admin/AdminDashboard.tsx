@@ -66,8 +66,8 @@ export function AdminDashboard() {
     }
   }, [userMenuOpen])
 
-  const handleLogout = () => {
-    logout()
+  const handleLogout = async () => {
+    await logout()
     setLogoutDialogOpen(false)
     setUserMenuOpen(false)
   }

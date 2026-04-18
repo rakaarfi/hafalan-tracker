@@ -49,10 +49,13 @@ export function UserDropdown({ user }: UserDropdownProps) {
     setLogoutDialogOpen(true)
   }
 
-  const handleLogout = () => {
-    logout()
+  const handleLogout = async () => {
+    // Close dropdown first
     setLogoutDialogOpen(false)
     setUserMenuOpen(false)
+
+    // Wait for logout to complete before letting anything else happen
+    await logout()
   }
 
   const handleToggleDropdown = () => {
