@@ -102,7 +102,8 @@ func (s *Server) login(c *gin.Context) {
 // logout handles user logout
 func (s *Server) logout(c *gin.Context) {
 	// Clear the auth_token cookie
-	c.SetSameSite(http.SameSiteStrictMode)
+	// Use SameSite Lax to match login cookie settings
+	c.SetSameSite(http.SameSiteLaxMode)
 
 	// Check if running in production (HTTPS)
 	isProduction := c.GetHeader("X-Forwarded-Proto") == "https"
