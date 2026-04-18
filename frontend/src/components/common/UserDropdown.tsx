@@ -5,6 +5,12 @@ import { useAuthStore, User } from '@/stores/authStore'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { useTranslation } from 'react-i18next'
 
+// Helper to detect mobile devices
+const isMobile = () => {
+  return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
+         window.innerWidth <= 768
+}
+
 interface UserDropdownProps {
   user?: User | null
 }
@@ -48,10 +54,20 @@ export function UserDropdown({ user }: UserDropdownProps) {
     setLogoutDialogOpen(true)
   }
 
-  const handleLogout = () => {
-    logout()
+  const handleLogout = async () => {
+    // Close dropdown and dialog first
     setLogoutDialogOpen(false)
     setUserMenuOpen(false)
+
+    // Wait for logout API to complete
+    await logout()
+
+    // On mobile, use hard redirect to ensure clean state
+    // On desktop, let ProtectedRoute handle navigation naturally
+    if (isMobile()) {
+      window.location.href = '/login'
+    }
+    // For desktop, no action needed - ProtectedRoute will redirect
   }
 
   const handleToggleDropdown = () => {
