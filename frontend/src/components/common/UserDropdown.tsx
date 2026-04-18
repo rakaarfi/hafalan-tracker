@@ -53,7 +53,6 @@ export function UserDropdown({ user }: UserDropdownProps) {
     logout()
     setLogoutDialogOpen(false)
     setUserMenuOpen(false)
-    window.location.href = '/login'
   }
 
   const handleToggleDropdown = () => {
