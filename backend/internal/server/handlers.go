@@ -114,9 +114,20 @@ func (s *Server) logout(c *gin.Context) {
 		"",
 		-1,          // Expire immediately
 		"/",
-		"",
+		"",          // Domain
 		secureFlag,  // Must match login cookie settings
 		true,        // httpOnly
+	)
+
+	// Additional cookie deletion with MaxAge=0 for better browser compatibility
+	c.SetCookie(
+		"auth_token",
+		"",
+		0,           // MaxAge=0 also expires cookie
+		"/",
+		"",
+		secureFlag,
+		true,
 	)
 
 	c.JSON(http.StatusOK, gin.H{
