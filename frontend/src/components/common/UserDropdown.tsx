@@ -1,6 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { DismissableLayer } from '@radix-ui/react-dismissable-layer'
 import { LogOut, User as UserIcon, ChevronDown } from 'lucide-react'
 import { useAuthStore, User } from '@/stores/authStore'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
@@ -49,13 +48,10 @@ export function UserDropdown({ user }: UserDropdownProps) {
     setLogoutDialogOpen(true)
   }
 
-  const handleLogout = async () => {
-    // Close dropdown first
+  const handleLogout = () => {
+    logout()
     setLogoutDialogOpen(false)
     setUserMenuOpen(false)
-
-    // Wait for logout to complete before letting anything else happen
-    await logout()
   }
 
   const handleToggleDropdown = () => {
@@ -88,13 +84,16 @@ export function UserDropdown({ user }: UserDropdownProps) {
           />
         </button>
 
-        {/* Dropdown Content with Radix UI DismissableLayer */}
+        {/* Dropdown Content */}
         {userMenuOpen && (
-          <DismissableLayer
-            onDismiss={() => {
-              setUserMenuOpen(false)
-            }}
-          >
+          <>
+            {/* Backdrop - closes dropdown when clicking outside (mobile only) */}
+            <div
+              className="fixed inset-0 z-40 lg:hidden"
+              onClick={() => setUserMenuOpen(false)}
+            />
+
+            {/* Dropdown Menu - Smart positioning */}
             <div className={`absolute z-50 w-48 bg-white border-2 border-border shadow-lg ${
               dropdownPosition === 'bottom' ? 'mt-1 right-0' : 'mb-1 bottom-full right-0'
             }`}>
@@ -115,7 +114,7 @@ export function UserDropdown({ user }: UserDropdownProps) {
                 <span className="text-sm">{t('auth.logout')}</span>
               </button>
             </div>
-          </DismissableLayer>
+          </>
         )}
       </div>
 
