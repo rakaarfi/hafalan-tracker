@@ -33,7 +33,7 @@ server {
         proxy_set_header Host \$host;
         proxy_set_header X-Real-IP \$remote_addr;
         proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto \$scheme;
+        proxy_set_header X-Forwarded-Proto https;  # Cloudflare terminates TLS, always tell backend it's HTTPS
 
         # Forward cookies for authentication
         proxy_set_header Cookie \$http_cookie;

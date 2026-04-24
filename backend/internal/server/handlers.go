@@ -109,59 +109,16 @@ func (s *Server) logout(c *gin.Context) {
 	isProduction := c.GetHeader("X-Forwarded-Proto") == "https"
 	secureFlag := isProduction
 
-	// Get the actual domain from the request
-	host := c.Request.Host
-	domain := ""
-	if len(host) > 0 && host != "localhost" {
-		// Extract domain for production (e.g., "hafalan.rakaarfi.dev")
-		domain = host
-	}
-
-	// Multiple attempts to delete cookie for better mobile browser compatibility
-	// Attempt 1: With explicit domain (for production)
-	if domain != "" {
-		c.SetCookie(
-			"auth_token",
-			"",
-			-1,
-			"/",
-			domain,
-			secureFlag,
-			true,
-		)
-	}
-
-	// Attempt 2: Without domain (default behavior)
+	// Delete cookie WITHOUT specifying domain - let browser handle it automatically
+	// This avoids creating duplicate cookies with different domains
 	c.SetCookie(
 		"auth_token",
 		"",
-		-1,
+		-1, // MaxAge -1 means delete immediately
 		"/",
-		"",
+		"", // Empty domain = browser uses current domain automatically
 		secureFlag,
-		true,
-	)
-
-	// Attempt 3: With MaxAge=0 (alternative expiration method)
-	c.SetCookie(
-		"auth_token",
-		"",
-		0,
-		"/",
-		domain,
-		secureFlag,
-		true,
-	)
-
-	// Attempt 4: MaxAge=0 without domain
-	c.SetCookie(
-		"auth_token",
-		"",
-		0,
-		"/",
-		"",
-		secureFlag,
-		true,
+		true, // httpOnly
 	)
 
 	c.JSON(http.StatusOK, gin.H{
