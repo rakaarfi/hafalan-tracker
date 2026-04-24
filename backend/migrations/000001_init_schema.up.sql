@@ -32,6 +32,7 @@ CREATE TABLE users (
     password_hash VARCHAR(255) NOT NULL,
     role_id INTEGER REFERENCES roles(id),
     is_active BOOLEAN DEFAULT true,
+    password_changed_at TIMESTAMP,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -85,7 +86,7 @@ CREATE TABLE student_parents (
     is_primary_contact BOOLEAN DEFAULT false,
     is_active BOOLEAN DEFAULT true,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    UNIQUE(student_id, parent_id)
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Surah reference table

@@ -55,7 +55,7 @@ echo ""
 
 # Run migrations
 echo -e "${YELLOW}Running migrations...${NC}"
-MIGRATIONS_DIR="/home/rakaarfi/documents/hafalan-tracker/database/migrations"
+MIGRATIONS_DIR="$(dirname "$0")/../backend/migrations"
 
 if [ -d "$MIGRATIONS_DIR" ]; then
     for migration in "$MIGRATIONS_DIR"/*.up.sql; do

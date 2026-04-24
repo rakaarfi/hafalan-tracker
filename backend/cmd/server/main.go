@@ -9,6 +9,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/rakaarfi/hafalan-tracker/backend"
 	"github.com/rakaarfi/hafalan-tracker/backend/internal/config"
 	"github.com/rakaarfi/hafalan-tracker/backend/internal/database"
 	"github.com/rakaarfi/hafalan-tracker/backend/internal/server"
@@ -27,6 +28,11 @@ func main() {
 		log.Fatalf("Failed to connect to database: %v", err)
 	}
 	defer db.Close()
+
+	// Run auto-migrations
+	if err := database.RunMigrations(db.DB.DB, backend.MigrationFS, "migrations"); err != nil {
+		log.Fatalf("Failed to run migrations: %v", err)
+	}
 
 	// Initialize server
 	srv := server.New(cfg, db)

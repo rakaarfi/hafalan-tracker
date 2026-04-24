@@ -60,3 +60,4 @@ bun.lockb
 
 # Docker
 docker-compose.override.yml
+server

@@ -3,6 +3,16 @@
 -- All passwords: admin123 (admin) or password123 (others)
 
 -- ============================================
+-- ROLES (must exist before users)
+-- ============================================
+
+INSERT INTO roles (id, name, description) VALUES
+(1, 'admin', 'Full system access'),
+(2, 'teacher', 'Can input and view student memorization'),
+(3, 'parent', 'Can view their children progress')
+ON CONFLICT (id) DO NOTHING;
+
+-- ============================================
 -- CLEAR EXISTING DEMO DATA
 -- ============================================
 
@@ -21,7 +31,7 @@ DELETE FROM users WHERE id <= 100 AND id > 1;
 
 -- Admin (password: admin123)
 INSERT INTO users (id, email, password_hash, role_id) VALUES
-(1, 'admin@hafalan.sch.id', '$2b$12$vrfDFDDLwEq7wCf7zqjy..7uQsWtf26Q65k3vLikMQChUusn4mbN2', 1)
+(1, 'admin@test.com', '$2b$12$vrfDFDDLwEq7wCf7zqjy..7uQsWtf26Q65k3vLikMQChUusn4mbN2', 1)
 ON CONFLICT (email) DO NOTHING;
 
 -- Teachers (password: password123)
@@ -158,7 +168,7 @@ VALUES
 -- ============================================
 
 -- Test Accounts:
--- Admin: admin@hafalan.sch.id / admin123
+-- Admin: admin@test.com / admin123
 -- Teacher: budi.santoso@hafalan.sch.id / password123
 -- Teacher: siti.rahayu@hafalan.sch.id / password123
 -- Parent: bapak.ahmad@parent.com / password123
